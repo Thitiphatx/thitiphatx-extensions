@@ -145,7 +145,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
     const latestSection_Array: MangaTile[] = []
 
     for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image: string = $('div.cvr > div > a > img', comic).first().attr('src') ?? ''
+        let image: string = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0") ?? ''
         if (image.startsWith('/')) image = 'https:' + image
         const title: string = $('div.det > a', comic).first().text().trim() ?? ''
         const id: string = $('div.det > a', comic).attr('href').split('/')[3] ?? ''
@@ -169,7 +169,7 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     const collectedIds: string[] = []
 
     for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image: string = $('div.cvr div.img_wrp > a > img', item).first().attr('src') ?? ''
+        let image: string = $('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0","350x0") ?? ''
 
         const title: string = $('div.det > a.ttl', item).first().text().trim() ?? ''
         const id: string = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? ''
@@ -196,7 +196,7 @@ export const parseSearch = ($: CheerioStatic): MangaTile[] => {
 
     for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
         const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? ''
-        const image: string = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src') ?? ''
+        const image: string = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0","350x0") ?? ''
         const title: string = $('div.det > a', manga).text().trim() ?? ''
         const subtitle: string = $('div.det > div.vws', manga).text().trim() ?? ''
         if (!id || !title || !image) continue
