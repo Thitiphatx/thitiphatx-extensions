@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
 exports.NiceoppaiInfo = {
-    version: '1.0.0',
+    version: '1.0.2',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1069,7 +1069,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/latest-chapters/${page}`,
             method: 'GET',
             param,
         });
@@ -1088,7 +1088,8 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const manga = (0, NiceoppaiParser_1.parseSearch)(response.data);
+        const $ = this.cheerio.load(response.data);
+        const manga = (0, NiceoppaiParser_1.parseSearch)($);
         return createPagedResults({
             results: manga,
         });
@@ -1217,7 +1218,7 @@ const parseHomeSections = ($, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true });
     const latestSection_Array = [];
     for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = $('div.cvr > div > a > img', comic).first().attr('src') ?? '';
+        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0") ?? '';
         if (image.startsWith('/'))
             image = 'https:' + image;
         const title = $('div.det > a', comic).first().text().trim() ?? '';
@@ -1239,13 +1240,11 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
-    for (const item of $('div', '#sct_content > div > div').toArray()) {
-        let image = $('div.cvr > div > a > img', item).first().attr('src') ?? '';
-        if (image.startsWith('/'))
-            image = 'https:' + image;
+    for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        let image = $('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0", "350x0") ?? '';
         const title = $('div.det > a.ttl', item).first().text().trim() ?? '';
-        const id = $('div.det > a.ttl', item).attr('href')?.split('/').pop() ?? '';
-        const subtitle = $('div.det > ul > li > a > b.val.lng_', item).first().text().trim() ?? '';
+        const id = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? '';
+        const subtitle = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? '';
         if (!id || !title)
             continue;
         if (collectedIds.includes(id))
@@ -1261,26 +1260,27 @@ const parseViewMore = ($) => {
     return comics;
 };
 exports.parseViewMore = parseViewMore;
-const parseSearch = (data) => {
-    const comics = [];
+const parseSearch = ($) => {
+    const mangaItems = [];
     const collectedIds = [];
-    const parsedData = JSON.parse(data);
-    for (const item of parsedData.suggestions) {
-        const id = item.data;
-        const image = `https://readcomicsonline.ru/uploads/manga/${id}/cover/cover_250x350.jpg`;
-        const title = item.value;
-        if (!id || !title)
+    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
+        const image = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0") ?? '';
+        const title = $('div.det > a', manga).text().trim() ?? '';
+        const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
+        if (!id || !title || !image)
             continue;
         if (collectedIds.includes(id))
             continue;
-        comics.push(createMangaTile({
+        mangaItems.push(createMangaTile({
             id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            title: createIconText({ text: title }),
+            subtitleText: createIconText({ text: subtitle }),
         }));
         collectedIds.push(id);
     }
-    return comics;
+    return mangaItems;
 };
 exports.parseSearch = parseSearch;
 const decodeHTMLEntity = (str) => {
