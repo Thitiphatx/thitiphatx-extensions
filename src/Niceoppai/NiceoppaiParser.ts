@@ -191,29 +191,30 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     return comics
 }
 
-export const parseSearch = (data: string): MangaTile[] => {
-    const comics: MangaTile[] = []
+export const parseSearch = ($: CheerioStatic): MangaTile[] => {
+    const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
-    const parsedData = JSON.parse(data)
-    for (const item of parsedData.suggestions) {
-        const id: string = item.data
-        const image = `https://readcomicsonline.ru/uploads/manga/${id}/cover/cover_250x350.jpg`
-        const title: string = item.value
-
-        if (!id || !title) continue
+    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? ''
+        const image: string = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src') ?? ''
+        const title: string = $('div.det > a', manga).text().trim() ?? ''
+        const subtitle: string = $('div.det > div.vws', manga).text().trim() ?? ''
+        if (!id || !title || !image) continue
 
         if (collectedIds.includes(id)) continue
-        comics.push(createMangaTile({
+        mangaItems.push(createMangaTile({
             id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            title: createIconText({ text: title }),
+            subtitleText: createIconText({ text: subtitle }),
         }))
         collectedIds.push(id)
-    }
 
-    return comics
+    }
+    return mangaItems
 }
+
 const decodeHTMLEntity = (str: string): string => {
     return entities.decodeHTML(str)
 }
