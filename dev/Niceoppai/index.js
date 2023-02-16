@@ -1088,7 +1088,8 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const manga = (0, NiceoppaiParser_1.parseSearch)(response.data);
+        const $ = this.cheerio.load(response.data);
+        const manga = (0, NiceoppaiParser_1.parseSearch)($);
         return createPagedResults({
             results: manga,
         });
