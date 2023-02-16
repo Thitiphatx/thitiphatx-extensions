@@ -177,7 +177,8 @@ export class Niceoppai extends Source {
         })
 
         const response = await this.requestManager.schedule(request, 1)
-        const manga = parseSearch(response.data)
+        const $ = this.cheerio.load(response.data)
+        const manga = parseSearch($)
 
         return createPagedResults({
             results: manga,
