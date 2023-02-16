@@ -20,14 +20,14 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
     let image: string = $('img', 'div.cvr_ara').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
     if (image.startsWith('/')) image = 'https:' + image
 
-    const author: string = $('div.det > p:nth-child(7) > a').text().trim() ?? ''
+    const author: string = $('div.det p:nth-child(7) a').text().trim() ?? ''
     const description: string = decodeHTMLEntity($('div.det > p:nth-child(3)').text().trim() ?? '')
 
     let hentai = false
     const arrayTags: Tag[] = []
     for (const tag of $('a', 'div.det > p:nth-child(9) a').toArray()) {
         const label: string = $(tag).text().trim()
-        const id: string = $(tag).attr('href')?.split('/').pop() ?? ''
+        const id: string = $(tag).attr('href').split('/')[4] ?? ''
 
         if (!id || !label) continue
         if (['ADULT', 'SMUT', 'MATURE'].includes(label.toUpperCase())) hentai = true
@@ -54,7 +54,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 
 export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
     const chapters: Chapter[] = []
-    let i = 0
+    let sortingIndex = 0
 
     for (const chapter of $('li.lng_', 'div.wpm_pag.mng_det ul.lst').toArray()) {
         i++
@@ -77,12 +77,16 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
             langCode: LanguageCode.THAI,
             chapNum: isNaN(chapNum) ? i : chapNum,
             time: date,
+            // @ts-ignore
+            sortingIndex
         })
 
-        i--
+        sortingIndex--
 
     }
     return chapters.map(chapter => {
+        // @ts-ignore
+        chapter.sortingIndex += chapters.length
         return createChapter(chapter)
     })
 }
@@ -91,8 +95,8 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     const pages: string[] = []
 
     for (const images of $('img', '#image-container > center').toArray()) {
-        let image: string | undefined = $(images).attr('src')?.trim()
-        if (image && image.startsWith('/')) image = 'https:' + image
+        let image: any = $(images).attr('src')?.trim()
+        if (image.startsWith('/')) image = 'https:' + image
         if (image) pages.push(image)
     }
 
@@ -115,13 +119,12 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
     const updatedManga: string[] = []
     let loadMore = true
 
-    for (const manga of $('div.manga-item', 'div.mangalist').toArray()) {
-        const id = $('h3.manga-heading > a', manga).attr('href')?.split('/').pop() ?? ''
-        const date = $('small.pull-right', manga).text().trim()
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id = $('div.det a.ttl', manga).attr('href').split('/')[3] ?? ''
+        const date = $('ul.lst li:nth-child(1) a b.dte', manga).text().trim() ?? ''
         let mangaDate = new Date()
-        if (date.toUpperCase() !== 'TODAY') {
-            const datePieces = date.split('/')
-            mangaDate = new Date(`${datePieces[1]}-${datePieces[0]}-${datePieces[2]}`)
+        if (date.toUpperCase() !== 'วันนี้') {
+            mangaDate = new Date(date)
         }
 
         if (!id || !mangaDate) continue
@@ -168,13 +171,13 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     const comics: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const item of $('div', '#sct_content > div > div').toArray()) {
-        let image: string = $('div.cvr > div > a > img', item).first().attr('src') ?? ''
+    for (const item of $('div.nde', '#sct_content div.con div.wpm_pag.mng_lst.tbn').toArray()) {
+        let image: string = $('div.cvr div.img_wrp a img', item).first().attr('src') ?? ''
         if (image.startsWith('/')) image = 'https:' + image
 
         const title: string = $('div.det > a.ttl', item).first().text().trim() ?? ''
-        const id: string = $('div.det > a.ttl', item).attr('href')?.split('/').pop() ?? ''
-        const subtitle: string = $('div.det > ul > li > a > b.val.lng_', item).first().text().trim() ?? ''
+        const id: string = $('div.det a.ttl', item).attr('href').split('/')[3] ?? ''
+        const subtitle: string = $('div.det ul.lst li a.lst b.val.lng_', item).first().text().trim() ?? ''
 
         if (!id || !title) continue
 
@@ -191,26 +194,28 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     return comics
 }
 
-export const parseSearch = (data: string): MangaTile[] => {
+export const parseSearch = ($: CheerioStatic): MangaTile[] => {
     const comics: MangaTile[] = []
-    const collectedIds: string[] = []
 
-    const parsedData = JSON.parse(data)
-    for (const item of parsedData.suggestions) {
-        const id: string = item.data
-        const image = `https://readcomicsonline.ru/uploads/manga/${id}/cover/cover_250x350.jpg`
-        const title: string = item.value
+        for (const obj of $('div.nde', '#sct_content div.con div.wpm_pag.mng_lst.tbn').toArray()) {
+            let image: string = $('div.cvr div.img_wrp a img', obj).first().attr('src') ?? ''
 
-        if (!id || !title) continue
+            const title: string = $('div.det a', obj).first().text() ?? ''
 
-        if (collectedIds.includes(id)) continue
-        comics.push(createMangaTile({
-            id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }))
-        collectedIds.push(id)
-    }
+            const id = $('a', obj).attr('href').split('/')[3] ?? ''
+
+            const views = $('div.det > div.vws', obj).text().trim()
+            
+            const subtitle = views ? views + 'views' : 'N/A Views'
+
+            if (!id || !title) continue
+            comics.push(createMangaTile({
+                id,
+                image: image,
+                title: createIconText({ text: decodeHTMLEntity(title) }),
+                subtitleText: createIconText({ text: decodeHTMLEntity(subtitle) })
+            }))
+        }
 
     return comics
 }
