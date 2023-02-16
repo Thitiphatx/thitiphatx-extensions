@@ -29,7 +29,7 @@ import {
 const NO_DOMAIN = 'https://www.niceoppai.net'
 
 export const NiceoppaiInfo: SourceInfo = {
-    version: '1.0.1',
+    version: '1.0.2',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
