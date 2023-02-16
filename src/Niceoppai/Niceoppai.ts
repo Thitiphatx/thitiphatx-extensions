@@ -142,9 +142,16 @@ export class Niceoppai extends Source {
         const $ = this.cheerio.load(response.data)
         parseHomeSections($, sectionCallback)
     }
-    override async getViewMoreItems(metadata: any): Promise<PagedResults> {
+    override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
         const page: number = metadata?.page ?? 1
-        let param = `/latest-chapters/${page}`
+        let param = ''
+        switch (homepageSectionId) {
+            case 'latest_comic':
+                param = `${page}`
+                break
+            default:
+                throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist')
+        }
     
         const request = createRequestObject({
             url: `${NO_DOMAIN}`,
