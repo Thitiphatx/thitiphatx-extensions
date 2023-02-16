@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
 exports.NiceoppaiInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1261,26 +1261,27 @@ const parseViewMore = ($) => {
     return comics;
 };
 exports.parseViewMore = parseViewMore;
-const parseSearch = (data) => {
-    const comics = [];
+const parseSearch = ($) => {
+    const mangaItems = [];
     const collectedIds = [];
-    const parsedData = JSON.parse(data);
-    for (const item of parsedData.suggestions) {
-        const id = item.data;
-        const image = `https://readcomicsonline.ru/uploads/manga/${id}/cover/cover_250x350.jpg`;
-        const title = item.value;
-        if (!id || !title)
+    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
+        const image = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src') ?? '';
+        const title = $('div.det > a', manga).text().trim() ?? '';
+        const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
+        if (!id || !title || !image)
             continue;
         if (collectedIds.includes(id))
             continue;
-        comics.push(createMangaTile({
+        mangaItems.push(createMangaTile({
             id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            title: createIconText({ text: title }),
+            subtitleText: createIconText({ text: subtitle }),
         }));
         collectedIds.push(id);
     }
-    return comics;
+    return mangaItems;
 };
 exports.parseSearch = parseSearch;
 const decodeHTMLEntity = (str) => {
