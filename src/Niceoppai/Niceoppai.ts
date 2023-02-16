@@ -154,7 +154,7 @@ export class Niceoppai extends Source {
         }
     
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/latest-chapters/${page}`,
             method: 'GET',
             param,
         })
