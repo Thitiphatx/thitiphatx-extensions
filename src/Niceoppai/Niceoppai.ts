@@ -29,7 +29,7 @@ import {
 const NO_DOMAIN = 'https://www.niceoppai.net'
 
 export const NiceoppaiInfo: SourceInfo = {
-    version: '1.0.0',
+    version: '1.0.2',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -154,7 +154,7 @@ export class Niceoppai extends Source {
         }
     
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/latest-chapters/${page}`,
             method: 'GET',
             param,
         })
@@ -177,7 +177,8 @@ export class Niceoppai extends Source {
         })
 
         const response = await this.requestManager.schedule(request, 1)
-        const manga = parseSearch(response.data)
+        const $ = this.cheerio.load(response.data)
+        const manga = parseSearch($)
 
         return createPagedResults({
             results: manga,

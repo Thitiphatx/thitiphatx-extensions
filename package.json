@@ -1,8 +1,8 @@
 {
   "name": "thitiphatx-extensions",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "repositoryName": "thitiphatx-extensions",
-  "description": "thitiphatx extensions for Paperback",
+  "description": "Thitiphatx's extensions for Paperback",
   "scripts": {
     "bundle": "paperback bundle",
     "serve": "paperback serve",

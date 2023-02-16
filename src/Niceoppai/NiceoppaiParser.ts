@@ -145,7 +145,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
     const latestSection_Array: MangaTile[] = []
 
     for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image: string = $('div.cvr > div > a > img', comic).first().attr('src') ?? ''
+        let image: string = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0") ?? ''
         if (image.startsWith('/')) image = 'https:' + image
         const title: string = $('div.det > a', comic).first().text().trim() ?? ''
         const id: string = $('div.det > a', comic).attr('href').split('/')[3] ?? ''
@@ -168,13 +168,12 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     const comics: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const item of $('div', '#sct_content > div > div').toArray()) {
-        let image: string = $('div.cvr > div > a > img', item).first().attr('src') ?? ''
-        if (image.startsWith('/')) image = 'https:' + image
+    for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        let image: string = $('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0","350x0") ?? ''
 
         const title: string = $('div.det > a.ttl', item).first().text().trim() ?? ''
-        const id: string = $('div.det > a.ttl', item).attr('href')?.split('/').pop() ?? ''
-        const subtitle: string = $('div.det > ul > li > a > b.val.lng_', item).first().text().trim() ?? ''
+        const id: string = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? ''
+        const subtitle: string = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? ''
 
         if (!id || !title) continue
 
@@ -191,29 +190,30 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     return comics
 }
 
-export const parseSearch = (data: string): MangaTile[] => {
-    const comics: MangaTile[] = []
+export const parseSearch = ($: CheerioStatic): MangaTile[] => {
+    const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
-    const parsedData = JSON.parse(data)
-    for (const item of parsedData.suggestions) {
-        const id: string = item.data
-        const image = `https://readcomicsonline.ru/uploads/manga/${id}/cover/cover_250x350.jpg`
-        const title: string = item.value
-
-        if (!id || !title) continue
+    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? ''
+        const image: string = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0","350x0") ?? ''
+        const title: string = $('div.det > a', manga).text().trim() ?? ''
+        const subtitle: string = $('div.det > div.vws', manga).text().trim() ?? ''
+        if (!id || !title || !image) continue
 
         if (collectedIds.includes(id)) continue
-        comics.push(createMangaTile({
+        mangaItems.push(createMangaTile({
             id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            title: createIconText({ text: title }),
+            subtitleText: createIconText({ text: subtitle }),
         }))
         collectedIds.push(id)
-    }
 
-    return comics
+    }
+    return mangaItems
 }
+
 const decodeHTMLEntity = (str: string): string => {
     return entities.decodeHTML(str)
 }
