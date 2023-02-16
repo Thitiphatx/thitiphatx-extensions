@@ -1069,7 +1069,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/latest-chapters/${page}`,
             method: 'GET',
             param,
         });
@@ -1240,13 +1240,11 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
-    for (const item of $('div', '#sct_content > div > div').toArray()) {
-        let image = $('div.cvr > div > a > img', item).first().attr('src') ?? '';
-        if (image.startsWith('/'))
-            image = 'https:' + image;
+    for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        let image = $('div.cvr div.img_wrp > a > img', item).first().attr('src') ?? '';
         const title = $('div.det > a.ttl', item).first().text().trim() ?? '';
-        const id = $('div.det > a.ttl', item).attr('href')?.split('/').pop() ?? '';
-        const subtitle = $('div.det > ul > li > a > b.val.lng_', item).first().text().trim() ?? '';
+        const id = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? '';
+        const subtitle = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? '';
         if (!id || !title)
             continue;
         if (collectedIds.includes(id))
