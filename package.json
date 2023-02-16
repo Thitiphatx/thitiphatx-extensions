@@ -9,12 +9,12 @@
     "test": "mocha --timeout 300000 -r ts-node/register src/**/*.test.ts",
     "eslint": "eslint src"
   },
-  "repository": "github:Thitiphatx/Thitiphatx-s-Extensions",
+  "repository": "github:Thitiphatx/Thitiphatx-Extensions",
   "author": "Thitiphatx",
   "bugs": {
-    "url": "https://github.com/Thitiphatx/Thitiphatx-s-Extensions/issues"
+    "url": "https://github.com/Thitiphatx/Thitiphatx-Extensions/issues"
   },
-  "homepage": "https://github.com/Thitiphatx/Thitiphatx-s-Extensions/",
+  "homepage": "https://github.com/Thitiphatx/Thitiphatx-Extensions/",
   "license": "MIT",
   "dependencies": {
     "paperback-cli": "^2.0.0-alpha.13",
