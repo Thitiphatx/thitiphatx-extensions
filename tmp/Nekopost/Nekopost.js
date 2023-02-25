@@ -1,18 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Niceoppai = exports.NiceoppaiInfo = void 0;
+exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
-const NiceoppaiParser_1 = require("./NiceoppaiParser");
-const NO_DOMAIN = 'https://www.niceoppai.net';
-exports.NiceoppaiInfo = {
-    version: '1.0.2',
-    name: 'Niceoppai',
+const NekopostParser_1 = require("./NekopostParser");
+const NP_DOMAIN = 'https://www.Nekopost.net';
+exports.NekopostInfo = {
+    version: '1.0.0',
+    name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls comics from Niceoppai.net.',
+    description: 'Extension that pulls comics from Nekopost.net.',
     contentRating: paperback_extensions_common_1.ContentRating.MATURE,
-    websiteBaseURL: NO_DOMAIN,
+    websiteBaseURL: NP_DOMAIN,
     sourceTags: [
         {
             text: 'Recommend',
@@ -20,7 +20,7 @@ exports.NiceoppaiInfo = {
         },
     ],
 };
-class Niceoppai extends paperback_extensions_common_1.Source {
+class Nekopost extends paperback_extensions_common_1.Source {
     constructor() {
         super(...arguments);
         this.requestManager = createRequestManager({
@@ -31,7 +31,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                     request.headers = {
                         ...(request.headers ?? {}),
                         ...{
-                            'referer': NO_DOMAIN,
+                            'referer': NP_DOMAIN,
                         },
                     };
                     return request;
@@ -42,35 +42,35 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             },
         });
     }
-    getMangaShareUrl(mangaId) { return `${NO_DOMAIN}/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${NP_DOMAIN}/${mangaId}`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `${NP_DOMAIN}/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseMangaDetails)($, mangaId);
+        return (0, NekopostParser_1.parseMangaDetails)($, mangaId);
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `${NP_DOMAIN}/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseChapters)($, mangaId);
+        return (0, NekopostParser_1.parseChapters)($, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/${mangaId}/${chapterId}`,
+            url: `${NP_DOMAIN}/${mangaId}/${chapterId}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseChapterDetails)($, mangaId, chapterId);
+        return (0, NekopostParser_1.parseChapterDetails)($, mangaId, chapterId);
     }
     async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
         let page = 1;
@@ -80,12 +80,12 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page++}`,
+                url: `${NP_DOMAIN}/latest-chapters/${page++}`,
                 method: 'GET',
             });
             const response = await this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
-            updatedManga = (0, NiceoppaiParser_1.parseUpdatedManga)($, time, ids);
+            updatedManga = (0, NekopostParser_1.parseUpdatedManga)($, time, ids);
             if (updatedManga.ids.length > 0) {
                 mangaUpdatesFoundCallback(createMangaUpdates({
                     ids: updatedManga.ids,
@@ -95,12 +95,12 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: NP_DOMAIN,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
+        (0, NekopostParser_1.parseHomeSections)($, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -113,14 +113,14 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/${page}`,
+            url: `${NP_DOMAIN}/latest-chapters/${page}`,
             method: 'GET',
             param,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        const manga = (0, NiceoppaiParser_1.parseViewMore)($);
-        metadata = !(0, NiceoppaiParser_1.isLastPage)($) ? { page: page + 1 } : {};
+        const manga = (0, NekopostParser_1.parseViewMore)($);
+        metadata = !(0, NekopostParser_1.isLastPage)($) ? { page: page + 1 } : {};
         return createPagedResults({
             results: manga,
             metadata,
@@ -128,15 +128,15 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getSearchResults(query) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
+            url: `${NP_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        const manga = (0, NiceoppaiParser_1.parseSearch)($);
+        const manga = (0, NekopostParser_1.parseSearch)($);
         return createPagedResults({
             results: manga,
         });
     }
 }
-exports.Niceoppai = Niceoppai;
+exports.Nekopost = Nekopost;

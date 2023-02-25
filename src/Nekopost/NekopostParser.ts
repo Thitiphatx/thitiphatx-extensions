@@ -91,7 +91,7 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     const pages: string[] = []
 
     for (const images of $('img', '#image-container > center').toArray()) {
-        let image: string | undefined = $(images).attr('data-src')?.trim()
+        let image: string | undefined = $(images).attr('src')?.trim()
         if (image && image.startsWith('/')) image = 'https:' + image
         if (image) pages.push(image)
     }
@@ -143,7 +143,6 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true })
 
     const latestSection_Array: MangaTile[] = []
-
     for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
         let image: string = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0") ?? ''
         if (image.startsWith('/')) image = 'https:' + image
