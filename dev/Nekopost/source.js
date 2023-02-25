@@ -956,19 +956,19 @@ __exportStar(require("./SearchFilter"), exports);
 },{"./Chapter":13,"./ChapterDetails":14,"./Constants":15,"./DynamicUI":31,"./HomeSection":32,"./Languages":33,"./Manga":34,"./MangaTile":35,"./MangaUpdate":36,"./PagedResults":37,"./RawData":38,"./RequestHeaders":39,"./RequestInterceptor":40,"./RequestManager":41,"./RequestObject":42,"./ResponseObject":43,"./SearchField":44,"./SearchFilter":45,"./SearchRequest":46,"./SourceInfo":47,"./SourceManga":48,"./SourceStateManager":49,"./SourceTag":50,"./TagSection":51,"./TrackedManga":52,"./TrackedMangaChapterReadAction":53,"./TrackerActionQueue":54}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Niceoppai = exports.NiceoppaiInfo = void 0;
+exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
-const NiceoppaiParser_1 = require("./NiceoppaiParser");
-const NO_DOMAIN = 'https://www.niceoppai.net';
-exports.NiceoppaiInfo = {
-    version: '1.0.2',
-    name: 'Niceoppai',
+const NekopostParser_1 = require("./NekopostParser");
+const NP_DOMAIN = 'https://www.Nekopost.net';
+exports.NekopostInfo = {
+    version: '1.0.0',
+    name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls comics from Niceoppai.net.',
+    description: 'Extension that pulls comics from Nekopost.net.',
     contentRating: paperback_extensions_common_1.ContentRating.MATURE,
-    websiteBaseURL: NO_DOMAIN,
+    websiteBaseURL: NP_DOMAIN,
     sourceTags: [
         {
             text: 'Recommend',
@@ -976,7 +976,7 @@ exports.NiceoppaiInfo = {
         },
     ],
 };
-class Niceoppai extends paperback_extensions_common_1.Source {
+class Nekopost extends paperback_extensions_common_1.Source {
     constructor() {
         super(...arguments);
         this.requestManager = createRequestManager({
@@ -987,7 +987,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                     request.headers = {
                         ...(request.headers ?? {}),
                         ...{
-                            'referer': NO_DOMAIN,
+                            'referer': NP_DOMAIN,
                         },
                     };
                     return request;
@@ -998,50 +998,49 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             },
         });
     }
-    getMangaShareUrl(mangaId) { return `${NO_DOMAIN}/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${NP_DOMAIN}/manga/${mangaId}`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `${NP_DOMAIN}/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseMangaDetails)($, mangaId);
+        return (0, NekopostParser_1.parseMangaDetails)($, mangaId);
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `${NP_DOMAIN}/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseChapters)($, mangaId);
+        return (0, NekopostParser_1.parseChapters)($, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/${mangaId}/${chapterId}`,
+            url: `${NP_DOMAIN}/manga/${mangaId}/${chapterId}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseChapterDetails)($, mangaId, chapterId);
+        return (0, NekopostParser_1.parseChapterDetails)($, mangaId, chapterId);
     }
     async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
-        let page = 1;
         let updatedManga = {
             ids: [],
             loadMore: true,
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page++}`,
+                url: `${NP_DOMAIN}/project`,
                 method: 'GET',
             });
             const response = await this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
-            updatedManga = (0, NiceoppaiParser_1.parseUpdatedManga)($, time, ids);
+            updatedManga = (0, NekopostParser_1.parseUpdatedManga)($, time, ids);
             if (updatedManga.ids.length > 0) {
                 mangaUpdatesFoundCallback(createMangaUpdates({
                     ids: updatedManga.ids,
@@ -1051,12 +1050,12 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: NP_DOMAIN,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
+        (0, NekopostParser_1.parseHomeSections)($, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -1069,14 +1068,14 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/${page}`,
+            url: `${NP_DOMAIN}/latest-chapters/${page}`,
             method: 'GET',
             param,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        const manga = (0, NiceoppaiParser_1.parseViewMore)($);
-        metadata = !(0, NiceoppaiParser_1.isLastPage)($) ? { page: page + 1 } : {};
+        const manga = (0, NekopostParser_1.parseViewMore)($);
+        metadata = !(0, NekopostParser_1.isLastPage)($) ? { page: page + 1 } : {};
         return createPagedResults({
             results: manga,
             metadata,
@@ -1084,20 +1083,20 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getSearchResults(query) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
+            url: `${NP_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        const manga = (0, NiceoppaiParser_1.parseSearch)($);
+        const manga = (0, NekopostParser_1.parseSearch)($);
         return createPagedResults({
             results: manga,
         });
     }
 }
-exports.Niceoppai = Niceoppai;
+exports.Nekopost = Nekopost;
 
-},{"./NiceoppaiParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
+},{"./NekopostParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
@@ -1171,7 +1170,7 @@ exports.parseChapters = parseChapters;
 const parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
     for (const images of $('img', '#image-container > center').toArray()) {
-        let image = $(images).attr('data-src')?.trim();
+        let image = $(images).attr('src')?.trim();
         if (image && image.startsWith('/'))
             image = 'https:' + image;
         if (image)
