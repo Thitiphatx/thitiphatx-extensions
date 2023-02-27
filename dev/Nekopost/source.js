@@ -959,7 +959,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
-const NP_DOMAIN = 'https://www.Nekopost.net';
+const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
     version: '1.0.0',
     name: 'Nekopost',
@@ -1001,17 +1001,23 @@ class Nekopost extends paperback_extensions_common_1.Source {
     getMangaShareUrl(mangaId) { return `${NP_DOMAIN}/manga/${mangaId}`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NekopostParser_1.parseMangaDetails)($, mangaId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseMangaDetails)(data, mangaId);
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         });
@@ -1029,13 +1035,14 @@ class Nekopost extends paperback_extensions_common_1.Source {
         return (0, NekopostParser_1.parseChapterDetails)($, mangaId, chapterId);
     }
     async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
+        let page = 1;
         let updatedManga = {
             ids: [],
             loadMore: true,
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NP_DOMAIN}/project`,
+                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page += 12}`,
                 method: 'GET',
             });
             const response = await this.requestManager.schedule(request, 1);
@@ -1050,15 +1057,21 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: NP_DOMAIN,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        (0, NekopostParser_1.parseHomeSections)($, sectionCallback);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 1;
+        const page = metadata?.page ?? 12;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -1068,14 +1081,14 @@ class Nekopost extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/latest-chapters/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page}`,
             method: 'GET',
             param,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         const manga = (0, NekopostParser_1.parseViewMore)($);
-        metadata = !(0, NekopostParser_1.isLastPage)($) ? { page: page + 1 } : {};
+        metadata = !(0, NekopostParser_1.isLastPage)($) ? { page: page + 12 } : {};
         return createPagedResults({
             results: manga,
             metadata,
@@ -1102,69 +1115,71 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
-const parseMangaDetails = ($, mangaId) => {
+const parseMangaDetails = (data, mangaId) => {
+    const details = data;
     const titles = [];
-    titles.push(decodeHTMLEntity($('div.wpm_pag.mng_det > h1').first().text().trim()));
-    let image = $('img', 'div.cvr_ara').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
-    if (image.startsWith('/'))
-        image = 'https:' + image;
-    const author = $('div.det > p:nth-child(7) > a').text().trim() ?? '';
-    const description = decodeHTMLEntity($('div.det > p:nth-child(3)').text().trim() ?? '');
-    let hentai = false;
+    if (details?.projectInfo.aliasName)
+        titles.push(details?.projectInfo.aliasName.trim());
+    if (details?.projectInfo.projectName)
+        titles.push(details?.projectInfo.projectName.trim());
+    const imageversion = details.projectInfo.imageVersion;
+    const image = `https://www.osemocphoto.com/collectManga/${mangaId}/${mangaId}_cover.jpg?${imageversion}` ?? '';
+    const author = details.projectInfo.authorName;
+    const artist = details.projectInfo.artistName;
     const arrayTags = [];
-    for (const tag of $('a', 'div.det > p:nth-child(9) a').toArray()) {
-        const label = $(tag).text().trim();
-        const id = $(tag).attr('href')?.split('/').pop() ?? '';
-        if (!id || !label)
-            continue;
-        if (['ADULT', 'SMUT', 'MATURE'].includes(label.toUpperCase()))
-            hentai = true;
-        arrayTags.push({ id: id, label: label });
+    if (details?.listCate) {
+        for (const category of details?.listCate) {
+            const id = category?.cateLink ?? '';
+            const label = category?.cateName ?? '';
+            if (!id || !label)
+                continue;
+            arrayTags.push({
+                id,
+                label
+            });
+        }
     }
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
-    const rawStatus = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? '';
+    const rawStatus = details?.projectInfo.status;
     let status = paperback_extensions_common_1.MangaStatus.ONGOING;
-    if (rawStatus.includes('แล้ว'))
+    if (rawStatus == '2')
         status = paperback_extensions_common_1.MangaStatus.COMPLETED;
+    const description = details?.projectInfo.info ?? '';
     return createManga({
         id: mangaId,
         titles: titles,
         image: image,
-        hentai: hentai,
         status: status,
         author: author,
-        artist: author,
+        artist: artist,
         tags: tagSections,
         desc: description,
     });
 };
 exports.parseMangaDetails = parseMangaDetails;
-const parseChapters = ($, mangaId) => {
+const parseChapters = (data, mangaId) => {
     const chapters = [];
-    let i = 0;
-    for (const chapter of $('li.lng_', 'div.wpm_pag.mng_det ul.lst').toArray()) {
-        i++;
-        const title = $('a > b.val', chapter).text().trim() ?? '';
-        const chapterId = $('a', chapter).attr('href')?.split('/')[4] ?? '';
-        if (!chapterId)
+    let sortingIndex = 0;
+    for (const chapter of data?.listChapter) {
+        const id = chapter?.chapterId ?? '';
+        const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0;
+        const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined;
+        const name = chapter?.chapterName ? chapter?.chapterName : '';
+        if (!id)
             continue;
-        const chapNum = Number(chapterId); //We're manually setting the chapters regarless, however usually the ID equals the chapter number.
-        const date = new Date($('a > b.dte', chapter).last().text().trim());
-        if (!chapterId || !title)
-            continue;
-        chapters.push({
-            id: chapterId,
+        chapters.push(createChapter({
+            id: `${id}`,
             mangaId,
-            name: decodeHTMLEntity(title),
+            name,
+            chapNum: chapNum ? chapNum : 0,
+            time: time,
             langCode: paperback_extensions_common_1.LanguageCode.THAI,
-            chapNum: isNaN(chapNum) ? i : chapNum,
-            time: date,
-        });
-        i--;
+            // @ts-ignore
+            sortingIndex
+        }));
+        sortingIndex--;
     }
-    return chapters.map(chapter => {
-        return createChapter(chapter);
-    });
+    return chapters;
 };
 exports.parseChapters = parseChapters;
 const parseChapterDetails = ($, mangaId, chapterId) => {
@@ -1213,16 +1228,16 @@ const parseUpdatedManga = ($, time, ids) => {
     };
 };
 exports.parseUpdatedManga = parseUpdatedManga;
-const parseHomeSections = ($, sectionCallback) => {
+const parseHomeSections = (data, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true });
     const latestSection_Array = [];
-    for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0") ?? '';
-        if (image.startsWith('/'))
-            image = 'https:' + image;
-        const title = $('div.det > a', comic).first().text().trim() ?? '';
-        const id = $('div.det > a', comic).attr('href').split('/')[3] ?? '';
-        const subtitle = $('b.val.lng_', comic).first().text().trim() ?? '';
+    for (const manga of data?.listChapter) {
+        const id = manga.projectId;
+        const imageversion = manga.imageVersion;
+        const image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageversion}`;
+        const title = manga.projectName;
+        const chapnum = manga.chapterNo;
+        const subtitle = `Chapter ${chapnum}`;
         if (!id || !title)
             continue;
         latestSection_Array.push(createMangaTile({
