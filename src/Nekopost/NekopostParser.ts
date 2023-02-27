@@ -115,46 +115,13 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     return chapterDetails
 }
 
-
-export interface UpdatedManga {
-    ids: string[],
-    loadMore: boolean;
-}
-
-export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): UpdatedManga => {
-    const updatedManga: string[] = []
-    let loadMore = true
-
-    for (const manga of $('div.manga-item', 'div.mangalist').toArray()) {
-        const id = $('h3.manga-heading > a', manga).attr('href')?.split('/').pop() ?? ''
-        const date = $('small.pull-right', manga).text().trim()
-        let mangaDate = new Date()
-        if (date.toUpperCase() !== 'TODAY') {
-            const datePieces = date.split('/')
-            mangaDate = new Date(`${datePieces[1]}-${datePieces[0]}-${datePieces[2]}`)
-        }
-
-        if (!id || !mangaDate) continue
-        if (mangaDate > time) {
-            if (ids.includes(id)) {
-                updatedManga.push(id)
-            }
-        } else {
-            loadMore = false
-        }
-    }
-    return {
-        ids: updatedManga,
-        loadMore,
-    }
-}
-
 export const parseHomeSections = (data: HomeData, sectionCallback: (section: HomeSection) => void): void => {
+    const details = data
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true })
 
     const latestSection_Array: MangaTile[] = []
 
-    for (const manga of data?.listChapter) {
+    for (const manga of details?.listChapter) {
         const id = manga.projectId
         const imageversion = manga.imageVersion
         const image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageversion}`
@@ -176,26 +143,27 @@ export const parseHomeSections = (data: HomeData, sectionCallback: (section: Hom
 
 }
 
-export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
+export const parseViewMore = (data: HomeData): MangaTile[] => {
     const comics: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image: string = $('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0","350x0") ?? ''
-
-        const title: string = $('div.det > a.ttl', item).first().text().trim() ?? ''
-        const id: string = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? ''
-        const subtitle: string = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? ''
+    for (const manga of data?.listChapter) {
+        const id = manga.projectId
+        const imageversion = manga.imageVersion
+        const image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageversion}`
+        const title = manga.projectName
+        const chapnum = manga.chapterNo
+        const subtitle = `Chapter ${chapnum}`
 
         if (!id || !title) continue
-
         if (collectedIds.includes(id)) continue
         comics.push(createMangaTile({
             id,
-            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            image: image,
             title: createIconText({ text: decodeHTMLEntity(title) }),
             subtitleText: createIconText({ text: subtitle }),
         }))
+        
         collectedIds.push(id)
 
     }
@@ -228,18 +196,4 @@ export const parseSearch = ($: CheerioStatic): MangaTile[] => {
 
 const decodeHTMLEntity = (str: string): string => {
     return entities.decodeHTML(str)
-}
-
-export const isLastPage = ($: CheerioStatic): boolean => {
-    let isLast = false
-    const pages = []
-    for (const page of $('li', 'ul.pgg').toArray()) {
-        const p = Number($(page).text().trim())
-        if (isNaN(p)) continue
-        pages.push(p)
-    }
-    const lastPage = Math.max(...pages)
-    const currentPage = Number($('li > a.sel').text().trim())
-    if (currentPage >= lastPage) isLast = true
-    return isLast
 }

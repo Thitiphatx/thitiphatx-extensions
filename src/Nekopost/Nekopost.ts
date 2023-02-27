@@ -8,7 +8,6 @@ import {
     PagedResults,
     SourceInfo,
     ContentRating,
-    MangaUpdates,
     TagType,
     Request,
     Response,
@@ -16,14 +15,11 @@ import {
 
 import {
     parseChapterDetails,
-    isLastPage,
     parseChapters,
     parseHomeSections,
     parseMangaDetails,
     parseViewMore,
     parseSearch,
-    parseUpdatedManga,
-    UpdatedManga,
 } from './NekopostParser'
 
 import { 
@@ -119,32 +115,6 @@ export class Nekopost extends Source {
         return parseChapterDetails($, mangaId, chapterId)
     }
 
-    override async filterUpdatedManga(mangaUpdatesFoundCallback: (updates: MangaUpdates) => void, time: Date, ids: string[]): Promise<void> {
-        let page = 1
-        let updatedManga: UpdatedManga = {
-            ids: [],
-            loadMore: true,
-        }
-
-        while (updatedManga.loadMore) {
-            const request = createRequestObject({
-                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page+= 12}`,
-                method: 'GET',
-            })
-
-            const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
-
-            updatedManga = parseUpdatedManga($, time, ids)
-            if (updatedManga.ids.length > 0) {
-                mangaUpdatesFoundCallback(createMangaUpdates({
-                    ids: updatedManga.ids,
-                }))
-            }
-        }
-
-    }
-
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
             url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
@@ -162,7 +132,7 @@ export class Nekopost extends Source {
         parseHomeSections(data, sectionCallback)
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 12
+        let page: number = metadata?.page ?? 12
         let param = ''
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -179,10 +149,15 @@ export class Nekopost extends Source {
         })
     
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-    
-        const manga = parseViewMore($)
-        metadata = !isLastPage($) ? { page: page + 12 } : {}
+        let data: HomeData
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        const manga = parseViewMore(data)
+        metadata = page ? { page: page + 12 } : {}
         return createPagedResults({
             results: manga,
             metadata,
