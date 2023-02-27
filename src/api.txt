@@ -2,3 +2,5 @@ search
 https://api.osemocphoto.com/frontAPI/getProjectSearch/ search
 https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/ page
 https://api.osemocphoto.com/frontAPI/getProjectInfo/ mangaid
+
+?ipCate=0&ipOrder="l"&ipStatus=1&ipOneshot="S"&ipKeyword="test"
