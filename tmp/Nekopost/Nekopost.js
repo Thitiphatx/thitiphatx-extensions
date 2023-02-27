@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
-const NP_DOMAIN = 'https://www.Nekopost.net';
+const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
     version: '1.0.0',
     name: 'Nekopost',
@@ -42,20 +42,26 @@ class Nekopost extends paperback_extensions_common_1.Source {
             },
         });
     }
-    getMangaShareUrl(mangaId) { return `${NP_DOMAIN}/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${NP_DOMAIN}/manga/${mangaId}`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NekopostParser_1.parseMangaDetails)($, mangaId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseMangaDetails)(data, mangaId);
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         });
@@ -65,7 +71,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getChapterDetails(mangaId, chapterId) {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/${mangaId}/${chapterId}`,
+            url: `${NP_DOMAIN}/manga/${mangaId}/${chapterId}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -80,7 +86,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NP_DOMAIN}/latest-chapters/${page++}`,
+                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page += 12}`,
                 method: 'GET',
             });
             const response = await this.requestManager.schedule(request, 1);
@@ -95,15 +101,21 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: NP_DOMAIN,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        (0, NekopostParser_1.parseHomeSections)($, sectionCallback);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 1;
+        const page = metadata?.page ?? 12;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -113,14 +125,14 @@ class Nekopost extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/latest-chapters/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page}`,
             method: 'GET',
             param,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         const manga = (0, NekopostParser_1.parseViewMore)($);
-        metadata = !(0, NekopostParser_1.isLastPage)($) ? { page: page + 1 } : {};
+        metadata = !(0, NekopostParser_1.isLastPage)($) ? { page: page + 12 } : {};
         return createPagedResults({
             results: manga,
             metadata,

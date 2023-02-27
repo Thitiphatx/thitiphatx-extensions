@@ -26,7 +26,13 @@ import {
     UpdatedManga,
 } from './NekopostParser'
 
-const NP_DOMAIN = 'https://www.Nekopost.net'
+import { 
+    ChapterDetailsImages,
+    MangaDetails,
+    HomeData,
+} from './NekopostHelper'
+
+const NP_DOMAIN = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
     version: '1.0.0',
@@ -74,18 +80,25 @@ export class Nekopost extends Source {
 
     override async getMangaDetails(mangaId: string): Promise<Manga> {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         })
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        return parseMangaDetails($, mangaId)
+
+        let data: MangaDetails
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        return parseMangaDetails(data, mangaId)
     }
 
     override async getChapters(mangaId: string): Promise<Chapter[]> {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         })
@@ -107,6 +120,7 @@ export class Nekopost extends Source {
     }
 
     override async filterUpdatedManga(mangaUpdatesFoundCallback: (updates: MangaUpdates) => void, time: Date, ids: string[]): Promise<void> {
+        let page = 1
         let updatedManga: UpdatedManga = {
             ids: [],
             loadMore: true,
@@ -114,9 +128,10 @@ export class Nekopost extends Source {
 
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NP_DOMAIN}/project`,
+                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page+= 12}`,
                 method: 'GET',
             })
+
             const response = await this.requestManager.schedule(request, 1)
             const $ = this.cheerio.load(response.data)
 
@@ -129,18 +144,25 @@ export class Nekopost extends Source {
         }
 
     }
+
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: NP_DOMAIN,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
             method: 'GET',
         })
 
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        parseHomeSections($, sectionCallback)
+
+        let data: HomeData
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+        parseHomeSections(data, sectionCallback)
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 1
+        const page: number = metadata?.page ?? 12
         let param = ''
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -151,7 +173,7 @@ export class Nekopost extends Source {
         }
     
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/latest-chapters/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page}`,
             method: 'GET',
             param,
         })
@@ -160,7 +182,7 @@ export class Nekopost extends Source {
         const $ = this.cheerio.load(response.data)
     
         const manga = parseViewMore($)
-        metadata = !isLastPage($) ? { page: page + 1 } : {}
+        metadata = !isLastPage($) ? { page: page + 12 } : {}
         return createPagedResults({
             results: manga,
             metadata,
