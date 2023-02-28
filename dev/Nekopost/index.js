@@ -1036,7 +1036,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -1060,7 +1060,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/${page}`,
             method: 'GET',
             param,
         });
