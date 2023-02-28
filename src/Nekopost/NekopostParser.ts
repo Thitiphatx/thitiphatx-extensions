@@ -67,10 +67,11 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
 }
 
 export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] => {
+    const details = data
     const chapters: Chapter[] = []
     let sortingIndex = 0
 
-    for (const chapter of data?.listChapter) {
+    for (const chapter of details?.listChapter) {
 
         const id = chapter?.chapterId ?? ''
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0
