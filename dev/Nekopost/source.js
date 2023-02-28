@@ -1143,9 +1143,10 @@ const parseMangaDetails = (data, mangaId) => {
 };
 exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = (data, mangaId) => {
+    const details = data;
     const chapters = [];
     let sortingIndex = 0;
-    for (const chapter of data?.listChapter) {
+    for (const chapter of details?.listChapter) {
         const id = chapter?.chapterId ?? '';
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0;
         const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined;
