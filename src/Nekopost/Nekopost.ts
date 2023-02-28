@@ -101,6 +101,7 @@ export class Nekopost extends Source {
 
         const response = await this.requestManager.schedule(request, 1)
         let data: MangaDetails
+        
         try {
             data = JSON.parse(response.data)
         } catch (e) {
