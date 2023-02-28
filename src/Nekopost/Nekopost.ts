@@ -117,7 +117,7 @@ export class Nekopost extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/`,
             method: 'GET',
         })
 
@@ -143,7 +143,7 @@ export class Nekopost extends Source {
         }
     
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/${page}`,
             method: 'GET',
             param,
         })
