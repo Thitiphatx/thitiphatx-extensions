@@ -115,13 +115,12 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
     const updatedManga: string[] = []
     let loadMore = true
 
-    for (const manga of $('div.manga-item', 'div.mangalist').toArray()) {
-        const id = $('h3.manga-heading > a', manga).attr('href')?.split('/').pop() ?? ''
-        const date = $('small.pull-right', manga).text().trim()
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id: string = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? ''
+        const date = $('a > b.dte', manga).last().text().trim()
         let mangaDate = new Date()
-        if (date.toUpperCase() !== 'TODAY') {
-            const datePieces = date.split('/')
-            mangaDate = new Date(`${datePieces[1]}-${datePieces[0]}-${datePieces[2]}`)
+        if (date !== 'วันนี้') {
+            mangaDate = new Date(date)
         }
 
         if (!id || !mangaDate) continue
