@@ -29,7 +29,7 @@ import {
 const NO_DOMAIN = 'https://www.niceoppai.net'
 
 export const NiceoppaiInfo: SourceInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -148,8 +148,6 @@ export class Niceoppai extends Source {
         switch (homepageSectionId) {
             case 'latest_comic':
                 param = `${page}`
-                break
-            case 'popular_comic':
                 break
             default:
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist')
