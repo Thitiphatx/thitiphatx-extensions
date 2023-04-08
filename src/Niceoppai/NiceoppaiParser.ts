@@ -146,8 +146,8 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
     for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
         let image: string = $('div.cvr > div > a > img', comic).first().attr('src').replace("62x88","350x0") ?? ''
         if (image.startsWith('/')) image = 'https:' + image
-        const title: string = $('div.det d.ifo a.ttl', comic).first().text().trim() ?? ''
-        const id: string = $('div.det d.ifo a.ttl', comic).attr('href').split('/')[3] ?? ''
+        const title: string = $('div.det div.ifo a.ttl', comic).first().text().trim() ?? ''
+        const id: string = $('div.det div.ifo a.ttl', comic).attr('href').split('/')[3] ?? ''
 
         if (!id || !title) continue
         popularSection_Array.push(createMangaTile({
