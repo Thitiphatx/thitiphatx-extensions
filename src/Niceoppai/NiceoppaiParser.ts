@@ -143,7 +143,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
     const popularSection = createHomeSection({ id: 'popular_comic', title: 'Most Popular Comics', view_more: false })
     
     const popularSection_Array: MangaTile[] = []
-    for (const comic of $('div.nde', 'div#text-23 div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
+    for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
         let image: string = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0") ?? ''
         if (image.startsWith('/')) image = 'https:' + image
         const title: string = $('div.det > a', comic).first().text().trim() ?? ''
