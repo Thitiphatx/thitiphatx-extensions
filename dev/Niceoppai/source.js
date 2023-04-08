@@ -1221,8 +1221,8 @@ const parseHomeSections = ($, sectionCallback) => {
         let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("62x88", "350x0") ?? '';
         if (image.startsWith('/'))
             image = 'https:' + image;
-        const title = $('div.det d.ifo a.ttl', comic).first().text().trim() ?? '';
-        const id = $('div.det d.ifo a.ttl', comic).attr('href').split('/')[3] ?? '';
+        const title = $('div.det div.ifo a.ttl', comic).first().text().trim() ?? '';
+        const id = $('div.det div.ifo a.ttl', comic).attr('href').split('/')[3] ?? '';
         if (!id || !title)
             continue;
         popularSection_Array.push(createMangaTile({
