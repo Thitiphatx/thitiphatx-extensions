@@ -66,8 +66,14 @@ class Nekopost extends paperback_extensions_common_1.Source {
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NekopostParser_1.parseChapters)($, mangaId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
         const request = createRequestObject({

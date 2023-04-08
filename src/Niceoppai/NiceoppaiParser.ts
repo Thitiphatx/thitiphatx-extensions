@@ -140,6 +140,25 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
 
 export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true })
+    const popularSection = createHomeSection({ id: 'popular_comic', title: 'Most Popular Comics', view_more: false })
+    
+    const popularSection_Array: MangaTile[] = []
+    for (const comic of $('div.nde', 'div#text-23 div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
+        let image: string = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0") ?? ''
+        if (image.startsWith('/')) image = 'https:' + image
+        const title: string = $('div.det > a', comic).first().text().trim() ?? ''
+        const id: string = $('div.det > a', comic).attr('href').split('/')[3] ?? ''
+
+        if (!id || !title) continue
+        popularSection_Array.push(createMangaTile({
+            id: id,
+            image: image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }))
+    }
+
+    popularSection.items = popularSection_Array
+    sectionCallback(popularSection)
 
     const latestSection_Array: MangaTile[] = []
 

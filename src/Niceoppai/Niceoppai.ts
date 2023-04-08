@@ -149,6 +149,8 @@ export class Niceoppai extends Source {
             case 'latest_comic':
                 param = `${page}`
                 break
+            case 'popular_comic':
+                break
             default:
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist')
         }
