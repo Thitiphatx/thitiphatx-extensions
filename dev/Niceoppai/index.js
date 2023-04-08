@@ -1218,11 +1218,11 @@ const parseHomeSections = ($, sectionCallback) => {
     const popularSection = createHomeSection({ id: 'popular_comic', title: 'Most Popular Comics', view_more: false });
     const popularSection_Array = [];
     for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
-        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0") ?? '';
+        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("62x88", "350x0") ?? '';
         if (image.startsWith('/'))
             image = 'https:' + image;
-        const title = $('div.det > a', comic).first().text().trim() ?? '';
-        const id = $('div.det > a', comic).attr('href').split('/')[3] ?? '';
+        const title = $('div.det > d.ifo > a.ttl', comic).first().text().trim() ?? '';
+        const id = $('div.det > d.ifo > a.ttl', comic).attr('href').split('/')[3] ?? '';
         if (!id || !title)
             continue;
         popularSection_Array.push(createMangaTile({
