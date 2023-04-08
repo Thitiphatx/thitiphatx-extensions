@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
 exports.NiceoppaiInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1064,8 +1064,6 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         switch (homepageSectionId) {
             case 'latest_comic':
                 param = `${page}`;
-                break;
-            case 'popular_comic':
                 break;
             default:
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
