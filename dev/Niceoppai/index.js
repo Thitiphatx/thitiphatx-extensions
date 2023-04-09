@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
 exports.NiceoppaiInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
