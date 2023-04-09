@@ -169,7 +169,7 @@ export class Nekopost extends Source {
         }
 
         const manga = parseViewMore(data)
-        metadata = page ? { page: page + 1 } : {}
+        metadata = page ? { page: page } : {}
         return createPagedResults({
             results: manga,
             metadata,
@@ -178,8 +178,11 @@ export class Nekopost extends Source {
 
     override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
+            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'GET',
+            headers: {
+                "body": `{\"ipCate\":0,\"ipOrder\":\"n\",\"ipStatus\":1,\"ipOneshot\":\"S\",\"ipKeyword\":\"${encodeURI(query.title ?? '')}\"}`,
+            },
         })
 
         const response = await this.requestManager.schedule(request, 1)
