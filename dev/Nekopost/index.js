@@ -1035,6 +1035,9 @@ class Nekopost extends paperback_extensions_common_1.Source {
         const request = createRequestObject({
             url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
+            headers: {
+                "Referer": "https://www.nekopost.net/",
+            }
         });
         const response = await this.requestManager.schedule(request, 1);
         let data;
@@ -1044,7 +1047,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        return (0, NekopostParser_1.parseChapterDetails)(data);
+        return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, chapterId);
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
@@ -1180,20 +1183,20 @@ const parseChapters = (data, mangaId) => {
     return chapters;
 };
 exports.parseChapters = parseChapters;
-const parseChapterDetails = (data) => {
+const parseChapterDetails = (data, mangaId, chapterId) => {
     const detail = data;
-    const chapId = detail.chapterId;
-    const projId = detail.projectId;
     const pages = [];
     for (const images of detail.pageItem) {
         let page = images.pageName;
-        let image = `https://www.osemocphoto.com/collectManga/${projId}/${chapId}/${page}`;
+        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${page}`;
+        if (image && image.startsWith('/'))
+            image = 'https:' + image;
         if (image)
             pages.push(image);
     }
     const chapterDetails = createChapterDetails({
-        id: chapId,
-        mangaId: projId,
+        id: chapterId,
+        mangaId: mangaId,
         pages: pages,
         longStrip: false,
     });
