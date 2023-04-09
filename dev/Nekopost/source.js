@@ -1184,10 +1184,9 @@ const parseChapterDetails = (data, mangaId, chapterId) => {
     const detail = data;
     const pages = [];
     for (const images of detail.pageItem) {
-        let page = images.pageName;
-        let image = `${page}`;
-        if (image)
-            pages.push(`https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${image}`);
+        let pageimg = images.pageName;
+        let image = `${pageimg}`;
+        pages.push(`https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${pageimg}`);
     }
     const chapterDetails = createChapterDetails({
         id: chapterId,
