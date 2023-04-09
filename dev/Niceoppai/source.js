@@ -1036,9 +1036,10 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page++}`,
+                url: `${NO_DOMAIN}/latest-chapters/${page}`,
                 method: 'GET',
             });
+            page++;
             const response = await this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
             updatedManga = (0, NiceoppaiParser_1.parseUpdatedManga)($, time, ids);
@@ -1214,8 +1215,8 @@ const parseUpdatedManga = ($, time, ids) => {
 };
 exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = ($, sectionCallback) => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true });
-    const popularSection = createHomeSection({ id: 'popular_comic', title: 'Most Popular Comics', view_more: false });
+    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true });
+    const popularSection = createHomeSection({ id: 'popular_comic', title: 'Popular Mangas', view_more: false });
     const popularSection_Array = [];
     for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
         let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("62x88", "350x0") ?? '';
