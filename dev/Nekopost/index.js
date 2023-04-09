@@ -1033,7 +1033,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getChapterDetails(mangaId, chapterId) {
         const request = {
-            url: `https://www.osemocphoto.com/collectManga/12190/134154/12190_134154.json`,
+            url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
             headers: {
                 Referer: 'https://www.nekopost.net/',
@@ -1162,7 +1162,7 @@ const parseChapters = (data, mangaId) => {
     const chapters = [];
     let sortingIndex = 0;
     for (const chapter of details?.listChapter) {
-        const id = chapter?.chapterNo ?? '';
+        const id = chapter?.chapterId ?? '';
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0;
         const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined;
         const name = chapter?.chapterName ? chapter?.chapterName : '';
