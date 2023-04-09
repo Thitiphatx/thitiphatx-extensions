@@ -1060,7 +1060,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         let param = '';
         switch (homepageSectionId) {
             case 'latest_comic':
-                param = `${page}`;
+                param = `${page++}`;
                 break;
             default:
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
