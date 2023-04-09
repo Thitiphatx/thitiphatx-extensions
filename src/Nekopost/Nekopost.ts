@@ -111,13 +111,13 @@ export class Nekopost extends Source {
     }
 
     override async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const request = createRequestObject({
-            url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
+        const request: Request = {
+            url: `https://www.osemocphoto.com/collectManga/12190/134154/12190_134154.json`,
             method: 'GET',
             headers: {
-                "Referer": "https://www.nekopost.net/",
-              }
-        })
+                Referer: 'https://www.nekopost.net/',
+            },
+        };
         const response = await this.requestManager.schedule(request, 1)
         let data: ChapterImage
         try {
