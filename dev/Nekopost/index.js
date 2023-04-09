@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.4',
+    version: '1.0.5',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1031,14 +1031,20 @@ class Nekopost extends paperback_extensions_common_1.Source {
         }
         return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
-    async getChapterDetails(mangaId, chapterNo) {
+    async getChapterDetails(mangaId, chapterId) {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/manga/${mangaId}/${chapterNo}`,
+            url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NekopostParser_1.parseChapterDetails)($, mangaId, chapterNo);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseChapterDetails)(data);
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
@@ -1174,18 +1180,20 @@ const parseChapters = (data, mangaId) => {
     return chapters;
 };
 exports.parseChapters = parseChapters;
-const parseChapterDetails = ($, mangaId, chapterNo) => {
+const parseChapterDetails = (data) => {
+    const detail = data;
+    const chapId = detail.chapterId;
+    const projId = detail.projectId;
     const pages = [];
-    for (const images of $('div > div > article > img', 'div.container-fluid.wrapper.light.svelte-ixpqjn > div.chapter-content.svelte-ixpqjn > div:nth-child(2)').toArray()) {
-        let image = $(images).attr('src')?.trim();
-        if (image && image.startsWith('/'))
-            image = 'https:' + image;
+    for (const images of detail.pageItem) {
+        let page = images.pageName;
+        let image = `https://www.osemocphoto.com/collectManga/${projId}/${chapId}/${page}`;
         if (image)
             pages.push(image);
     }
     const chapterDetails = createChapterDetails({
-        id: chapterNo,
-        mangaId: mangaId,
+        id: chapId,
+        mangaId: projId,
         pages: pages,
         longStrip: false,
     });
