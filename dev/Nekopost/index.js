@@ -1157,36 +1157,40 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = (data, mangaId) => {
     const details = data;
     const chapters = [];
-    let sortingIndex = 0;
+    let i = 0;
     for (const chapter of details?.listChapter) {
-        const chapid = chapter?.chapterId ?? '';
+        i++;
+        const chapterId = chapter?.chapterId ?? '';
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0;
-        const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined;
-        const name = chapter?.chapterName ? chapter?.chapterName : '';
-        if (!chapid)
+        const date = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined;
+        const title = chapter?.chapterName ? chapter?.chapterName : '';
+        if (!chapterId)
             continue;
-        chapters.push(createChapter({
-            id: chapid,
+        chapters.push({
+            id: chapterId,
             mangaId,
-            name,
-            chapNum: chapNum ? chapNum : 0,
-            time: time,
+            name: title,
             langCode: paperback_extensions_common_1.LanguageCode.THAI,
-            // @ts-ignore
-            sortingIndex
-        }));
-        sortingIndex--;
+            chapNum: isNaN(chapNum) ? i : chapNum,
+            time: date,
+        });
+        i--;
     }
-    return chapters;
+    return chapters.map(chapter => {
+        return createChapter(chapter);
+    });
 };
 exports.parseChapters = parseChapters;
 const parseChapterDetails = (data, mangaId, chapterId) => {
     const detail = data;
     const pages = [];
     for (const images of detail.pageItem) {
-        let pageimg = images.pageName;
-        let image = `${pageimg}`;
-        pages.push(`https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${pageimg}`);
+        let page = images.pageName;
+        let image = `${page}`;
+        if (image && image.startsWith('/'))
+            image = 'https:' + image;
+        if (image)
+            pages.push(`https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${image}`);
     }
     const chapterDetails = createChapterDetails({
         id: chapterId,
