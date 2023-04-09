@@ -65,6 +65,7 @@ const parseChapters = (data, mangaId) => {
             chapNum: isNaN(chapNum) ? i : chapNum,
             time: date,
         });
+        console.log(chapterId, mangaId, title, chapNum);
         i--;
     }
     return chapters.map(chapter => {
@@ -80,7 +81,6 @@ const parseChapterDetails = (data, mangaId, chapterId) => {
         let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${page}`;
         if (image)
             pages.push(image);
-        console.log(image);
     }
     const chapterDetails = createChapterDetails({
         id: chapterId,

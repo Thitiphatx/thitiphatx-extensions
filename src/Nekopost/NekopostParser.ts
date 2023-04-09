@@ -89,7 +89,6 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
             chapNum: isNaN(chapNum) ? i : chapNum,
             time: date,
         })
-
         i--
     }
 

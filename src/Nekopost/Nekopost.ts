@@ -124,7 +124,7 @@ export class Nekopost extends Source {
         } catch (e) {
             throw new Error(`${e}`)
         }
-        return parseChapterDetails(data, mangaId, chapterId)
+        return parseChapterDetails(data, mangaId, "120780")
     }
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
