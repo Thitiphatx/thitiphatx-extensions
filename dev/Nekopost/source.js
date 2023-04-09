@@ -1176,7 +1176,7 @@ const parseChapters = (data, mangaId) => {
 exports.parseChapters = parseChapters;
 const parseChapterDetails = ($, mangaId, chapterNo) => {
     const pages = [];
-    for (const images of $('div.t-center.item-content > div > article.svelte-1yjvc8p > img', 'div.layout-wrapper div.container-fluid.wrapper.light.svelte-ixpqjn div.chapter-content.svelte-ixpqjn div.px-2').toArray()) {
+    for (const images of $('div > div > article > img', 'div.container-fluid.wrapper.light.svelte-ixpqjn > div.chapter-content.svelte-ixpqjn > div:nth-child(2)').toArray()) {
         let image = $(images).attr('src')?.trim();
         if (image && image.startsWith('/'))
             image = 'https:' + image;
