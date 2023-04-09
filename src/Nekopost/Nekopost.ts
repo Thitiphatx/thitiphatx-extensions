@@ -31,7 +31,7 @@ import {
 const NP_DOMAIN = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
