@@ -31,7 +31,7 @@ import {
 const NP_DOMAIN = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
-    version: '1.0.6',
+    version: '1.0.7',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -118,7 +118,7 @@ export class Nekopost extends Source {
 
         const response = await this.requestManager.schedule(request, 1)
         let data: ChapterImage
-        
+
         try {
             data = JSON.parse(response.data)
         } catch (e) {
