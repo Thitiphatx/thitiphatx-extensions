@@ -163,7 +163,7 @@ export class Nekopost extends Source {
         }
 
         const manga = parseViewMore(data)
-        metadata = page ? { page: page++ } : {}
+        metadata = page ? { page: page + 1 } : {}
         return createPagedResults({
             results: manga,
             metadata,
