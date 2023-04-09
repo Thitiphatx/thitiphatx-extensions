@@ -124,12 +124,12 @@ export class Nekopost extends Source {
         } catch (e) {
             throw new Error(`${e}`)
         }
-        return parseChapterDetails(data, mangaId, "120780")
+        return parseChapterDetails(data, mangaId, chapterId)
     }
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1/`,
             method: 'GET',
         })
 

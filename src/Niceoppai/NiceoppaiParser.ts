@@ -38,7 +38,6 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
     const rawStatus: string = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? ''
     let status = MangaStatus.ONGOING
     if (rawStatus.includes('แล้ว')) status = MangaStatus.COMPLETED
-
     return createManga({
         id: mangaId,
         titles: titles,
@@ -98,7 +97,7 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
 
     const chapterDetails = createChapterDetails({
         id: chapterId,
-        mangaId: mangaId,
+        mangaId,
         pages: pages,
         longStrip: false,
     })
