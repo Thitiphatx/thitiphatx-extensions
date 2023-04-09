@@ -1056,7 +1056,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        let page = metadata?.page ?? 12;
+        let page = metadata?.page ?? 1;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_comic':
