@@ -115,8 +115,10 @@ export class Nekopost extends Source {
             url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
         };
+
         const response = await this.requestManager.schedule(request, 1)
         let data: ChapterImage
+        
         try {
             data = JSON.parse(response.data)
         } catch (e) {

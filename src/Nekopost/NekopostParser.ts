@@ -72,17 +72,16 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
     let sortingIndex = 0
 
     for (const chapter of details?.listChapter) {
-
-        const id = chapter?.chapterId ?? ''
+        const chapid = chapter?.chapterId ?? ''
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0
         const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined
         const name = chapter?.chapterName ? chapter?.chapterName : ''
 
 
-        if (!id) continue
+        if (!chapid) continue
 
         chapters.push(createChapter({
-            id: `${id}`,
+            id: chapid,
             mangaId,
             name,
             chapNum: chapNum ? chapNum : 0,
@@ -104,9 +103,8 @@ export const parseChapterDetails = (data: ChapterImage, mangaId: string, chapter
 
     for (const images of detail.pageItem) {
         let page = images.pageName
-        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${page}`
-        if (image && image.startsWith('/')) image = 'https:' + image
-        if (image) pages.push(image)
+        let image: string | undefined = `${page}`
+        if (image) pages.push(`https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${image}`)
     }
 
     const chapterDetails = createChapterDetails({
@@ -200,4 +198,36 @@ export const parseSearch = ($: CheerioStatic): MangaTile[] => {
 
 const decodeHTMLEntity = (str: string): string => {
     return entities.decodeHTML(str)
+}
+
+export interface UpdatedManga {
+    ids: string[],
+    loadMore: boolean;
+}
+
+export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): UpdatedManga => {
+    const updatedManga: string[] = []
+    let loadMore = true
+
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id: string = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? ''
+        const date = $('a > b.dte', manga).last().text().trim()
+        let mangaDate = new Date()
+        if (date !== 'วันนี้') {
+            mangaDate = new Date(date)
+        }
+
+        if (!id || !mangaDate) continue
+        if (mangaDate > time) {
+            if (ids.includes(id)) {
+                updatedManga.push(id)
+            }
+        } else {
+            loadMore = false
+        }
+    }
+    return {
+        ids: updatedManga,
+        loadMore,
+    }
 }
