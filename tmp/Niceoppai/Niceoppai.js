@@ -5,7 +5,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
 exports.NiceoppaiInfo = {
-    version: '1.0.3',
+    version: '1.0.6',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -80,9 +80,10 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page++}`,
+                url: `${NO_DOMAIN}/latest-chapters/${page}`,
                 method: 'GET',
             });
+            page++;
             const response = await this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
             updatedManga = (0, NiceoppaiParser_1.parseUpdatedManga)($, time, ids);

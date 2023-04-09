@@ -114,6 +114,9 @@ export class Nekopost extends Source {
         const request = createRequestObject({
             url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
+            headers: {
+                "Referer": "https://www.nekopost.net/",
+              }
         })
         const response = await this.requestManager.schedule(request, 1)
         let data: ChapterImage
@@ -122,7 +125,7 @@ export class Nekopost extends Source {
         } catch (e) {
             throw new Error(`${e}`)
         }
-        return parseChapterDetails(data)
+        return parseChapterDetails(data, mangaId, chapterId)
     }
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
