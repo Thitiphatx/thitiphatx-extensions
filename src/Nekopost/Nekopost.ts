@@ -31,7 +31,7 @@ import {
 const NP_DOMAIN = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -115,7 +115,6 @@ export class Nekopost extends Source {
             url: `${NP_DOMAIN}/manga/${mangaId}/${chapterId}`,
             method: 'GET',
         })
-
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
         return parseChapterDetails($, mangaId, chapterId)
