@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.6',
+    version: '1.0.7',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1186,11 +1186,9 @@ const parseChapterDetails = (data, mangaId, chapterId) => {
     const pages = [];
     for (const images of detail.pageItem) {
         let page = images.pageName;
-        let image = `${page}`;
-        if (image && image.startsWith('/'))
-            image = 'https:' + image;
+        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${page}`;
         if (image)
-            pages.push(`https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${image}`);
+            pages.push(image);
     }
     const chapterDetails = createChapterDetails({
         id: chapterId,
