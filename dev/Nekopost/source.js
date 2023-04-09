@@ -1032,13 +1032,13 @@ class Nekopost extends paperback_extensions_common_1.Source {
         return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
-        const request = createRequestObject({
-            url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
+        const request = {
+            url: `https://www.osemocphoto.com/collectManga/12190/134154/12190_134154.json`,
             method: 'GET',
             headers: {
-                "Referer": "https://www.nekopost.net/",
-            }
-        });
+                Referer: 'https://www.nekopost.net/',
+            },
+        };
         const response = await this.requestManager.schedule(request, 1);
         let data;
         try {
