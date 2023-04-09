@@ -1109,7 +1109,7 @@ exports.Nekopost = Nekopost;
 },{"./NekopostParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseUpdatedManga = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = (data, mangaId) => {
@@ -1159,14 +1159,14 @@ const parseChapters = (data, mangaId) => {
     const chapters = [];
     let sortingIndex = 0;
     for (const chapter of details?.listChapter) {
-        const id = chapter?.chapterId ?? '';
+        const chapid = chapter?.chapterId ?? '';
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0;
         const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined;
         const name = chapter?.chapterName ? chapter?.chapterName : '';
-        if (!id)
+        if (!chapid)
             continue;
         chapters.push(createChapter({
-            id: `${id}`,
+            id: chapid,
             mangaId,
             name,
             chapNum: chapNum ? chapNum : 0,
@@ -1185,11 +1185,9 @@ const parseChapterDetails = (data, mangaId, chapterId) => {
     const pages = [];
     for (const images of detail.pageItem) {
         let page = images.pageName;
-        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${page}`;
-        if (image && image.startsWith('/'))
-            image = 'https:' + image;
+        let image = `${page}`;
         if (image)
-            pages.push(image);
+            pages.push(`https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${image}`);
     }
     const chapterDetails = createChapterDetails({
         id: chapterId,
@@ -1275,6 +1273,33 @@ exports.parseSearch = parseSearch;
 const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };
+const parseUpdatedManga = ($, time, ids) => {
+    const updatedManga = [];
+    let loadMore = true;
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? '';
+        const date = $('a > b.dte', manga).last().text().trim();
+        let mangaDate = new Date();
+        if (date !== 'วันนี้') {
+            mangaDate = new Date(date);
+        }
+        if (!id || !mangaDate)
+            continue;
+        if (mangaDate > time) {
+            if (ids.includes(id)) {
+                updatedManga.push(id);
+            }
+        }
+        else {
+            loadMore = false;
+        }
+    }
+    return {
+        ids: updatedManga,
+        loadMore,
+    };
+};
+exports.parseUpdatedManga = parseUpdatedManga;
 
 },{"entities":8,"paperback-extensions-common":12}]},{},[56])(56)
 });
