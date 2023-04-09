@@ -1180,7 +1180,7 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
     }
     const chapterDetails = createChapterDetails({
         id: chapterId,
-        mangaId: mangaId,
+        mangaId,
         pages: pages,
         longStrip: false,
     });

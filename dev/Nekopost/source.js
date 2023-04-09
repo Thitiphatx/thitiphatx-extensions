@@ -1044,11 +1044,11 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, "120780");
+        return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, chapterId);
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1/`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
