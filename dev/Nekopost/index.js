@@ -1042,7 +1042,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -1066,7 +1066,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/${page}`,
             method: 'GET',
             param,
         });
@@ -1079,7 +1079,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
             throw new Error(`${e}`);
         }
         const manga = (0, NekopostParser_1.parseViewMore)(data);
-        metadata = page ? { page: page + 12 } : {};
+        metadata = page ? { page: page + 1 } : {};
         return createPagedResults({
             results: manga,
             metadata,
