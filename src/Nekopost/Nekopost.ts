@@ -110,14 +110,14 @@ export class Nekopost extends Source {
         return parseChapters(data, mangaId)
     }
 
-    override async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
+    override async getChapterDetails(mangaId: string, chapterNo: string): Promise<ChapterDetails> {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/manga/${mangaId}/${chapterId}`,
+            url: `${NP_DOMAIN}/manga/${mangaId}/${chapterNo}`,
             method: 'GET',
         })
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
-        return parseChapterDetails($, mangaId, chapterId)
+        return parseChapterDetails($, mangaId, chapterNo)
     }
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {

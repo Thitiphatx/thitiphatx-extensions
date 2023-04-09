@@ -73,7 +73,7 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
 
     for (const chapter of details?.listChapter) {
 
-        const id = chapter?.chapterId ?? ''
+        const id = chapter?.chapterNo ?? ''
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0
         const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined
         const name = chapter?.chapterName ? chapter?.chapterName : ''
@@ -98,7 +98,7 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
     return chapters
 }
 
-export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId: string): ChapterDetails => {
+export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterNo: string): ChapterDetails => {
     const pages: string[] = []
 
     for (const images of $('div.t-center.item-content > div > article.svelte-1yjvc8p > img', 'div.layout-wrapper div.container-fluid.wrapper.light.svelte-ixpqjn div.chapter-content.svelte-ixpqjn div.px-2').toArray()) {
@@ -106,10 +106,9 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
         if (image && image.startsWith('/')) image = 'https:' + image
         if (image) pages.push(image)
     }
-    pages.push("https://i.imgur.com/1iVRV27.jpeg")
-    
+
     const chapterDetails = createChapterDetails({
-        id: chapterId,
+        id: chapterNo,
         mangaId: mangaId,
         pages: pages,
         longStrip: false,
