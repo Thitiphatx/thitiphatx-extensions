@@ -129,7 +129,7 @@ export class Nekopost extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/0`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1/`,
             method: 'GET',
         })
 
@@ -144,18 +144,18 @@ export class Nekopost extends Source {
         parseHomeSections(data, sectionCallback)
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        let page: number = metadata?.page ?? 12
+        let page: number = metadata?.page ?? 1
         let param = ''
         switch (homepageSectionId) {
             case 'latest_comic':
-                param = `${page+=12}`
+                param = `${page++}`
                 break
             default:
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist')
         }
     
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/`,
             method: 'GET',
             param,
         })
@@ -169,7 +169,7 @@ export class Nekopost extends Source {
         }
 
         const manga = parseViewMore(data)
-        metadata = page ? { page: page + 12 } : {}
+        metadata = page ? { page: page + 1 } : {}
         return createPagedResults({
             results: manga,
             metadata,
