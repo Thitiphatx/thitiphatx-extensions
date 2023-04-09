@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.1',
+    version: '1.0.2',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1042,7 +1042,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0/`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -1066,7 +1066,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/${page}`,
             method: 'GET',
             param,
         });
