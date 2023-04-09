@@ -1035,9 +1035,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
         const request = {
             url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
-            headers: {
-                Referer: 'https://www.nekopost.net/',
-            },
         };
         const response = await this.requestManager.schedule(request, 1);
         let data;
