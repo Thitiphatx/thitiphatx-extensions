@@ -76,10 +76,10 @@ class Nekopost extends paperback_extensions_common_1.Source {
         return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
-        const request = createRequestObject({
+        const request = {
             url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
-        });
+        };
         const response = await this.requestManager.schedule(request, 1);
         let data;
         try {
@@ -88,7 +88,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        return (0, NekopostParser_1.parseChapterDetails)(data);
+        return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, chapterId);
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({

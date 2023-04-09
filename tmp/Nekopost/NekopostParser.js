@@ -50,7 +50,7 @@ const parseChapters = (data, mangaId) => {
     const chapters = [];
     let sortingIndex = 0;
     for (const chapter of details?.listChapter) {
-        const id = chapter?.chapterNo ?? '';
+        const id = chapter?.chapterId ?? '';
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0;
         const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined;
         const name = chapter?.chapterName ? chapter?.chapterName : '';
@@ -71,20 +71,20 @@ const parseChapters = (data, mangaId) => {
     return chapters;
 };
 exports.parseChapters = parseChapters;
-const parseChapterDetails = (data) => {
+const parseChapterDetails = (data, mangaId, chapterId) => {
     const detail = data;
-    const chapId = detail.chapterId;
-    const projId = detail.projectId;
     const pages = [];
     for (const images of detail.pageItem) {
         let page = images.pageName;
-        let image = `https://www.osemocphoto.com/collectManga/${projId}/${chapId}/${page}`;
+        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${page}`;
+        if (image && image.startsWith('/'))
+            image = 'https:' + image;
         if (image)
             pages.push(image);
     }
     const chapterDetails = createChapterDetails({
-        id: chapId,
-        mangaId: projId,
+        id: chapterId,
+        mangaId: mangaId,
         pages: pages,
         longStrip: false,
     });

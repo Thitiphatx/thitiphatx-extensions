@@ -114,9 +114,6 @@ export class Nekopost extends Source {
         const request: Request = {
             url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
-            headers: {
-                Referer: 'https://www.nekopost.net/',
-            },
         };
         const response = await this.requestManager.schedule(request, 1)
         let data: ChapterImage
