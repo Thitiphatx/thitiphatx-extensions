@@ -1044,7 +1044,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, chapterId);
+        return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, "120780");
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
