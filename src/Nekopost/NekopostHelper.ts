@@ -17,6 +17,14 @@ export interface HomeData {
         }
     ]
 }
+export interface ChapterImage {
+    projectId: string;
+    chapterId: string;
+    chapterNo: string;
+    pageItem: [{
+        pageName: string;
+    }];
+}
 
 export interface MangaDetails {
     code: number

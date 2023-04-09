@@ -11,9 +11,9 @@ import {
 } from 'paperback-extensions-common'
 
 import { 
-    ChapterDetailsImages,
     MangaDetails,
     HomeData,
+    ChapterImage,
 } from './NekopostHelper'
 
 import entities = require('entities')
@@ -98,22 +98,26 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
     return chapters
 }
 
-export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterNo: string): ChapterDetails => {
+export const parseChapterDetails = (data: ChapterImage): ChapterDetails => {
+    const detail = data;
+    const chapId = detail.chapterId
+    const projId = detail.projectId
     const pages: string[] = []
 
-    for (const images of $('div > div > article > img', 'div.container-fluid.wrapper.light.svelte-ixpqjn > div.chapter-content.svelte-ixpqjn > div:nth-child(2)').toArray()) {
-        let image: string | undefined = $(images).attr('src')?.trim()
-        if (image && image.startsWith('/')) image = 'https:' + image
+    for (const images of detail.pageItem) {
+        let page = images.pageName
+        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${projId}/${chapId}/${page}`
         if (image) pages.push(image)
     }
 
     const chapterDetails = createChapterDetails({
-        id: chapterNo,
-        mangaId: mangaId,
+        id: chapId,
+        mangaId: projId,
         pages: pages,
         longStrip: false,
     })
     return chapterDetails
+
 }
 
 export const parseHomeSections = (data: HomeData, sectionCallback: (section: HomeSection) => void): void => {
