@@ -1085,7 +1085,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
             throw new Error(`${e}`);
         }
         const manga = (0, NekopostParser_1.parseViewMore)(data);
-        metadata = page ? { page: page + 1 } : {};
+        metadata = page ? { page: page } : {};
         return createPagedResults({
             results: manga,
             metadata,
@@ -1093,8 +1093,11 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getSearchResults(query) {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
+            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'GET',
+            headers: {
+                "body": `{\"ipCate\":0,\"ipOrder\":\"n\",\"ipStatus\":1,\"ipOneshot\":\"S\",\"ipKeyword\":\"${encodeURI(query.title ?? '')}\"}`,
+            },
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
