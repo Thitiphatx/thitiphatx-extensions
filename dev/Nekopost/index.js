@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
