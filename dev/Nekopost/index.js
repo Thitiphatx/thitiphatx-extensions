@@ -1031,14 +1031,14 @@ class Nekopost extends paperback_extensions_common_1.Source {
         }
         return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
-    async getChapterDetails(mangaId, chapterId) {
+    async getChapterDetails(mangaId, chapterNo) {
         const request = createRequestObject({
-            url: `${NP_DOMAIN}/manga/${mangaId}/${chapterId}`,
+            url: `${NP_DOMAIN}/manga/${mangaId}/${chapterNo}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return (0, NekopostParser_1.parseChapterDetails)($, mangaId, chapterId);
+        return (0, NekopostParser_1.parseChapterDetails)($, mangaId, chapterNo);
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
@@ -1153,7 +1153,7 @@ const parseChapters = (data, mangaId) => {
     const chapters = [];
     let sortingIndex = 0;
     for (const chapter of details?.listChapter) {
-        const id = chapter?.chapterId ?? '';
+        const id = chapter?.chapterNo ?? '';
         const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0;
         const time = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined;
         const name = chapter?.chapterName ? chapter?.chapterName : '';
@@ -1174,7 +1174,7 @@ const parseChapters = (data, mangaId) => {
     return chapters;
 };
 exports.parseChapters = parseChapters;
-const parseChapterDetails = ($, mangaId, chapterId) => {
+const parseChapterDetails = ($, mangaId, chapterNo) => {
     const pages = [];
     for (const images of $('div.t-center.item-content > div > article.svelte-1yjvc8p > img', 'div.layout-wrapper div.container-fluid.wrapper.light.svelte-ixpqjn div.chapter-content.svelte-ixpqjn div.px-2').toArray()) {
         let image = $(images).attr('src')?.trim();
@@ -1183,9 +1183,8 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
         if (image)
             pages.push(image);
     }
-    pages.push("https://i.imgur.com/1iVRV27.jpeg");
     const chapterDetails = createChapterDetails({
-        id: chapterId,
+        id: chapterNo,
         mangaId: mangaId,
         pages: pages,
         longStrip: false,
