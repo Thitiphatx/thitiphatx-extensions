@@ -115,10 +115,10 @@ export class Niceoppai extends Source {
 
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page++}`,
+                url: `${NO_DOMAIN}/latest-chapters/${page}`,
                 method: 'GET',
             })
-
+            page++
             const response = await this.requestManager.schedule(request, 1)
             const $ = this.cheerio.load(response.data)
 

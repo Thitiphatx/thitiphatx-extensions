@@ -139,8 +139,8 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
 }
 
 export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true })
-    const popularSection = createHomeSection({ id: 'popular_comic', title: 'Most Popular Comics', view_more: false })
+    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true })
+    const popularSection = createHomeSection({ id: 'popular_comic', title: 'Popular Mangas', view_more: false })
     
     const popularSection_Array: MangaTile[] = []
     for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
