@@ -1079,7 +1079,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
             throw new Error(`${e}`);
         }
         const manga = (0, NekopostParser_1.parseViewMore)(data);
-        metadata = page ? { page: page++ } : {};
+        metadata = page ? { page: page + 1 } : {};
         return createPagedResults({
             results: manga,
             metadata,
