@@ -106,6 +106,8 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
         if (image && image.startsWith('/')) image = 'https:' + image
         if (image) pages.push(image)
     }
+    pages.push("https://i.imgur.com/1iVRV27.jpeg")
+    
     const chapterDetails = createChapterDetails({
         id: chapterId,
         mangaId: mangaId,
