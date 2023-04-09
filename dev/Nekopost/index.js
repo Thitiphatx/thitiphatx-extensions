@@ -1056,7 +1056,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        let page = metadata?.page ?? 1;
+        let page = metadata?.page ?? 0;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -1079,7 +1079,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
             throw new Error(`${e}`);
         }
         const manga = (0, NekopostParser_1.parseViewMore)(data);
-        metadata = page ? { page: page + 1 } : {};
+        metadata = page ? { page: page++ } : {};
         return createPagedResults({
             results: manga,
             metadata,
