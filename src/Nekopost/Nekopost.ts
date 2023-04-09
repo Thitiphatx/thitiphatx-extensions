@@ -138,7 +138,7 @@ export class Nekopost extends Source {
         parseHomeSections(data, sectionCallback)
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        let page: number = metadata?.page ?? 12
+        let page: number = metadata?.page ?? 1
         let param = ''
         switch (homepageSectionId) {
             case 'latest_comic':
