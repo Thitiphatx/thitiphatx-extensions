@@ -222,9 +222,9 @@ export class Nekopost extends Source {
             url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'GET',
             headers: {
-                "body": `{\"ipCate\":0,\"ipOrder\":\"n\",\"ipStatus\":1,\"ipOneshot\":\"S\",\"ipKeyword\":\"${encodeURI(query.title ?? '')}\"}`,
-            },
-        })
+              "body": `{"ipCate":0,"ipOrder":"n","ipStatus":1,"ipOneshot":"S","ipKeyword":"${encodeURI(query.title ?? '')}"}`,
+            }
+          });
 
         const response = await this.requestManager.schedule(request, 1)
 
