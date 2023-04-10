@@ -157,7 +157,7 @@ export const parseHomeSections = (data: HomeData, sectionCallback: (section: Hom
     for (const manga of data.listChapter) {
         const id: string = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
-        let image: string = (manga.cover == 'assets/demo/no_image.jpg') ? 'https://www.nekopost.net/assets/demo/no_image.jpg' : `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}`
+        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? ''
 
         const title: string = manga.projectName ?? ''
         const subtitle: string = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? ''
