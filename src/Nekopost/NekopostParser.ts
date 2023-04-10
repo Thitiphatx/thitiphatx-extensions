@@ -106,7 +106,7 @@ export const parseChapterDetails = (data: ChapterImage, mangaId: string, chapter
     const pages: string[] = []
 
     for (const images of data.pageItem) {
-        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${chapterId}_${images.pageName}`
+        let image: string | undefined = 'https://www.osemocphoto.com/collectManga/12645/134191/134191_20230410072734_1.jpg'
         if (image) pages.push(image)
     }
 

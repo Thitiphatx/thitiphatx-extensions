@@ -34,8 +34,6 @@ import {
 
 const NP_DOMAIN = 'https://www.nekopost.net'
 
-let globalUA: string | null
-
 export const NekopostInfo: SourceInfo = {
     version: '1.0.0',
     name: 'Nekopost',
@@ -63,41 +61,20 @@ export class Nekopost extends Source {
                 request.headers = {
                     ...(request.headers ?? {}),
                     ...{
-                        ...(globalUA && { 'user-agent': await this.getUserAgent() }), // Set globalUA intially
-                        'referer': `${NP_DOMAIN}/`,
-                        ...(request.url.includes('wordpress.com') && { 'Accept': 'image/avif,image/webp,*/*' })
-                    }
+                        'referer': NP_DOMAIN,
+                    },
+
                 }
-                request.cookies = [
-                    createCookie({ name: 'wpmanga-adault', value: '1', domain: NP_DOMAIN }),
-                    createCookie({ name: 'toonily-mature', value: '1', domain: NP_DOMAIN })
-                ]
 
                 return request
             },
 
             interceptResponse: async (response: Response): Promise<Response> => {
                 return response
-            }
-        }
+            },
+        },
     })
 
-    stateManager = createSourceStateManager({})
-    userAgent: string | boolean = true
-    async getUserAgent(): Promise<any> {
-        const stateUA = await this.stateManager.retrieve('userAgent') as string
-
-        if (!this.userAgent) {
-            globalUA = null
-        } else if (typeof this.userAgent == 'string') {
-            globalUA = this.userAgent
-        } else if (stateUA) {
-            globalUA = stateUA
-        } else {
-            globalUA = null
-        }
-        return globalUA
-    }
 
     override getMangaShareUrl(mangaId: string): string { return `${NP_DOMAIN}/manga/${mangaId}` }
 
@@ -127,7 +104,6 @@ export class Nekopost extends Source {
             param: mangaId,
         })
         const response = await this.requestManager.schedule(request, 1)
-        this.CloudFlareError(response.status)
 
         let data: MangaDetails
         try {
@@ -265,21 +241,5 @@ export class Nekopost extends Source {
             results: manga,
         })
 
-    }
-
-    override getCloudflareBypassRequest() {
-        return createRequestObject({
-            url: `${NP_DOMAIN}`,
-            method: 'GET',
-            headers: {
-                ...(globalUA && { 'user-agent': globalUA }),
-            }
-        })
-    }
-    
-    CloudFlareError(status: any) {
-        if (status == 503) {
-            throw new Error('CLOUDFLARE BYPASS ERROR:\nPlease go to Settings > Sources > <The name of this source> and press Cloudflare Bypass')
-        }
     }
 }
