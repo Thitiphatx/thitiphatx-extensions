@@ -960,7 +960,6 @@ exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
 const NP_DOMAIN = 'https://www.nekopost.net';
-let globalUA;
 exports.NekopostInfo = {
     version: '1.0.0',
     name: 'Nekopost',
@@ -988,40 +987,16 @@ class Nekopost extends paperback_extensions_common_1.Source {
                     request.headers = {
                         ...(request.headers ?? {}),
                         ...{
-                            ...(globalUA && { 'user-agent': await this.getUserAgent() }),
-                            'referer': `${NP_DOMAIN}/`,
-                            ...(request.url.includes('wordpress.com') && { 'Accept': 'image/avif,image/webp,*/*' })
-                        }
+                            'referer': NP_DOMAIN,
+                        },
                     };
-                    request.cookies = [
-                        createCookie({ name: 'wpmanga-adault', value: '1', domain: NP_DOMAIN }),
-                        createCookie({ name: 'toonily-mature', value: '1', domain: NP_DOMAIN })
-                    ];
                     return request;
                 },
                 interceptResponse: async (response) => {
                     return response;
-                }
-            }
+                },
+            },
         });
-        this.stateManager = createSourceStateManager({});
-        this.userAgent = true;
-    }
-    async getUserAgent() {
-        const stateUA = await this.stateManager.retrieve('userAgent');
-        if (!this.userAgent) {
-            globalUA = null;
-        }
-        else if (typeof this.userAgent == 'string') {
-            globalUA = this.userAgent;
-        }
-        else if (stateUA) {
-            globalUA = stateUA;
-        }
-        else {
-            globalUA = null;
-        }
-        return globalUA;
     }
     getMangaShareUrl(mangaId) { return `${NP_DOMAIN}/manga/${mangaId}`; }
     async getMangaDetails(mangaId) {
@@ -1047,7 +1022,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
-        this.CloudFlareError(response.status);
         let data;
         try {
             data = JSON.parse(response.data);
@@ -1166,20 +1140,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
             results: manga,
         });
     }
-    getCloudflareBypassRequest() {
-        return createRequestObject({
-            url: `${NP_DOMAIN}`,
-            method: 'GET',
-            headers: {
-                ...(globalUA && { 'user-agent': globalUA }),
-            }
-        });
-    }
-    CloudFlareError(status) {
-        if (status == 503) {
-            throw new Error('CLOUDFLARE BYPASS ERROR:\nPlease go to Settings > Sources > <The name of this source> and press Cloudflare Bypass');
-        }
-    }
 }
 exports.Nekopost = Nekopost;
 
@@ -1262,7 +1222,7 @@ exports.parseChapters = parseChapters;
 const parseChapterDetails = (data, mangaId, chapterId) => {
     const pages = [];
     for (const images of data.pageItem) {
-        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${chapterId}_${images.pageName}`;
+        let image = 'https://www.osemocphoto.com/collectManga/12645/134191/134191_20230410072734_1.jpg';
         if (image)
             pages.push(image);
     }
