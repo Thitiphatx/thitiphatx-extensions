@@ -17,6 +17,18 @@ export interface HomeData {
         }
     ]
 }
+
+export interface SearchData {
+    listProject: [
+        {
+            projectId: string;
+            projectName: string;
+            noChapter: string;
+            imageVersion: string;
+        }
+    ]
+}
+
 export interface ChapterImage {
     chapterId: string;
     chapterNo: string;

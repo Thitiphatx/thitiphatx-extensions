@@ -10,126 +10,157 @@ import {
     TagSection,
 } from 'paperback-extensions-common'
 
-import { 
+import {
     MangaDetails,
     HomeData,
     ChapterImage,
+    SearchData,
 } from './NekopostHelper'
 
 import entities = require('entities')
 
 export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga => {
-    const details = data
+    const manga = data
     const titles: string[] = []
 
-    if(details?.projectInfo.aliasName) titles.push(details?.projectInfo.aliasName.trim())
-    if(details?.projectInfo.projectName) titles.push(details?.projectInfo.projectName.trim())
-    const imageversion = details.projectInfo.imageVersion
-    const image = `https://www.osemocphoto.com/collectManga/${mangaId}/${mangaId}_cover.jpg?${imageversion}` ?? ''
+    const id: string = manga.projectInfo.projectId ?? ''
+    const projectName: string = manga.projectInfo.projectName ?? ''
+    const alias: string = manga.projectInfo.aliasName ?? ''
     
-    const author = details.projectInfo.authorName
-    const artist = details.projectInfo.artistName
+    titles.push(projectName)
+    titles.push(alias)
 
+    let imageVersion: string = manga.projectInfo.imageVersion ?? ''
+
+    let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? ''
+
+    const author: string = manga.projectInfo.authorName ?? ''
+    const artist: string = manga.projectInfo.artistName ?? ''
+    const info: string = manga.projectInfo.info ?? ''
+
+    let hentai = false
+    
     const arrayTags: Tag[] = []
+    for (const tag of manga.listCate) {
+        const label: string = tag.cateName ?? ''
+        const id: string = tag.cateCode ?? ''
 
-    if (details?.listCate) {
-        for (const category of details?.listCate) {
-            const id = category?.cateLink ?? ''
-            const label = category?.cateName ?? ''
-
-            if (!id || !label) continue
-
-            arrayTags.push({
-                id,
-                label
-            })
-        }
+        if (!id || !label) continue
+        if (manga.projectInfo.flgMature) hentai = true
+        arrayTags.push({ id: id, label: label })
     }
-
     const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
 
-    const rawStatus = details?.projectInfo.status
+    const rawStatus: string = manga.projectInfo.status ?? ''
     let status = MangaStatus.ONGOING
-    if (rawStatus == '2') status = MangaStatus.COMPLETED
-
-    const description = details?.projectInfo.info ?? ''
-
+    if (rawStatus == '0') status = MangaStatus.COMPLETED
     return createManga({
         id: mangaId,
         titles: titles,
         image: image,
+        hentai: hentai,
         status: status,
         author: author,
         artist: artist,
         tags: tagSections,
-        desc: description,
+        desc: info,
     })
 }
 
 export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] => {
-    const details = data
     const chapters: Chapter[] = []
     let i = 0
 
-    for (const chapter of details?.listChapter) {
+    for (const chapter of data.listChapter) {
         i++
-        const chapterId = chapter?.chapterId ?? ''
-        const chapNum = chapter?.chapterNo ? Number(chapter.chapterNo) : 0
-        const date = chapter?.publishDate ? new Date(chapter?.publishDate) ?? 0 : undefined
-        const title = chapter?.chapterName ? chapter?.chapterName : ''
-
+        const title: string = chapter.chapterName ?? ''
+        const chapterId: string = chapter.chapterId ?? ''
 
         if (!chapterId) continue
+
+        const chapNum = Number(chapter.chapterNo) //We're manually setting the chapters regarless, however usually the ID equals the chapter number.
+
+
+        const date: Date = new Date(chapter.publishDate)
+
+        if (!chapterId || !title) continue
 
         chapters.push({
             id: chapterId,
             mangaId,
-            name: title,
+            name: decodeHTMLEntity(title),
             langCode: LanguageCode.THAI,
             chapNum: isNaN(chapNum) ? i : chapNum,
             time: date,
         })
-        i--
-    }
 
+        i--
+
+    }
     return chapters.map(chapter => {
         return createChapter(chapter)
     })
 }
 
 export const parseChapterDetails = (data: ChapterImage, mangaId: string, chapterId: string): ChapterDetails => {
-    const detail = data;
     const pages: string[] = []
 
-    for (const images of detail.pageItem) {
-        let page = images.pageName
-        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${page}`
+    for (const images of data.pageItem) {
+        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${chapterId}_${images.pageName}`
         if (image) pages.push(image)
     }
 
     const chapterDetails = createChapterDetails({
         id: chapterId,
-        mangaId: mangaId,
+        mangaId,
         pages: pages,
         longStrip: false,
     })
     return chapterDetails
+}
 
+
+export interface UpdatedManga {
+    ids: string[],
+    loadMore: boolean;
+}
+
+export const parseUpdatedManga = (data: HomeData, time: Date, ids: string[]): UpdatedManga => {
+    const updatedManga: string[] = []
+    let loadMore = true
+
+    for (const manga of data.listChapter) {
+        const id: string = manga.projectId ?? ''
+        const date = manga.createDate
+        const mangaDate = new Date(date)
+
+        if (!id || !mangaDate) continue
+        if (mangaDate > time) {
+            if (ids.includes(id)) {
+                updatedManga.push(id)
+            }
+        } else {
+            loadMore = false
+        }
+    }
+    return {
+        ids: updatedManga,
+        loadMore,
+    }
 }
 
 export const parseHomeSections = (data: HomeData, sectionCallback: (section: HomeSection) => void): void => {
-    const details = data
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true })
+    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true })
 
     const latestSection_Array: MangaTile[] = []
 
-    for (const manga of details?.listChapter) {
-        const id = manga.projectId
-        const imageversion = manga.imageVersion
-        const image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageversion}`
-        const title = manga.projectName
-        const chapnum = manga.chapterNo
-        const subtitle = `Chapter ${chapnum}`
+    for (const manga of data.listChapter) {
+        const id: string = manga.projectId ?? ''
+        let imageVersion: string = manga.imageVersion ?? ''
+        let image: string = (manga.cover == 'assets/demo/no_image.jpg') ? 'https://www.nekopost.net/assets/demo/no_image.jpg' : `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}`
+
+        const title: string = manga.projectName ?? ''
+        const subtitle: string = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? ''
 
         if (!id || !title) continue
         latestSection_Array.push(createMangaTile({
@@ -149,38 +180,40 @@ export const parseViewMore = (data: HomeData): MangaTile[] => {
     const comics: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const manga of data?.listChapter) {
-        const id = manga.projectId
-        const imageversion = manga.imageVersion
-        const image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageversion}`
-        const title = manga.projectName
-        const chapnum = manga.chapterNo
-        const subtitle = `Chapter ${chapnum}`
+    for (const manga of data.listChapter) {
+        const id: string = manga.projectId ?? ''
+        let imageVersion: string = manga.imageVersion ?? ''
+        let image: string = (manga.cover == 'assets/demo/no_image.jpg') ? 'https://www.nekopost.net/assets/demo/no_image.jpg' : `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}`
+
+        const title: string = manga.projectName ?? ''
+        const subtitle: string = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? ''
 
         if (!id || !title) continue
+
         if (collectedIds.includes(id)) continue
         comics.push(createMangaTile({
             id,
-            image: image,
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
             title: createIconText({ text: decodeHTMLEntity(title) }),
             subtitleText: createIconText({ text: subtitle }),
         }))
-        
         collectedIds.push(id)
 
     }
     return comics
 }
 
-export const parseSearch = ($: CheerioStatic): MangaTile[] => {
+export const parseSearch = (data: SearchData): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
-        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? ''
-        const image: string = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0","350x0") ?? ''
-        const title: string = $('div.det > a', manga).text().trim() ?? ''
-        const subtitle: string = $('div.det > div.vws', manga).text().trim() ?? ''
+    for (const manga of data.listProject) {
+        const id = manga.projectId ?? ''
+        let imageVersion: string = manga.imageVersion ?? ''
+        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? ''
+        const title: string = manga.projectName ?? ''
+
+        const subtitle: string = `Ch.${manga.noChapter}` ?? ''
         if (!id || !title || !image) continue
 
         if (collectedIds.includes(id)) continue
@@ -198,36 +231,4 @@ export const parseSearch = ($: CheerioStatic): MangaTile[] => {
 
 const decodeHTMLEntity = (str: string): string => {
     return entities.decodeHTML(str)
-}
-
-export interface UpdatedManga {
-    ids: string[],
-    loadMore: boolean;
-}
-
-export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): UpdatedManga => {
-    const updatedManga: string[] = []
-    let loadMore = true
-
-    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        const id: string = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? ''
-        const date = $('a > b.dte', manga).last().text().trim()
-        let mangaDate = new Date()
-        if (date !== 'วันนี้') {
-            mangaDate = new Date(date)
-        }
-
-        if (!id || !mangaDate) continue
-        if (mangaDate > time) {
-            if (ids.includes(id)) {
-                updatedManga.push(id)
-            }
-        } else {
-            loadMore = false
-        }
-    }
-    return {
-        ids: updatedManga,
-        loadMore,
-    }
 }
