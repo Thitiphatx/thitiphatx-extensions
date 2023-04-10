@@ -1265,7 +1265,7 @@ const parseHomeSections = (data, sectionCallback) => {
     for (const manga of data.listChapter) {
         const id = manga.projectId ?? '';
         let imageVersion = manga.imageVersion ?? '';
-        let image = (manga.cover == 'assets/demo/no_image.jpg') ? 'https://www.nekopost.net/assets/demo/no_image.jpg' : `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}`;
+        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? '';
         const title = manga.projectName ?? '';
         const subtitle = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? '';
         if (!id || !title)
