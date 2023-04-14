@@ -218,11 +218,10 @@ export class Nekopost extends Source {
     }
 
     override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
-        let param = `?ipKeyword=${encodeURI(query.title ?? '')}`;
         const request = createRequestObject({
             url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'GET',
-            param,
+            data: `ipKeyword=${encodeURI(query.title ?? '')}`
           });
 
         const response = await this.requestManager.schedule(request, 1)
