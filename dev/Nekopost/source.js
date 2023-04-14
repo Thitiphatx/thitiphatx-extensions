@@ -1120,11 +1120,10 @@ class Nekopost extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query) {
-        let param = `?ipKeyword=${encodeURI(query.title ?? '')}`;
         const request = createRequestObject({
             url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'GET',
-            param,
+            data: `ipKeyword=${encodeURI(query.title ?? '')}`
         });
         const response = await this.requestManager.schedule(request, 1);
         let data;
