@@ -1120,21 +1120,14 @@ class Nekopost extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query) {
-        const request = createRequestObject({
-            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
-            method: 'POST',
-            headers: {
-                "body": `{"ipCate":0,"ipOrder":"n","ipStatus":1,"ipOneshot":"S","ipKeyword":"${encodeURI(query.title ?? '')}"}`,
-            }
+        const response = await fetch("https://api.osemocphoto.com/frontAPI/getProjectSearch", {
+            "referrer": "https://www.nekopost.net/",
+            "body": JSON.stringify({
+                "ipKeyword": "test",
+            }),
+            "method": "POST",
         });
-        const response = await this.requestManager.schedule(request, 1);
-        let data;
-        try {
-            data = JSON.parse(response.data);
-        }
-        catch (e) {
-            throw new Error(`${e}`);
-        }
+        const data = await response.json();
         const manga = (0, NekopostParser_1.parseSearch)(data);
         return createPagedResults({
             results: manga,
