@@ -76,9 +76,7 @@ exports.parseChapters = parseChapters;
 const parseChapterDetails = (data, mangaId, chapterId) => {
     const pages = [];
     for (const images of data.pageItem) {
-        let file = images.pageName;
         let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${images.pageName}`;
-        console.log(image);
         if (image)
             pages.push(image);
     }

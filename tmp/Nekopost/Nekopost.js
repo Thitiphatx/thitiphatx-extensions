@@ -5,7 +5,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -144,7 +144,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/`,
             method: 'GET',
             param,
         });
@@ -164,21 +164,19 @@ class Nekopost extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query) {
-        const request = createRequestObject({
-            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
-            method: 'GET',
-            headers: {
-                "body": `{\"ipCate\":0,\"ipOrder\":\"n\",\"ipStatus\":1,\"ipOneshot\":\"S\",\"ipKeyword\":\"${encodeURI(query.title ?? '')}\"}`,
-            },
+        const response = await fetch("https://api.osemocphoto.com/frontAPI/getProjectSearch", {
+            "referrer": "https://www.nekopost.net/",
+            "body": JSON.stringify({
+                "ipCate": 0,
+                "ipOrder": "n",
+                "ipStatus": 1,
+                "ipOneshot": "S",
+                "ipKeyword": query.title ?? ""
+            }),
+            "method": "POST",
         });
-        const response = await this.requestManager.schedule(request, 1);
-        let data;
-        try {
-            data = JSON.parse(response.data);
-        }
-        catch (e) {
-            throw new Error(`${e}`);
-        }
+        const data = await response.json();
+        console.log(data);
         const manga = (0, NekopostParser_1.parseSearch)(data);
         return createPagedResults({
             results: manga,
