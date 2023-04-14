@@ -218,20 +218,26 @@ export class Nekopost extends Source {
     }
 
     override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
-        const response = await fetch("https://api.osemocphoto.com/frontAPI/getProjectSearch", {
-          "referrer": "https://www.nekopost.net/",
-          "body": JSON.stringify({
-            "ipKeyword": "test",
-          }),
-          "method": "POST",
-        });
-      
-        const data = await response.json();
-      
-        const manga = parseSearch(data);
-      
+        const request = createRequestObject({
+            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+            method: 'POST',
+            data: `ipKeyword=${encodeURI(query.title ?? '')}`,
+          });
+
+        const response = await this.requestManager.schedule(request, 1)
+        let data: SearchData
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        console.log(data)
+        const manga = parseSearch(data)
+
         return createPagedResults({
-          results: manga,
-        });
-      }
+            results: manga,
+        })
+
+    }
 }
