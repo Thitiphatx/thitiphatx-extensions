@@ -1,18 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Niceoppai = exports.NiceoppaiInfo = void 0;
+exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
-const NiceoppaiParser_1 = require("./NiceoppaiParser");
-const NO_DOMAIN = 'https://www.niceoppai.net';
-exports.NiceoppaiInfo = {
-    version: '1.0.6',
-    name: 'Niceoppai',
+const NekopostParser_1 = require("./NekopostParser");
+const NP_DOMAIN = 'https://www.nekopost.net';
+exports.NekopostInfo = {
+    version: '1.0.1',
+    name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls comics from Niceoppai.net.',
+    description: 'Extension that pulls comics from Nekopost.net',
     contentRating: paperback_extensions_common_1.ContentRating.MATURE,
-    websiteBaseURL: NO_DOMAIN,
+    websiteBaseURL: NP_DOMAIN,
     sourceTags: [
         {
             text: 'Recommend',
@@ -20,7 +20,7 @@ exports.NiceoppaiInfo = {
         },
     ],
 };
-class Niceoppai extends paperback_extensions_common_1.Source {
+class Nekopost extends paperback_extensions_common_1.Source {
     constructor() {
         super(...arguments);
         this.requestManager = createRequestManager({
@@ -31,7 +31,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                     request.headers = {
                         ...(request.headers ?? {}),
                         ...{
-                            'referer': NO_DOMAIN,
+                            'referer': NP_DOMAIN,
                         },
                     };
                     return request;
@@ -42,51 +42,75 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             },
         });
     }
-    getMangaShareUrl(mangaId) { return `${NO_DOMAIN}/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${NP_DOMAIN}/manga/${mangaId}`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseMangaDetails)($, mangaId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseMangaDetails)(data, mangaId);
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseChapters)($, mangaId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/${mangaId}/${chapterId}`,
+            url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseChapterDetails)($, mangaId, chapterId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, chapterId);
     }
     async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
-        let page = 1;
+        let page = 0;
         let updatedManga = {
             ids: [],
             loadMore: true,
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page}`,
+                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/${page}`,
                 method: 'GET',
             });
             page++;
             const response = await this.requestManager.schedule(request, 1);
-            const $ = this.cheerio.load(response.data);
-            updatedManga = (0, NiceoppaiParser_1.parseUpdatedManga)($, time, ids);
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            updatedManga = (0, NekopostParser_1.parseUpdatedManga)(data, time, ids);
             if (updatedManga.ids.length > 0) {
                 mangaUpdatesFoundCallback(createMangaUpdates({
                     ids: updatedManga.ids,
@@ -96,12 +120,18 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0',
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -114,14 +144,20 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/`,
             method: 'GET',
             param,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        const manga = (0, NiceoppaiParser_1.parseViewMore)($);
-        metadata = !(0, NiceoppaiParser_1.isLastPage)($) ? { page: page + 1 } : {};
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        const manga = (0, NekopostParser_1.parseViewMore)(data);
+        metadata = data ? { page: page + 1 } : {};
         return createPagedResults({
             results: manga,
             metadata,
@@ -129,15 +165,25 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getSearchResults(query) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
+            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'GET',
+            headers: {
+                "body": `{"ipCate":0,"ipOrder":"n","ipStatus":1,"ipOneshot":"S","ipKeyword":"${encodeURI(query.title ?? '')}"}`,
+            }
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        const manga = (0, NiceoppaiParser_1.parseSearch)($);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        console.log(data);
+        const manga = (0, NekopostParser_1.parseSearch)(data);
         return createPagedResults({
             results: manga,
         });
     }
 }
-exports.Niceoppai = Niceoppai;
+exports.Nekopost = Nekopost;

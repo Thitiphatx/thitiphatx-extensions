@@ -38,7 +38,6 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
     const rawStatus: string = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? ''
     let status = MangaStatus.ONGOING
     if (rawStatus.includes('แล้ว')) status = MangaStatus.COMPLETED
-
     return createManga({
         id: mangaId,
         titles: titles,
@@ -98,7 +97,7 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
 
     const chapterDetails = createChapterDetails({
         id: chapterId,
-        mangaId: mangaId,
+        mangaId,
         pages: pages,
         longStrip: false,
     })
@@ -115,13 +114,12 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
     const updatedManga: string[] = []
     let loadMore = true
 
-    for (const manga of $('div.manga-item', 'div.mangalist').toArray()) {
-        const id = $('h3.manga-heading > a', manga).attr('href')?.split('/').pop() ?? ''
-        const date = $('small.pull-right', manga).text().trim()
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id: string = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? ''
+        const date = $('a > b.dte', manga).last().text().trim()
         let mangaDate = new Date()
-        if (date.toUpperCase() !== 'TODAY') {
-            const datePieces = date.split('/')
-            mangaDate = new Date(`${datePieces[1]}-${datePieces[0]}-${datePieces[2]}`)
+        if (date !== 'วันนี้') {
+            mangaDate = new Date(date)
         }
 
         if (!id || !mangaDate) continue
@@ -140,7 +138,26 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
 }
 
 export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true })
+    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true })
+    const popularSection = createHomeSection({ id: 'popular_comic', title: 'Popular Mangas', view_more: false })
+    
+    const popularSection_Array: MangaTile[] = []
+    for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
+        let image: string = $('div.cvr > div > a > img', comic).first().attr('src').replace("62x88","350x0") ?? ''
+        if (image.startsWith('/')) image = 'https:' + image
+        const title: string = $('div.det div.ifo a.ttl', comic).first().text().trim() ?? ''
+        const id: string = $('div.det div.ifo a.ttl', comic).attr('href').split('/')[3] ?? ''
+
+        if (!id || !title) continue
+        popularSection_Array.push(createMangaTile({
+            id: id,
+            image: image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }))
+    }
+
+    popularSection.items = popularSection_Array
+    sectionCallback(popularSection)
 
     const latestSection_Array: MangaTile[] = []
 

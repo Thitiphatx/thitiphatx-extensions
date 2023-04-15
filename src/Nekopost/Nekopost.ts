@@ -16,7 +16,6 @@ import {
 
 import {
     parseChapterDetails,
-    isLastPage,
     parseChapters,
     parseHomeSections,
     parseMangaDetails,
@@ -24,19 +23,26 @@ import {
     parseSearch,
     parseUpdatedManga,
     UpdatedManga,
-} from './NiceoppaiParser'
+} from './NekopostParser'
 
-const NO_DOMAIN = 'https://www.niceoppai.net'
+import {
+    MangaDetails,
+    HomeData,
+    ChapterImage,
+    SearchData,
+} from './NekopostHelper'
 
-export const NiceoppaiInfo: SourceInfo = {
-    version: '1.0.6',
-    name: 'Niceoppai',
+const NP_DOMAIN = 'https://www.nekopost.net'
+
+export const NekopostInfo: SourceInfo = {
+    version: '1.0.1',
+    name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls comics from Niceoppai.net.',
+    description: 'Extension that pulls comics from Nekopost.net',
     contentRating: ContentRating.MATURE,
-    websiteBaseURL: NO_DOMAIN,
+    websiteBaseURL: NP_DOMAIN,
     sourceTags: [
         {
             text: 'Recommend',
@@ -45,7 +51,7 @@ export const NiceoppaiInfo: SourceInfo = {
     ],
 }
 
-export class Niceoppai extends Source {
+export class Nekopost extends Source {
     requestManager = createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 15000,
@@ -55,7 +61,7 @@ export class Niceoppai extends Source {
                 request.headers = {
                     ...(request.headers ?? {}),
                     ...{
-                        'referer': NO_DOMAIN,
+                        'referer': NP_DOMAIN,
                     },
 
                 }
@@ -70,44 +76,65 @@ export class Niceoppai extends Source {
     })
 
 
-    override getMangaShareUrl(mangaId: string): string { return `${NO_DOMAIN}/${mangaId}` }
+    override getMangaShareUrl(mangaId: string): string { return `${NP_DOMAIN}/manga/${mangaId}` }
 
     override async getMangaDetails(mangaId: string): Promise<Manga> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         })
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        return parseMangaDetails($, mangaId)
+
+        let data: MangaDetails
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        return parseMangaDetails(data, mangaId)
     }
 
     override async getChapters(mangaId: string): Promise<Chapter[]> {
+        
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         })
-
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        return parseChapters($, mangaId)
+
+        let data: MangaDetails
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        return parseChapters(data, mangaId)
     }
 
     override async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/${mangaId}/${chapterId}`,
+            url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
         })
 
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        return parseChapterDetails($, mangaId, chapterId)
+
+        let data: ChapterImage
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        return parseChapterDetails(data, mangaId, chapterId)
     }
 
     override async filterUpdatedManga(mangaUpdatesFoundCallback: (updates: MangaUpdates) => void, time: Date, ids: string[]): Promise<void> {
-        let page = 1
+        let page = 0
         let updatedManga: UpdatedManga = {
             ids: [],
             loadMore: true,
@@ -115,14 +142,21 @@ export class Niceoppai extends Source {
 
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page}`,
+                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/${page}`,
                 method: 'GET',
             })
+
             page++
             const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
 
-            updatedManga = parseUpdatedManga($, time, ids)
+            let data: HomeData
+            try {
+                data = JSON.parse(response.data)
+            } catch (e) {
+                throw new Error(`${e}`)
+            }
+
+            updatedManga = parseUpdatedManga(data, time, ids)
             if (updatedManga.ids.length > 0) {
                 mangaUpdatesFoundCallback(createMangaUpdates({
                     ids: updatedManga.ids,
@@ -134,16 +168,43 @@ export class Niceoppai extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0',
             method: 'GET',
         })
 
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        parseHomeSections($, sectionCallback)
+
+        let data: HomeData
+        
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        if ((data.desc) != "Success") {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
+                method: 'GET',
+            })
+
+            const response = await this.requestManager.schedule(request, 1)
+            try {
+                data = JSON.parse(response.data)
+            } catch (e) {
+                throw new Error(`${e}`)
+            }
+
+            parseHomeSections(data, sectionCallback)
+
+        }
+        else {
+            parseHomeSections(data, sectionCallback)
+        }
+        
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 1
+        const page: number = metadata?.page ?? 0
         let param = ''
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -154,16 +215,22 @@ export class Niceoppai extends Source {
         }
     
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/`,
             method: 'GET',
             param,
         })
     
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
+
+        let data: HomeData
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
     
-        const manga = parseViewMore($)
-        metadata = !isLastPage($) ? { page: page + 1 } : {}
+        const manga = parseViewMore(data)
+        metadata = data ? { page: page + 1 } : {}
         return createPagedResults({
             results: manga,
             metadata,
@@ -172,13 +239,22 @@ export class Niceoppai extends Source {
 
     override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
-            method: 'GET',
-        })
+            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+            method: 'POST',
+            data: JSON.stringify({
+                ipKeyword: `${(query.title ?? '')}`,
+            }),
+        });
 
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        const manga = parseSearch($)
+        let data: SearchData
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        const manga = parseSearch(data)
 
         return createPagedResults({
             results: manga,

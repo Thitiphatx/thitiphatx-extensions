@@ -79,7 +79,7 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
     }
     const chapterDetails = createChapterDetails({
         id: chapterId,
-        mangaId: mangaId,
+        mangaId,
         pages: pages,
         longStrip: false,
     });
@@ -89,13 +89,12 @@ exports.parseChapterDetails = parseChapterDetails;
 const parseUpdatedManga = ($, time, ids) => {
     const updatedManga = [];
     let loadMore = true;
-    for (const manga of $('div.manga-item', 'div.mangalist').toArray()) {
-        const id = $('h3.manga-heading > a', manga).attr('href')?.split('/').pop() ?? '';
-        const date = $('small.pull-right', manga).text().trim();
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? '';
+        const date = $('a > b.dte', manga).last().text().trim();
         let mangaDate = new Date();
-        if (date.toUpperCase() !== 'TODAY') {
-            const datePieces = date.split('/');
-            mangaDate = new Date(`${datePieces[1]}-${datePieces[0]}-${datePieces[2]}`);
+        if (date !== 'วันนี้') {
+            mangaDate = new Date(date);
         }
         if (!id || !mangaDate)
             continue;
@@ -115,10 +114,28 @@ const parseUpdatedManga = ($, time, ids) => {
 };
 exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = ($, sectionCallback) => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Comics', view_more: true });
+    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true });
+    const popularSection = createHomeSection({ id: 'popular_comic', title: 'Popular Mangas', view_more: false });
+    const popularSection_Array = [];
+    for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
+        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("62x88", "350x0") ?? '';
+        if (image.startsWith('/'))
+            image = 'https:' + image;
+        const title = $('div.det div.ifo a.ttl', comic).first().text().trim() ?? '';
+        const id = $('div.det div.ifo a.ttl', comic).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        popularSection_Array.push(createMangaTile({
+            id: id,
+            image: image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    popularSection.items = popularSection_Array;
+    sectionCallback(popularSection);
     const latestSection_Array = [];
     for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = $('div.cvr > div > a > img', comic).first().attr('src') ?? '';
+        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0") ?? '';
         if (image.startsWith('/'))
             image = 'https:' + image;
         const title = $('div.det > a', comic).first().text().trim() ?? '';
@@ -140,13 +157,11 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
-    for (const item of $('div', '#sct_content > div > div').toArray()) {
-        let image = $('div.cvr > div > a > img', item).first().attr('src') ?? '';
-        if (image.startsWith('/'))
-            image = 'https:' + image;
+    for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        let image = $('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0", "350x0") ?? '';
         const title = $('div.det > a.ttl', item).first().text().trim() ?? '';
-        const id = $('div.det > a.ttl', item).attr('href')?.split('/').pop() ?? '';
-        const subtitle = $('div.det > ul > li > a > b.val.lng_', item).first().text().trim() ?? '';
+        const id = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? '';
+        const subtitle = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? '';
         if (!id || !title)
             continue;
         if (collectedIds.includes(id))
@@ -163,22 +178,26 @@ const parseViewMore = ($) => {
 };
 exports.parseViewMore = parseViewMore;
 const parseSearch = ($) => {
-    const mangas = [];
-    for (const obj of $('div.manga-box', 'div.result-left').toArray()) {
-        const id = $('a', obj).attr('href')?.split('/').pop()?.trim();
-        const image = $('img', obj).attr('data-original') ?? '';
-        const title = $('img', obj).attr('alt')?.trim() ?? '';
-        const subtitle = $('div.detail', obj).first().text().trim();
-        if (!id || !title)
+    const mangaItems = [];
+    const collectedIds = [];
+    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
+        const image = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0") ?? '';
+        const title = $('div.det > a', manga).text().trim() ?? '';
+        const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
+        if (!id || !title || !image)
             continue;
-        mangas.push(App.createPartialSourceManga({
-            image: image,
-            title: decodeHTMLEntity(title),
-            mangaId: id,
-            subtitle: decodeHTMLEntity(subtitle)
+        if (collectedIds.includes(id))
+            continue;
+        mangaItems.push(createMangaTile({
+            id,
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            title: createIconText({ text: title }),
+            subtitleText: createIconText({ text: subtitle }),
         }));
+        collectedIds.push(id);
     }
-    return mangas;
+    return mangaItems;
 };
 exports.parseSearch = parseSearch;
 const decodeHTMLEntity = (str) => {
