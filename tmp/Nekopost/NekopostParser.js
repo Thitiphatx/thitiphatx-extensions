@@ -48,7 +48,7 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = (data, mangaId) => {
     const chapters = [];
     let i = 0;
-    for (const chapter of data?.listChapter) {
+    for (const chapter of data.listChapter) {
         i++;
         const title = chapter.chapterName ?? '';
         const chapterId = chapter.chapterId ?? '';

@@ -105,12 +105,12 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
 
 export const parseChapterDetails = (data: ChapterImage, mangaId: string, chapterId: string): ChapterDetails => {
     const pages: string[] = []
-
     for (const images of data.pageItem) {
-        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${images.pageName}`
+        let imageFile: string = (images.pageName) ? `${images.pageName}` : `${images.fileName}`
+        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${imageFile}`
         if (image) pages.push(image)
     }
-    
+
     const chapterDetails = createChapterDetails({
         id: chapterId,
         mangaId,

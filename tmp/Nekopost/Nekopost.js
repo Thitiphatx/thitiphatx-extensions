@@ -32,6 +32,13 @@ class Nekopost extends paperback_extensions_common_1.Source {
                         ...(request.headers ?? {}),
                         ...{
                             'referer': NP_DOMAIN,
+                            'Accept': '*/*',
+                            'Accept-Language': 'en-US,en;q=0.9',
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache',
+                            'Sec-Fetch-Dest': 'empty',
+                            'Sec-Fetch-Mode': 'cors',
+                            'Sec-Fetch-Site': 'cross-site',
                         },
                     };
                     return request;
@@ -76,6 +83,8 @@ class Nekopost extends paperback_extensions_common_1.Source {
         return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
+        mangaId = "584";
+        chapterId = "83122";
         const request = createRequestObject({
             url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
@@ -88,6 +97,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
+        console.log(data);
         return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, chapterId);
     }
     async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {

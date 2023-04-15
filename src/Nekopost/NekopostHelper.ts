@@ -35,6 +35,7 @@ export interface ChapterImage {
     pageItem: [
         {
             pageName: string;
+            fileName: string;
         }
     ]
 }
