@@ -1180,16 +1180,14 @@ const parseMangaDetails = (data, mangaId) => {
     const info = manga.projectInfo.info ?? '';
     let hentai = false;
     const arrayTags = [];
-    if (manga.listCate) {
-        for (const tag of manga.listCate) {
-            const label = tag.cateName ?? '';
-            const id = tag.cateCode ?? '';
-            if (!id || !label)
-                continue;
-            if (manga.projectInfo.flgMature)
-                hentai = true;
-            arrayTags.push({ id: id, label: label });
-        }
+    for (const tag of manga?.listCate) {
+        const label = tag.cateName ?? '';
+        const id = tag.cateCode ?? '';
+        if (!id || !label)
+            continue;
+        if (manga.projectInfo.flgMature)
+            hentai = true;
+        arrayTags.push({ id: id, label: label });
     }
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     const rawStatus = manga.projectInfo.status ?? '';
@@ -1212,7 +1210,7 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = (data, mangaId) => {
     const chapters = [];
     let i = 0;
-    for (const chapter of data.listChapter) {
+    for (const chapter of data?.listChapter) {
         i++;
         const title = chapter.chapterName ?? '';
         const chapterId = chapter.chapterId ?? '';
