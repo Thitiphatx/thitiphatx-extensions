@@ -1123,7 +1123,9 @@ class Nekopost extends paperback_extensions_common_1.Source {
         const request = createRequestObject({
             url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'POST',
-            data: `ipKeyword=${encodeURI(query.title ?? '')}`,
+            data: {
+                ipKeyword: `${encodeURI(query.title ?? '')}`,
+            },
         });
         const response = await this.requestManager.schedule(request, 1);
         let data;
@@ -1133,7 +1135,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        console.log(data);
         const manga = (0, NekopostParser_1.parseSearch)(data);
         return createPagedResults({
             results: manga,
