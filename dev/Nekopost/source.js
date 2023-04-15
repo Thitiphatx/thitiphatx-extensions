@@ -1087,10 +1087,26 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
+        if ((data.desc) != "Success") {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
+                method: 'GET',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
+        }
+        else {
+            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
+        }
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 1;
+        const page = metadata?.page ?? 0;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_comic':
