@@ -956,19 +956,19 @@ __exportStar(require("./SearchFilter"), exports);
 },{"./Chapter":13,"./ChapterDetails":14,"./Constants":15,"./DynamicUI":31,"./HomeSection":32,"./Languages":33,"./Manga":34,"./MangaTile":35,"./MangaUpdate":36,"./PagedResults":37,"./RawData":38,"./RequestHeaders":39,"./RequestInterceptor":40,"./RequestManager":41,"./RequestObject":42,"./ResponseObject":43,"./SearchField":44,"./SearchFilter":45,"./SearchRequest":46,"./SourceInfo":47,"./SourceManga":48,"./SourceStateManager":49,"./SourceTag":50,"./TagSection":51,"./TrackedManga":52,"./TrackedMangaChapterReadAction":53,"./TrackerActionQueue":54}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Niceoppai = exports.NiceoppaiInfo = void 0;
+exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
-const NiceoppaiParser_1 = require("./NiceoppaiParser");
-const NO_DOMAIN = 'https://www.niceoppai.net';
-exports.NiceoppaiInfo = {
-    version: '1.0.6',
-    name: 'Niceoppai',
+const NekopostParser_1 = require("./NekopostParser");
+const NP_DOMAIN = 'https://www.nekopost.net';
+exports.NekopostInfo = {
+    version: '1.0.1',
+    name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls comics from Niceoppai.net.',
+    description: 'Extension that pulls comics from Nekopost.net',
     contentRating: paperback_extensions_common_1.ContentRating.MATURE,
-    websiteBaseURL: NO_DOMAIN,
+    websiteBaseURL: NP_DOMAIN,
     sourceTags: [
         {
             text: 'Recommend',
@@ -976,7 +976,7 @@ exports.NiceoppaiInfo = {
         },
     ],
 };
-class Niceoppai extends paperback_extensions_common_1.Source {
+class Nekopost extends paperback_extensions_common_1.Source {
     constructor() {
         super(...arguments);
         this.requestManager = createRequestManager({
@@ -987,7 +987,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                     request.headers = {
                         ...(request.headers ?? {}),
                         ...{
-                            'referer': NO_DOMAIN,
+                            'referer': NP_DOMAIN,
                         },
                     };
                     return request;
@@ -998,51 +998,75 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             },
         });
     }
-    getMangaShareUrl(mangaId) { return `${NO_DOMAIN}/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${NP_DOMAIN}/manga/${mangaId}`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseMangaDetails)($, mangaId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseMangaDetails)(data, mangaId);
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `https://api.osemocphoto.com/frontAPI/getProjectInfo/`,
             method: 'GET',
             param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseChapters)($, mangaId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/${mangaId}/${chapterId}`,
+            url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseChapterDetails)($, mangaId, chapterId);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, chapterId);
     }
     async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
-        let page = 1;
+        let page = 0;
         let updatedManga = {
             ids: [],
             loadMore: true,
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page}`,
+                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/${page}`,
                 method: 'GET',
             });
             page++;
             const response = await this.requestManager.schedule(request, 1);
-            const $ = this.cheerio.load(response.data);
-            updatedManga = (0, NiceoppaiParser_1.parseUpdatedManga)($, time, ids);
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            updatedManga = (0, NekopostParser_1.parseUpdatedManga)(data, time, ids);
             if (updatedManga.ids.length > 0) {
                 mangaUpdatesFoundCallback(createMangaUpdates({
                     ids: updatedManga.ids,
@@ -1052,15 +1076,37 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0',
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        if ((data.desc) != "Success") {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
+                method: 'GET',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
+        }
+        else {
+            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
+        }
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 1;
+        const page = metadata?.page ?? 0;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -1070,14 +1116,20 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/${page}`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/`,
             method: 'GET',
             param,
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        const manga = (0, NiceoppaiParser_1.parseViewMore)($);
-        metadata = !(0, NiceoppaiParser_1.isLastPage)($) ? { page: page + 1 } : {};
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        const manga = (0, NekopostParser_1.parseViewMore)(data);
+        metadata = data ? { page: page + 1 } : {};
         return createPagedResults({
             results: manga,
             metadata,
@@ -1085,48 +1137,62 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getSearchResults(query) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
-            method: 'GET',
+            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+            method: 'POST',
+            data: JSON.stringify({
+                ipKeyword: `${(query.title ?? '')}`,
+            }),
         });
         const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        const manga = (0, NiceoppaiParser_1.parseSearch)($);
+        let data;
+        try {
+            data = JSON.parse(response.data);
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+        const manga = (0, NekopostParser_1.parseSearch)(data);
         return createPagedResults({
             results: manga,
         });
     }
 }
-exports.Niceoppai = Niceoppai;
+exports.Nekopost = Nekopost;
 
-},{"./NiceoppaiParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
+},{"./NekopostParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
-const parseMangaDetails = ($, mangaId) => {
+const parseMangaDetails = (data, mangaId) => {
+    const manga = data;
     const titles = [];
-    titles.push(decodeHTMLEntity($('div.wpm_pag.mng_det > h1').first().text().trim()));
-    let image = $('img', 'div.cvr_ara').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
-    if (image.startsWith('/'))
-        image = 'https:' + image;
-    const author = $('div.det > p:nth-child(7) > a').text().trim() ?? '';
-    const description = decodeHTMLEntity($('div.det > p:nth-child(3)').text().trim() ?? '');
+    const id = manga.projectInfo.projectId ?? '';
+    const projectName = manga.projectInfo.projectName ?? '';
+    const alias = manga.projectInfo.aliasName ?? '';
+    titles.push(projectName);
+    titles.push(alias);
+    let imageVersion = manga.projectInfo.imageVersion ?? '';
+    let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
+    const author = manga.projectInfo.authorName ?? '';
+    const artist = manga.projectInfo.artistName ?? '';
+    const info = manga.projectInfo.info ?? '';
     let hentai = false;
     const arrayTags = [];
-    for (const tag of $('a', 'div.det > p:nth-child(9) a').toArray()) {
-        const label = $(tag).text().trim();
-        const id = $(tag).attr('href')?.split('/').pop() ?? '';
+    for (const tag of manga?.listCate) {
+        const label = tag.cateName ?? '';
+        const id = tag.cateCode ?? '';
         if (!id || !label)
             continue;
-        if (['ADULT', 'SMUT', 'MATURE'].includes(label.toUpperCase()))
+        if (manga.projectInfo.flgMature)
             hentai = true;
         arrayTags.push({ id: id, label: label });
     }
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
-    const rawStatus = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? '';
+    const rawStatus = manga.projectInfo.status ?? '';
     let status = paperback_extensions_common_1.MangaStatus.ONGOING;
-    if (rawStatus.includes('แล้ว'))
+    if (rawStatus == '0')
         status = paperback_extensions_common_1.MangaStatus.COMPLETED;
     return createManga({
         id: mangaId,
@@ -1135,23 +1201,23 @@ const parseMangaDetails = ($, mangaId) => {
         hentai: hentai,
         status: status,
         author: author,
-        artist: author,
+        artist: artist,
         tags: tagSections,
-        desc: description,
+        desc: info,
     });
 };
 exports.parseMangaDetails = parseMangaDetails;
-const parseChapters = ($, mangaId) => {
+const parseChapters = (data, mangaId) => {
     const chapters = [];
     let i = 0;
-    for (const chapter of $('li.lng_', 'div.wpm_pag.mng_det ul.lst').toArray()) {
+    for (const chapter of data?.listChapter) {
         i++;
-        const title = $('a > b.val', chapter).text().trim() ?? '';
-        const chapterId = $('a', chapter).attr('href')?.split('/')[4] ?? '';
+        const title = chapter.chapterName ?? '';
+        const chapterId = chapter.chapterId ?? '';
         if (!chapterId)
             continue;
-        const chapNum = Number(chapterId); //We're manually setting the chapters regarless, however usually the ID equals the chapter number.
-        const date = new Date($('a > b.dte', chapter).last().text().trim());
+        const chapNum = Number(chapter.chapterNo); //We're manually setting the chapters regarless, however usually the ID equals the chapter number.
+        const date = new Date(chapter.publishDate);
         if (!chapterId || !title)
             continue;
         chapters.push({
@@ -1169,12 +1235,10 @@ const parseChapters = ($, mangaId) => {
     });
 };
 exports.parseChapters = parseChapters;
-const parseChapterDetails = ($, mangaId, chapterId) => {
+const parseChapterDetails = (data, mangaId, chapterId) => {
     const pages = [];
-    for (const images of $('img', '#image-container > center').toArray()) {
-        let image = $(images).attr('src')?.trim();
-        if (image && image.startsWith('/'))
-            image = 'https:' + image;
+    for (const images of data.pageItem) {
+        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${images.pageName}`;
         if (image)
             pages.push(image);
     }
@@ -1187,16 +1251,13 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
     return chapterDetails;
 };
 exports.parseChapterDetails = parseChapterDetails;
-const parseUpdatedManga = ($, time, ids) => {
+const parseUpdatedManga = (data, time, ids) => {
     const updatedManga = [];
     let loadMore = true;
-    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        const id = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? '';
-        const date = $('a > b.dte', manga).last().text().trim();
-        let mangaDate = new Date();
-        if (date !== 'วันนี้') {
-            mangaDate = new Date(date);
-        }
+    for (const manga of data.listChapter) {
+        const id = manga.projectId ?? '';
+        const date = manga.createDate;
+        const mangaDate = new Date(date);
         if (!id || !mangaDate)
             continue;
         if (mangaDate > time) {
@@ -1214,34 +1275,15 @@ const parseUpdatedManga = ($, time, ids) => {
     };
 };
 exports.parseUpdatedManga = parseUpdatedManga;
-const parseHomeSections = ($, sectionCallback) => {
+const parseHomeSections = (data, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true });
-    const popularSection = createHomeSection({ id: 'popular_comic', title: 'Popular Mangas', view_more: false });
-    const popularSection_Array = [];
-    for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
-        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("62x88", "350x0") ?? '';
-        if (image.startsWith('/'))
-            image = 'https:' + image;
-        const title = $('div.det div.ifo a.ttl', comic).first().text().trim() ?? '';
-        const id = $('div.det div.ifo a.ttl', comic).attr('href').split('/')[3] ?? '';
-        if (!id || !title)
-            continue;
-        popularSection_Array.push(createMangaTile({
-            id: id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
-    }
-    popularSection.items = popularSection_Array;
-    sectionCallback(popularSection);
     const latestSection_Array = [];
-    for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0") ?? '';
-        if (image.startsWith('/'))
-            image = 'https:' + image;
-        const title = $('div.det > a', comic).first().text().trim() ?? '';
-        const id = $('div.det > a', comic).attr('href').split('/')[3] ?? '';
-        const subtitle = $('b.val.lng_', comic).first().text().trim() ?? '';
+    for (const manga of data.listChapter) {
+        const id = manga.projectId ?? '';
+        let imageVersion = manga.imageVersion ?? '';
+        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
+        const title = manga.projectName ?? '';
+        const subtitle = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? '';
         if (!id || !title)
             continue;
         latestSection_Array.push(createMangaTile({
@@ -1255,14 +1297,15 @@ const parseHomeSections = ($, sectionCallback) => {
     sectionCallback(latestSection);
 };
 exports.parseHomeSections = parseHomeSections;
-const parseViewMore = ($) => {
+const parseViewMore = (data) => {
     const comics = [];
     const collectedIds = [];
-    for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = $('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0", "350x0") ?? '';
-        const title = $('div.det > a.ttl', item).first().text().trim() ?? '';
-        const id = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? '';
-        const subtitle = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? '';
+    for (const manga of data.listChapter) {
+        const id = manga.projectId ?? '';
+        let imageVersion = manga.imageVersion ?? '';
+        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
+        const title = manga.projectName ?? '';
+        const subtitle = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? '';
         if (!id || !title)
             continue;
         if (collectedIds.includes(id))
@@ -1278,14 +1321,15 @@ const parseViewMore = ($) => {
     return comics;
 };
 exports.parseViewMore = parseViewMore;
-const parseSearch = ($) => {
+const parseSearch = (data) => {
     const mangaItems = [];
     const collectedIds = [];
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
-        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
-        const image = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0") ?? '';
-        const title = $('div.det > a', manga).text().trim() ?? '';
-        const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
+    for (const manga of data.listProject) {
+        const id = manga.projectId ?? '';
+        let imageVersion = manga.imageVersion ?? '';
+        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
+        const title = manga.projectName ?? '';
+        const subtitle = `Ch.${manga.noChapter}` ?? '';
         if (!id || !title || !image)
             continue;
         if (collectedIds.includes(id))
@@ -1304,22 +1348,6 @@ exports.parseSearch = parseSearch;
 const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };
-const isLastPage = ($) => {
-    let isLast = false;
-    const pages = [];
-    for (const page of $('li', 'ul.pgg').toArray()) {
-        const p = Number($(page).text().trim());
-        if (isNaN(p))
-            continue;
-        pages.push(p);
-    }
-    const lastPage = Math.max(...pages);
-    const currentPage = Number($('li > a.sel').text().trim());
-    if (currentPage >= lastPage)
-        isLast = true;
-    return isLast;
-};
-exports.isLastPage = isLastPage;
 
 },{"entities":8,"paperback-extensions-common":12}]},{},[56])(56)
 });
