@@ -130,7 +130,7 @@ export const parseUpdatedManga = (data: HomeData, time: Date, ids: string[]): Up
     const updatedManga: string[] = []
     let loadMore = true
 
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id: string = manga.projectId ?? ''
         const date = manga.createDate
         const mangaDate = new Date(date)
@@ -155,7 +155,7 @@ export const parseHomeSections = (data: HomeData, sectionCallback: (section: Hom
 
     const latestSection_Array: MangaTile[] = []
 
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id: string = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
         let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
@@ -181,7 +181,7 @@ export const parseViewMore = (data: HomeData): MangaTile[] => {
     const comics: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id: string = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
         let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
@@ -208,7 +208,7 @@ export const parseSearch = (data: SearchData): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const manga of data.listProject) {
+    for (const manga of data?.listProject) {
         const id = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
         let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
