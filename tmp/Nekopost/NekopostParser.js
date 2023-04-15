@@ -12,13 +12,13 @@ const parseMangaDetails = (data, mangaId) => {
     titles.push(projectName);
     titles.push(alias);
     let imageVersion = manga.projectInfo.imageVersion ?? '';
-    let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? '';
+    let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
     const author = manga.projectInfo.authorName ?? '';
     const artist = manga.projectInfo.artistName ?? '';
     const info = manga.projectInfo.info ?? '';
     let hentai = false;
     const arrayTags = [];
-    for (const tag of manga.listCate) {
+    for (const tag of manga?.listCate) {
         const label = tag.cateName ?? '';
         const id = tag.cateCode ?? '';
         if (!id || !label)
@@ -48,7 +48,7 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = (data, mangaId) => {
     const chapters = [];
     let i = 0;
-    for (const chapter of data.listChapter) {
+    for (const chapter of data?.listChapter) {
         i++;
         const title = chapter.chapterName ?? '';
         const chapterId = chapter.chapterId ?? '';
@@ -92,7 +92,7 @@ exports.parseChapterDetails = parseChapterDetails;
 const parseUpdatedManga = (data, time, ids) => {
     const updatedManga = [];
     let loadMore = true;
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id = manga.projectId ?? '';
         const date = manga.createDate;
         const mangaDate = new Date(date);
@@ -116,10 +116,10 @@ exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = (data, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true });
     const latestSection_Array = [];
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id = manga.projectId ?? '';
         let imageVersion = manga.imageVersion ?? '';
-        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? '';
+        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
         const title = manga.projectName ?? '';
         const subtitle = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? '';
         if (!id || !title)
@@ -138,10 +138,10 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMore = (data) => {
     const comics = [];
     const collectedIds = [];
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id = manga.projectId ?? '';
         let imageVersion = manga.imageVersion ?? '';
-        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? '';
+        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
         const title = manga.projectName ?? '';
         const subtitle = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? '';
         if (!id || !title)
@@ -162,10 +162,10 @@ exports.parseViewMore = parseViewMore;
 const parseSearch = (data) => {
     const mangaItems = [];
     const collectedIds = [];
-    for (const manga of data.listProject) {
+    for (const manga of data?.listProject) {
         const id = manga.projectId ?? '';
         let imageVersion = manga.imageVersion ?? '';
-        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? '';
+        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
         const title = manga.projectName ?? '';
         const subtitle = `Ch.${manga.noChapter}` ?? '';
         if (!id || !title || !image)
