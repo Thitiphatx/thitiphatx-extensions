@@ -221,9 +221,9 @@ export class Nekopost extends Source {
         const request = createRequestObject({
             url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'POST',
-            data: {
+            data: JSON.stringify({
                 ipKeyword: `${encodeURI(query.title ?? '')}`,
-            },
+            }),
         });
 
         const response = await this.requestManager.schedule(request, 1)
