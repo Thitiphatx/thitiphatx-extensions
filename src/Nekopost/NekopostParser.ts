@@ -32,7 +32,7 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
 
     let imageVersion: string = manga.projectInfo.imageVersion ?? ''
 
-    let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? ''
+    let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
 
     const author: string = manga.projectInfo.authorName ?? ''
     const artist: string = manga.projectInfo.artistName ?? ''
@@ -160,7 +160,7 @@ export const parseHomeSections = (data: HomeData, sectionCallback: (section: Hom
     for (const manga of data.listChapter) {
         const id: string = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
-        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? ''
+        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
 
         const title: string = manga.projectName ?? ''
         const subtitle: string = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? ''
@@ -186,7 +186,7 @@ export const parseViewMore = (data: HomeData): MangaTile[] => {
     for (const manga of data.listChapter) {
         const id: string = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
-        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? ''
+        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
 
         const title: string = manga.projectName ?? ''
         const subtitle: string = `Ch.${manga.chapterNo} ${manga.chapterName}` ?? ''
@@ -213,7 +213,7 @@ export const parseSearch = (data: SearchData): MangaTile[] => {
     for (const manga of data.listProject) {
         const id = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
-        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? ''
+        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
         const title: string = manga.projectName ?? ''
 
         const subtitle: string = `Ch.${manga.noChapter}` ?? ''
