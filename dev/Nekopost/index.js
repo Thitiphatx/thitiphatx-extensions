@@ -988,13 +988,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
                         ...(request.headers ?? {}),
                         ...{
                             'referer': NP_DOMAIN,
-                            'Accept': '*/*',
-                            'Accept-Language': 'en-US,en;q=0.9',
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache',
-                            'Sec-Fetch-Dest': 'empty',
-                            'Sec-Fetch-Mode': 'cors',
-                            'Sec-Fetch-Site': 'cross-site',
                         },
                     };
                     return request;
@@ -1245,7 +1238,8 @@ exports.parseChapters = parseChapters;
 const parseChapterDetails = (data, mangaId, chapterId) => {
     const pages = [];
     for (const images of data.pageItem) {
-        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${images.pageName}`;
+        let imageFile = (images.pageName) ? `${images.pageName}` : `${images.fileName}`;
+        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${imageFile}`;
         if (image)
             pages.push(image);
     }
