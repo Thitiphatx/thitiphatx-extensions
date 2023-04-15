@@ -221,8 +221,10 @@ export class Nekopost extends Source {
         const request = createRequestObject({
             url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'POST',
-            data: `ipKeyword=${encodeURI(query.title ?? '')}`,
-          });
+            data: {
+                ipKeyword: `${encodeURI(query.title ?? '')}`,
+            },
+        });
 
         const response = await this.requestManager.schedule(request, 1)
         let data: SearchData
@@ -232,7 +234,6 @@ export class Nekopost extends Source {
             throw new Error(`${e}`)
         }
 
-        console.log(data)
         const manga = parseSearch(data)
 
         return createPagedResults({
