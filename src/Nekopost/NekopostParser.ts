@@ -41,15 +41,13 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
     let hentai = false
     
     const arrayTags: Tag[] = []
-    if (manga.listCate) {
-        for (const tag of manga.listCate) {
-            const label: string = tag.cateName ?? ''
-            const id: string = tag.cateCode ?? ''
-    
-            if (!id || !label) continue
-            if (manga.projectInfo.flgMature) hentai = true
-            arrayTags.push({ id: id, label: label })
-        }
+    for (const tag of manga?.listCate) {
+        const label: string = tag.cateName ?? ''
+        const id: string = tag.cateCode ?? ''
+
+        if (!id || !label) continue
+        if (manga.projectInfo.flgMature) hentai = true
+        arrayTags.push({ id: id, label: label })
     }
     
     const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
@@ -74,7 +72,7 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
     const chapters: Chapter[] = []
     let i = 0
 
-    for (const chapter of data.listChapter) {
+    for (const chapter of data?.listChapter) {
         i++
         const title: string = chapter.chapterName ?? ''
         const chapterId: string = chapter.chapterId ?? ''
