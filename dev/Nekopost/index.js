@@ -1124,7 +1124,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
             url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
             method: 'POST',
             data: JSON.stringify({
-                ipKeyword: `${encodeURI(query.title ?? '')}`,
+                ipKeyword: `${(query.title ?? '')}`,
             }),
         });
         const response = await this.requestManager.schedule(request, 1);
