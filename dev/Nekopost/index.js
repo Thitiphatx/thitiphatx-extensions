@@ -1180,14 +1180,16 @@ const parseMangaDetails = (data, mangaId) => {
     const info = manga.projectInfo.info ?? '';
     let hentai = false;
     const arrayTags = [];
-    for (const tag of manga.listCate) {
-        const label = tag.cateName ?? '';
-        const id = tag.cateCode ?? '';
-        if (!id || !label)
-            continue;
-        if (manga.projectInfo.flgMature)
-            hentai = true;
-        arrayTags.push({ id: id, label: label });
+    if (manga.listCate) {
+        for (const tag of manga.listCate) {
+            const label = tag.cateName ?? '';
+            const id = tag.cateCode ?? '';
+            if (!id || !label)
+                continue;
+            if (manga.projectInfo.flgMature)
+                hentai = true;
+            arrayTags.push({ id: id, label: label });
+        }
     }
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     const rawStatus = manga.projectInfo.status ?? '';
