@@ -175,16 +175,36 @@ export class Nekopost extends Source {
         const response = await this.requestManager.schedule(request, 1)
 
         let data: HomeData
+        
         try {
             data = JSON.parse(response.data)
         } catch (e) {
             throw new Error(`${e}`)
         }
 
-        parseHomeSections(data, sectionCallback)
+        if ((data.desc) != "Success") {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
+                method: 'GET',
+            })
+
+            const response = await this.requestManager.schedule(request, 1)
+            try {
+                data = JSON.parse(response.data)
+            } catch (e) {
+                throw new Error(`${e}`)
+            }
+
+            parseHomeSections(data, sectionCallback)
+
+        }
+        else {
+            parseHomeSections(data, sectionCallback)
+        }
+        
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 1
+        const page: number = metadata?.page ?? 0
         let param = ''
         switch (homepageSectionId) {
             case 'latest_comic':
