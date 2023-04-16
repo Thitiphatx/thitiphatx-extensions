@@ -182,7 +182,13 @@ export class Nekopost extends Source {
             throw new Error(`${e}`)
         }
 
-        if ((data.desc) != "Success") {
+        if ((data.listChapter)) {
+
+            parseHomeSections(data, sectionCallback)
+
+        }
+        else {
+
             const request = createRequestObject({
                 url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
                 method: 'GET',
@@ -195,10 +201,6 @@ export class Nekopost extends Source {
                 throw new Error(`${e}`)
             }
 
-            parseHomeSections(data, sectionCallback)
-
-        }
-        else {
             parseHomeSections(data, sectionCallback)
         }
         
