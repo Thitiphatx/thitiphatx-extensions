@@ -1325,7 +1325,7 @@ exports.parseViewMore = parseViewMore;
 const parseSearch = (data) => {
     const mangaItems = [];
     const collectedIds = [];
-    if (data.listProject) {
+    if (data.listProject != null) {
         for (const manga of data.listProject) {
             const id = manga.projectId ?? '';
             let imageVersion = manga.imageVersion ?? '';
