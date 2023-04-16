@@ -207,25 +207,26 @@ export const parseViewMore = (data: HomeData): MangaTile[] => {
 export const parseSearch = (data: SearchData): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
-
-    for (const manga of data?.listProject) {
-        const id = manga.projectId ?? ''
-        let imageVersion: string = manga.imageVersion ?? ''
-        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
-        const title: string = manga.projectName ?? ''
-
-        const subtitle: string = `Ch.${manga.noChapter}` ?? ''
-        if (!id || !title || !image) continue
-
-        if (collectedIds.includes(id)) continue
-        mangaItems.push(createMangaTile({
-            id,
-            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle }),
-        }))
-        collectedIds.push(id)
-
+    if (data.listProject) {
+        for (const manga of data.listProject) {
+            const id = manga.projectId ?? ''
+            let imageVersion: string = manga.imageVersion ?? ''
+            let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
+            const title: string = manga.projectName ?? ''
+    
+            const subtitle: string = `Ch.${manga.noChapter}` ?? ''
+            if (!id || !title || !image) continue
+    
+            if (collectedIds.includes(id)) continue
+            mangaItems.push(createMangaTile({
+                id,
+                image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+                title: createIconText({ text: title }),
+                subtitleText: createIconText({ text: subtitle }),
+            }))
+            collectedIds.push(id)
+    
+        }
     }
     return mangaItems
 }
