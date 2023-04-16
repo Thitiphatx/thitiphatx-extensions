@@ -1087,7 +1087,10 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        if ((data.desc) != "Success") {
+        if ((data.listChapter)) {
+            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
+        }
+        else {
             const request = createRequestObject({
                 url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
                 method: 'GET',
@@ -1099,9 +1102,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
             catch (e) {
                 throw new Error(`${e}`);
             }
-            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
-        }
-        else {
             (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
         }
     }
