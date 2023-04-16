@@ -207,7 +207,7 @@ export const parseViewMore = (data: HomeData): MangaTile[] => {
 export const parseSearch = (data: SearchData): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
-    if (data.listProject) {
+    if (data.listProject != null) {
         for (const manga of data.listProject) {
             const id = manga.projectId ?? ''
             let imageVersion: string = manga.imageVersion ?? ''
