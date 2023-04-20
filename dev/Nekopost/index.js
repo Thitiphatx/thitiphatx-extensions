@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1120,25 +1120,48 @@ class Nekopost extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query) {
-        const request = createRequestObject({
-            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
-            method: 'POST',
-            data: JSON.stringify({
-                ipKeyword: `${(query.title ?? '')}`,
-            }),
-        });
-        const response = await this.requestManager.schedule(request, 1);
-        let data;
-        try {
-            data = JSON.parse(response.data);
+        if (query.title) {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+                method: 'POST',
+                data: JSON.stringify({
+                    ipKeyword: `${(query.title ?? '')}`,
+                }),
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            const manga = (0, NekopostParser_1.parseSearch)(data);
+            return createPagedResults({
+                results: manga,
+            });
         }
-        catch (e) {
-            throw new Error(`${e}`);
+        else {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+                method: 'POST',
+                data: JSON.stringify({
+                    ipCate: `${query?.includedTags?.map((x) => x.id)[0]}`,
+                }),
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            const manga = (0, NekopostParser_1.parseSearch)(data);
+            return createPagedResults({
+                results: manga,
+            });
         }
-        const manga = (0, NekopostParser_1.parseSearch)(data);
-        return createPagedResults({
-            results: manga,
-        });
     }
     async getTags() {
         const request = createRequestObject({
