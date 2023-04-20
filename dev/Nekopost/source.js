@@ -1140,13 +1140,22 @@ class Nekopost extends paperback_extensions_common_1.Source {
             results: manga,
         });
     }
+    async getTags() {
+        const request = createRequestObject({
+            url: 'https://www.nekopost.net/explore',
+            method: 'GET',
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data);
+        return (0, NekopostParser_1.parseTags)($) || [];
+    }
 }
 exports.Nekopost = Nekopost;
 
 },{"./NekopostParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = (data, mangaId) => {
@@ -1335,6 +1344,19 @@ exports.parseSearch = parseSearch;
 const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };
+const parseTags = ($) => {
+    const arrayTags = [];
+    for (const tag of $('div.col-4.col-xxl-3', 'div.layout-wrapper > div.container.d-none.d-lg-block > div.box-right.svelte-aysmwu > div.card > div.card-body > div.row.g-2.mt-1').toArray()) {
+        const label = $('div.form-check > label.form-check-label', tag).text().trim();
+        const id = $('input.form-check-input', tag).attr('value') ?? '';
+        if (!id || !label)
+            continue;
+        arrayTags.push({ id: id, label: label });
+    }
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    return tagSections;
+};
+exports.parseTags = parseTags;
 
 },{"entities":8,"paperback-extensions-common":12}]},{},[56])(56)
 });
