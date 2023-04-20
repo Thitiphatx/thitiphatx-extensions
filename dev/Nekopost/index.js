@@ -1054,7 +1054,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/${page}`,
+                url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/${page}`,
                 method: 'GET',
             });
             page++;
