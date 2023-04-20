@@ -1087,26 +1087,10 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        if ((data.listChapter)) {
-            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
-        }
-        else {
-            const request = createRequestObject({
-                url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
-                method: 'GET',
-            });
-            const response = await this.requestManager.schedule(request, 1);
-            try {
-                data = JSON.parse(response.data);
-            }
-            catch (e) {
-                throw new Error(`${e}`);
-            }
-            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
-        }
+        (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 1;
+        const page = metadata?.page ?? 0;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -1116,7 +1100,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/`,
             method: 'GET',
             param,
         });
@@ -1129,7 +1113,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
             throw new Error(`${e}`);
         }
         const manga = (0, NekopostParser_1.parseViewMore)(data);
-        metadata = data ? { page: page + 1 } : {};
+        metadata = data ? { page: page + 12 } : {};
         return createPagedResults({
             results: manga,
             metadata,
