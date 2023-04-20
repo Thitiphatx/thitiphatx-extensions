@@ -10,6 +10,7 @@ import {
     ContentRating,
     MangaUpdates,
     TagType,
+    Tag,
     TagSection,
     Request,
     Response,
@@ -23,7 +24,6 @@ import {
     parseViewMore,
     parseSearch,
     parseUpdatedManga,
-    parseTags,
     UpdatedManga,
 } from './NekopostParser'
 
@@ -34,10 +34,11 @@ import {
     SearchData,
 } from './NekopostHelper'
 
+import TagList from './TagList.json'
 const NP_DOMAIN = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -273,13 +274,15 @@ export class Nekopost extends Source {
     }
 
     override async getTags(): Promise<TagSection[]> {
-        const request = createRequestObject({
-            url: 'https://www.nekopost.net/explore',
-            method: 'GET',
-        })
+        const arrayTags: Tag[] = []
+        for (const tag of TagList.List) {
+            const id = tag.id ?? ''
+            const label = tag.label ?? ''
+            if (!id || !label) continue
+            arrayTags.push({ id: id, label: label })
+        }
+        const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
 
-        const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        return parseTags($) || []
+        return tagSections || []
     }
 }
