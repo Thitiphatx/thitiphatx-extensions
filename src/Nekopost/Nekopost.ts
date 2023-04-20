@@ -248,11 +248,8 @@ export class Nekopost extends Source {
         }
         else {
             const request = createRequestObject({
-                url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+                url: `https://api.osemocphoto.com/frontAPI/getProjectExplore/${query?.includedTags?.map((x: any) => x.id)[0]}/n/1/S/`,
                 method: 'POST',
-                data: JSON.stringify({
-                    ipCate: `${query?.includedTags?.map((x: any) => x.id)[0]}`,
-                }),
             });
     
             const response = await this.requestManager.schedule(request, 1)
