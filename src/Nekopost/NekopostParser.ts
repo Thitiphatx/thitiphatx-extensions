@@ -234,3 +234,15 @@ export const parseSearch = (data: SearchData): MangaTile[] => {
 const decodeHTMLEntity = (str: string): string => {
     return entities.decodeHTML(str)
 }
+
+export const parseTags = ($: CheerioStatic): TagSection[] | null => {
+    const arrayTags: Tag[] = []
+    for (const tag of $('div.col-4.col-xxl-3', 'div.layout-wrapper > div.container.d-none.d-lg-block > div.box-right.svelte-aysmwu > div.card > div.card-body > div.row.g-2.mt-1').toArray()) {
+        const label = $('div.form-check > label.form-check-label', tag).text().trim()
+        const id = $('input.form-check-input', tag).attr('value') ?? ''
+        if (!id || !label) continue
+        arrayTags.push({ id: id, label: label })
+    }
+    const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
+    return tagSections
+}

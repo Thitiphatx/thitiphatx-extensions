@@ -10,6 +10,7 @@ import {
     ContentRating,
     MangaUpdates,
     TagType,
+    TagSection,
     Request,
     Response,
 } from 'paperback-extensions-common'
@@ -22,6 +23,7 @@ import {
     parseViewMore,
     parseSearch,
     parseUpdatedManga,
+    parseTags,
     UpdatedManga,
 } from './NekopostParser'
 
@@ -242,5 +244,16 @@ export class Nekopost extends Source {
             results: manga,
         })
 
+    }
+
+    override async getTags(): Promise<TagSection[]> {
+        const request = createRequestObject({
+            url: 'https://www.nekopost.net/explore',
+            method: 'GET',
+        })
+
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data)
+        return parseTags($) || []
     }
 }
