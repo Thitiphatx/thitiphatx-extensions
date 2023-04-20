@@ -182,31 +182,11 @@ export class Nekopost extends Source {
             throw new Error(`${e}`)
         }
 
-        if ((data.listChapter)) {
-
-            parseHomeSections(data, sectionCallback)
-
-        }
-        else {
-
-            const request = createRequestObject({
-                url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
-                method: 'GET',
-            })
-
-            const response = await this.requestManager.schedule(request, 1)
-            try {
-                data = JSON.parse(response.data)
-            } catch (e) {
-                throw new Error(`${e}`)
-            }
-
-            parseHomeSections(data, sectionCallback)
-        }
+        parseHomeSections(data, sectionCallback)
         
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 1
+        const page: number = metadata?.page ?? 0
         let param = ''
         switch (homepageSectionId) {
             case 'latest_comic':
@@ -217,7 +197,7 @@ export class Nekopost extends Source {
         }
     
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/`,
             method: 'GET',
             param,
         })
@@ -232,7 +212,7 @@ export class Nekopost extends Source {
         }
     
         const manga = parseViewMore(data)
-        metadata = data ? { page: page + 1 } : {}
+        metadata = data ? { page: page + 12 } : {}
         return createPagedResults({
             results: manga,
             metadata,
