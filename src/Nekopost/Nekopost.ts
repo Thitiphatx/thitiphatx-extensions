@@ -37,7 +37,7 @@ import {
 const NP_DOMAIN = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -222,27 +222,53 @@ export class Nekopost extends Source {
     }
 
     override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
-        const request = createRequestObject({
-            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
-            method: 'POST',
-            data: JSON.stringify({
-                ipKeyword: `${(query.title ?? '')}`,
-            }),
-        });
-
-        const response = await this.requestManager.schedule(request, 1)
-        let data: SearchData
-        try {
-            data = JSON.parse(response.data)
-        } catch (e) {
-            throw new Error(`${e}`)
+        if (query.title) {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+                method: 'POST',
+                data: JSON.stringify({
+                    ipKeyword: `${(query.title ?? '')}`,
+                }),
+            });
+    
+            const response = await this.requestManager.schedule(request, 1)
+            let data: SearchData
+            try {
+                data = JSON.parse(response.data)
+            } catch (e) {
+                throw new Error(`${e}`)
+            }
+    
+            const manga = parseSearch(data)
+    
+            return createPagedResults({
+                results: manga,
+            })
+        }
+        else {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+                method: 'POST',
+                data: JSON.stringify({
+                    ipCate: `${query?.includedTags?.map((x: any) => x.id)[0]}`,
+                }),
+            });
+    
+            const response = await this.requestManager.schedule(request, 1)
+            let data: SearchData
+            try {
+                data = JSON.parse(response.data)
+            } catch (e) {
+                throw new Error(`${e}`)
+            }
+    
+            const manga = parseSearch(data)
+    
+            return createPagedResults({
+                results: manga,
+            })
         }
 
-        const manga = parseSearch(data)
-
-        return createPagedResults({
-            results: manga,
-        })
 
     }
 
