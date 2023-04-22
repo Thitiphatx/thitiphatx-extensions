@@ -1024,6 +1024,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             url: `${MD_DOMAIN}/${mangaId}/${chapterId}`,
             method: 'GET',
         });
+        console.log(`${MD_DOMAIN}/${mangaId}/${chapterId}`);
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         return (0, MikudoujinParser_1.parseChapterDetails)($, mangaId, chapterId);
@@ -1173,7 +1174,7 @@ const parseChapters = ($, mangaId) => {
 exports.parseChapters = parseChapters;
 const parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
-    for (const images of $('img.lazy.loaded', '#manga-content').toArray()) {
+    for (const images of $('img', '#manga-content').toArray()) {
         let image = $(images).attr('data-src')?.trim();
         if (image && image.startsWith('/'))
             image = 'https:' + image;
