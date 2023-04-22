@@ -1135,7 +1135,6 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = ($, mangaId) => {
     const chapters = [];
     let i = 0;
-    console.log($('tbody').length);
     if ($('tbody').length) {
         for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
             i++;
@@ -1174,8 +1173,8 @@ const parseChapters = ($, mangaId) => {
 exports.parseChapters = parseChapters;
 const parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
-    for (const images of $('img', '#image-container > center').toArray()) {
-        let image = $(images).attr('src')?.trim();
+    for (const images of $('img.lazy.loaded', '#manga-content').toArray()) {
+        let image = $(images).attr('data-src')?.trim();
         if (image && image.startsWith('/'))
             image = 'https:' + image;
         if (image)
