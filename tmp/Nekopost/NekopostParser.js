@@ -76,7 +76,8 @@ exports.parseChapters = parseChapters;
 const parseChapterDetails = (data, mangaId, chapterId) => {
     const pages = [];
     for (const images of data.pageItem) {
-        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${images.pageName}`;
+        let imageFile = (images.pageName) ? `${images.pageName}` : `${images.fileName}`;
+        let image = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${imageFile}`;
         if (image)
             pages.push(image);
     }
@@ -114,7 +115,7 @@ const parseUpdatedManga = (data, time, ids) => {
 };
 exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = (data, sectionCallback) => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true });
+    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true });
     const latestSection_Array = [];
     for (const manga of data?.listChapter) {
         const id = manga.projectId ?? '';
@@ -162,23 +163,25 @@ exports.parseViewMore = parseViewMore;
 const parseSearch = (data) => {
     const mangaItems = [];
     const collectedIds = [];
-    for (const manga of data?.listProject) {
-        const id = manga.projectId ?? '';
-        let imageVersion = manga.imageVersion ?? '';
-        let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
-        const title = manga.projectName ?? '';
-        const subtitle = `Ch.${manga.noChapter}` ?? '';
-        if (!id || !title || !image)
-            continue;
-        if (collectedIds.includes(id))
-            continue;
-        mangaItems.push(createMangaTile({
-            id,
-            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle }),
-        }));
-        collectedIds.push(id);
+    if (data.listProject != null) {
+        for (const manga of data.listProject) {
+            const id = manga.projectId ?? '';
+            let imageVersion = manga.imageVersion ?? '';
+            let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
+            const title = manga.projectName ?? '';
+            const subtitle = `Ch.${manga.noChapter}` ?? '';
+            if (!id || !title || !image)
+                continue;
+            if (collectedIds.includes(id))
+                continue;
+            mangaItems.push(createMangaTile({
+                id,
+                image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+                title: createIconText({ text: title }),
+                subtitleText: createIconText({ text: subtitle }),
+            }));
+            collectedIds.push(id);
+        }
     }
     return mangaItems;
 };

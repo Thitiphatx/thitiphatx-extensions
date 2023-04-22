@@ -1,11 +1,15 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
+const TagList_json_1 = __importDefault(require("./TagList.json"));
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.1',
+    version: '1.0.4',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -32,13 +36,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
                         ...(request.headers ?? {}),
                         ...{
                             'referer': NP_DOMAIN,
-                            'Accept': '*/*',
-                            'Accept-Language': 'en-US,en;q=0.9',
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache',
-                            'Sec-Fetch-Dest': 'empty',
-                            'Sec-Fetch-Mode': 'cors',
-                            'Sec-Fetch-Site': 'cross-site',
                         },
                     };
                     return request;
@@ -83,8 +80,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
         return (0, NekopostParser_1.parseChapters)(data, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
-        mangaId = "584";
-        chapterId = "83122";
         const request = createRequestObject({
             url: `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${mangaId}_${chapterId}.json`,
             method: 'GET',
@@ -97,7 +92,6 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        console.log(data);
         return (0, NekopostParser_1.parseChapterDetails)(data, mangaId, chapterId);
     }
     async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
@@ -108,7 +102,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/${page}`,
+                url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/${page}`,
                 method: 'GET',
             });
             page++;
@@ -130,7 +124,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/0',
+            url: 'https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/0',
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -141,23 +135,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
         catch (e) {
             throw new Error(`${e}`);
         }
-        if ((data.desc) != "Success") {
-            const request = createRequestObject({
-                url: 'https://api.osemocphoto.com/frontAPI/getLatestChapter/m/1',
-                method: 'GET',
-            });
-            const response = await this.requestManager.schedule(request, 1);
-            try {
-                data = JSON.parse(response.data);
-            }
-            catch (e) {
-                throw new Error(`${e}`);
-            }
-            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
-        }
-        else {
-            (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
-        }
+        (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 0;
@@ -170,7 +148,7 @@ class Nekopost extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `https://api.osemocphoto.com/frontAPI/getLatestChapter/m/`,
+            url: `https://api.osemocphoto.com/frontAPI/getLatestChapterF3/m/0/12/`,
             method: 'GET',
             param,
         });
@@ -183,32 +161,64 @@ class Nekopost extends paperback_extensions_common_1.Source {
             throw new Error(`${e}`);
         }
         const manga = (0, NekopostParser_1.parseViewMore)(data);
-        metadata = data ? { page: page + 1 } : {};
+        metadata = data ? { page: page + 12 } : {};
         return createPagedResults({
             results: manga,
             metadata,
         });
     }
     async getSearchResults(query) {
-        const request = createRequestObject({
-            url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
-            method: 'POST',
-            data: JSON.stringify({
-                ipKeyword: `${(query.title ?? '')}`,
-            }),
-        });
-        const response = await this.requestManager.schedule(request, 1);
-        let data;
-        try {
-            data = JSON.parse(response.data);
+        if (query.title) {
+            const request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+                method: 'POST',
+                data: JSON.stringify({
+                    ipKeyword: `${(query.title ?? '')}`,
+                }),
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            const manga = (0, NekopostParser_1.parseSearch)(data);
+            return createPagedResults({
+                results: manga,
+            });
         }
-        catch (e) {
-            throw new Error(`${e}`);
+        else {
+            const request = createRequestObject({
+                url: `https://api.osemocphoto.com/frontAPI/getProjectExplore/${query?.includedTags?.map((x) => x.id)[0]}/n/1/S/`,
+                method: 'POST',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            const manga = (0, NekopostParser_1.parseSearch)(data);
+            return createPagedResults({
+                results: manga,
+            });
         }
-        const manga = (0, NekopostParser_1.parseSearch)(data);
-        return createPagedResults({
-            results: manga,
-        });
+    }
+    async getTags() {
+        const arrayTags = [];
+        for (const tag of TagList_json_1.default.List) {
+            const id = tag.id ?? '';
+            const label = tag.label ?? '';
+            if (!id || !label)
+                continue;
+            arrayTags.push({ id: id, label: label });
+        }
+        const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+        return tagSections || [];
     }
 }
 exports.Nekopost = Nekopost;
