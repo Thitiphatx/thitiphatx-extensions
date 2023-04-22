@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1143,11 +1143,8 @@ class Nekopost extends paperback_extensions_common_1.Source {
         }
         else {
             const request = createRequestObject({
-                url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+                url: `https://api.osemocphoto.com/frontAPI/getProjectExplore/${query?.includedTags?.map((x) => x.id)[0]}/n/1/S/`,
                 method: 'POST',
-                data: JSON.stringify({
-                    ipCate: `${query?.includedTags?.map((x) => x.id)[0]}`,
-                }),
             });
             const response = await this.requestManager.schedule(request, 1);
             let data;
@@ -1164,13 +1161,17 @@ class Nekopost extends paperback_extensions_common_1.Source {
         }
     }
     async getTags() {
-        const request = createRequestObject({
-            url: 'https://www.nekopost.net/explore',
-            method: 'GET',
-        });
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, NekopostParser_1.parseTags)($) || [];
+        const arrayTags = [];
+        const TagList = JSON.parse('{"List":[{"id":"1","label":"Fantasy"},{"id":"2","label":"Action"},{"id":"3","label":"Drama"},{"id":"5","label":"Sport"},{"id":"7","label":"Sci-fi"},{"id":"8","label":"Comedy"},{"id":"9","label":"Slice of Life"},{"id":"10","label":"Romance"},{"id":"13","label":"Adventure"},{"id":"23","label":"Yaoi"},{"id":"49","label":"Seinen"},{"id":"25","label":"Trap"},{"id":"26","label":"Gender Blender"},{"id":"45","label":"Second Life"},{"id":"44","label":"Isekai"},{"id":"43","label":"School Life"},{"id":"32","label":"Mystery"},{"id":"48","label":"One Shot"},{"id":"47","label":"Horror"},{"id":"37","label":"Doujinshi"},{"id":"46","label":"Shounen"},{"id":"42","label":"Shoujo"},{"id":"24","label":"Yuri"},{"id":"41","label":"Gourmet"},{"id":"50","label":"Harem"},{"id":"51","label":"Reincanate"}]}');
+        for (const tag of TagList.List) {
+            const id = tag.id ?? '';
+            const label = tag.label ?? '';
+            if (!id || !label)
+                continue;
+            arrayTags.push({ id: id, label: label });
+        }
+        const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+        return tagSections || [];
     }
 }
 exports.Nekopost = Nekopost;
@@ -1178,7 +1179,7 @@ exports.Nekopost = Nekopost;
 },{"./NekopostParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTags = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = (data, mangaId) => {
@@ -1367,19 +1368,6 @@ exports.parseSearch = parseSearch;
 const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };
-const parseTags = ($) => {
-    const arrayTags = [];
-    for (const tag of $('div.col-4.col-xxl-3', 'div.layout-wrapper > div.container.d-none.d-lg-block > div.box-right.svelte-aysmwu > div.card > div.card-body > div.row.g-2.mt-1').toArray()) {
-        const label = $('div.form-check > label.form-check-label', tag).text().trim();
-        const id = $('input.form-check-input', tag).attr('value') ?? '';
-        if (!id || !label)
-            continue;
-        arrayTags.push({ id: id, label: label });
-    }
-    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
-    return tagSections;
-};
-exports.parseTags = parseTags;
 
 },{"entities":8,"paperback-extensions-common":12}]},{},[56])(56)
 });
