@@ -100,7 +100,7 @@ export class Mikudoujin extends Source {
             url: `${MD_DOMAIN}/${mangaId}/${chapterId}`,
             method: 'GET',
         })
-
+        console.log(`${MD_DOMAIN}/${mangaId}/${chapterId}`)
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
         return parseChapterDetails($, mangaId, chapterId)

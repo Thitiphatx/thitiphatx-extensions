@@ -91,7 +91,7 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
 export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId: string): ChapterDetails => {
     const pages: string[] = []
 
-    for (const images of $('img.lazy.loaded', '#manga-content').toArray()) {
+    for (const images of $('img', '#manga-content').toArray()) {
         let image: string | undefined = $(images).attr('data-src')?.trim()
         if (image && image.startsWith('/')) image = 'https:' + image
         if (image) pages.push(image)
