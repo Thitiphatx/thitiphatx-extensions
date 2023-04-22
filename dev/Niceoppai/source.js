@@ -1219,9 +1219,7 @@ const parseHomeSections = ($, sectionCallback) => {
     const popularSection = createHomeSection({ id: 'popular_comic', title: 'Popular Mangas', view_more: false });
     const popularSection_Array = [];
     for (const comic of $('div.nde', 'li.wid.widget_text div.con div.textwidget div.wpm_pag.mng_lts_chp.tbn').toArray()) {
-        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("62x88", "350x0") ?? '';
-        if (image.startsWith('/'))
-            image = 'https:' + image;
+        let image = encodeURI($('div.cvr > div > a > img', comic).attr('src').replace("62x88", "350x0")) ?? '';
         const title = $('div.det div.ifo a.ttl', comic).first().text().trim() ?? '';
         const id = $('div.det div.ifo a.ttl', comic).attr('href').split('/')[3] ?? '';
         if (!id || !title)
@@ -1236,9 +1234,7 @@ const parseHomeSections = ($, sectionCallback) => {
     sectionCallback(popularSection);
     const latestSection_Array = [];
     for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = $('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0") ?? '';
-        if (image.startsWith('/'))
-            image = 'https:' + image;
+        let image = encodeURI($('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0")) ?? '';
         const title = $('div.det > a', comic).first().text().trim() ?? '';
         const id = $('div.det > a', comic).attr('href').split('/')[3] ?? '';
         const subtitle = $('b.val.lng_', comic).first().text().trim() ?? '';
@@ -1259,7 +1255,7 @@ const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
     for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = $('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0", "350x0") ?? '';
+        let image = encodeURI($('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0", "350x0")) ?? '';
         const title = $('div.det > a.ttl', item).first().text().trim() ?? '';
         const id = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? '';
         const subtitle = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? '';
@@ -1283,7 +1279,7 @@ const parseSearch = ($) => {
     const collectedIds = [];
     for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
         const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
-        const image = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0") ?? '';
+        const image = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0")) ?? '';
         const title = $('div.det > a', manga).text().trim() ?? '';
         const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
         if (!id || !title || !image)
