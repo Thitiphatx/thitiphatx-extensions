@@ -1,12 +1,8 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Nekopost = exports.NekopostInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NekopostParser_1 = require("./NekopostParser");
-const TagList_json_1 = __importDefault(require("./TagList.json"));
 const NP_DOMAIN = 'https://www.nekopost.net';
 exports.NekopostInfo = {
     version: '1.0.4',
@@ -210,7 +206,8 @@ class Nekopost extends paperback_extensions_common_1.Source {
     }
     async getTags() {
         const arrayTags = [];
-        for (const tag of TagList_json_1.default.List) {
+        const TagList = JSON.parse('{"List":[{"id":"1","label":"Fantasy"},{"id":"2","label":"Action"},{"id":"3","label":"Drama"},{"id":"5","label":"Sport"},{"id":"7","label":"Sci-fi"},{"id":"8","label":"Comedy"},{"id":"9","label":"Slice of Life"},{"id":"10","label":"Romance"},{"id":"13","label":"Adventure"},{"id":"23","label":"Yaoi"},{"id":"49","label":"Seinen"},{"id":"25","label":"Trap"},{"id":"26","label":"Gender Blender"},{"id":"45","label":"Second Life"},{"id":"44","label":"Isekai"},{"id":"43","label":"School Life"},{"id":"32","label":"Mystery"},{"id":"48","label":"One Shot"},{"id":"47","label":"Horror"},{"id":"37","label":"Doujinshi"},{"id":"46","label":"Shounen"},{"id":"42","label":"Shoujo"},{"id":"24","label":"Yuri"},{"id":"41","label":"Gourmet"},{"id":"50","label":"Harem"},{"id":"51","label":"Reincanate"}]}');
+        for (const tag of TagList.List) {
             const id = tag.id ?? '';
             const label = tag.label ?? '';
             if (!id || !label)

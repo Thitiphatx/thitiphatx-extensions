@@ -115,7 +115,7 @@ const parseUpdatedManga = (data, time, ids) => {
 };
 exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = (data, sectionCallback) => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true });
+    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true });
     const latestSection_Array = [];
     for (const manga of data?.listChapter) {
         const id = manga.projectId ?? '';

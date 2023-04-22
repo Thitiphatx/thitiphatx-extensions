@@ -34,45 +34,37 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = ($, mangaId) => {
     const chapters = [];
     let i = 0;
-    const title = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim();
-    // const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
-    chapters.push({
-        id: '',
-        mangaId,
-        name: decodeHTMLEntity(title),
-        langCode: paperback_extensions_common_1.LanguageCode.THAI,
-        chapNum: 1,
-    });
-    // console.log($('tbody').length);
-    // if ($('tbody').length) {
-    //     for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
-    //         i++
-    //         const title: string = $('td > a', chapter).text().trim() ?? ''
-    //         const chapterId: string = $('td > a', chapter).attr('href')?.split('/')[4]?.replace("ep-", "") ?? ''
-    //         if (!chapterId) continue
-    //         const chapNum = Number(chapterId) //We're manually setting the chapters regarless, however usually the ID equals the chapter number.
-    //         if (!chapterId || !title) continue
-    //         chapters.push({
-    //             id: chapterId,
-    //             mangaId,
-    //             name: decodeHTMLEntity(title),
-    //             langCode: LanguageCode.THAI,
-    //             chapNum: isNaN(chapNum) ? i : chapNum,
-    //         })
-    //         i--
-    //     }
-    // }
-    // else {
-    //     const title: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()
-    //     // const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
-    //     chapters.push({
-    //         id: '',
-    //         mangaId,
-    //         name: decodeHTMLEntity(title),
-    //         langCode: LanguageCode.THAI,
-    //         chapNum: 1,
-    //     })
-    // }
+    if ($('tbody').length) {
+        for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
+            i++;
+            const title = $('td > a', chapter).text().trim() ?? '';
+            const chapterId = $('td > a', chapter).attr('href')?.split('/')[4]?.replace("ep-", "") ?? '';
+            if (!chapterId)
+                continue;
+            const chapNum = Number(chapterId); //We're manually setting the chapters regarless, however usually the ID equals the chapter number.
+            if (!chapterId || !title)
+                continue;
+            chapters.push({
+                id: chapterId,
+                mangaId,
+                name: decodeHTMLEntity(title),
+                langCode: paperback_extensions_common_1.LanguageCode.THAI,
+                chapNum: isNaN(chapNum) ? i : chapNum,
+            });
+            i--;
+        }
+    }
+    else {
+        const title = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim();
+        // const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
+        chapters.push({
+            id: '',
+            mangaId,
+            name: decodeHTMLEntity(title),
+            langCode: paperback_extensions_common_1.LanguageCode.THAI,
+            chapNum: 1,
+        });
+    }
     return chapters.map(chapter => {
         return createChapter(chapter);
     });

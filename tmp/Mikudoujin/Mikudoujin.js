@@ -44,6 +44,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
     }
     getMangaShareUrl(mangaId) { return `${MD_DOMAIN}/${mangaId}`; }
     async getMangaDetails(mangaId) {
+        mangaId = 'ocvc0';
         const request = createRequestObject({
             url: `${MD_DOMAIN}`,
             method: 'GET',
@@ -54,6 +55,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         return (0, MikudoujinParser_1.parseMangaDetails)($, mangaId);
     }
     async getChapters(mangaId) {
+        mangaId = 'ocvc0';
         const request = createRequestObject({
             url: `${MD_DOMAIN}/`,
             method: 'GET',

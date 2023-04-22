@@ -48,7 +48,6 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
     const chapters: Chapter[] = []
     let i = 0
-    console.log($('tbody').length);
     if ($('tbody').length) {
         for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
             i++
@@ -92,8 +91,8 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
 export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId: string): ChapterDetails => {
     const pages: string[] = []
 
-    for (const images of $('img', '#image-container > center').toArray()) {
-        let image: string | undefined = $(images).attr('src')?.trim()
+    for (const images of $('img.lazy.loaded', '#manga-content').toArray()) {
+        let image: string | undefined = $(images).attr('data-src')?.trim()
         if (image && image.startsWith('/')) image = 'https:' + image
         if (image) pages.push(image)
     }
