@@ -34,7 +34,6 @@ import {
     SearchData,
 } from './NekopostHelper'
 
-import TagList from './TagList.json'
 const NP_DOMAIN = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
@@ -272,6 +271,7 @@ export class Nekopost extends Source {
 
     override async getTags(): Promise<TagSection[]> {
         const arrayTags: Tag[] = []
+        const TagList = JSON.parse('{"List":[{"id":"1","label":"Fantasy"},{"id":"2","label":"Action"},{"id":"3","label":"Drama"},{"id":"5","label":"Sport"},{"id":"7","label":"Sci-fi"},{"id":"8","label":"Comedy"},{"id":"9","label":"Slice of Life"},{"id":"10","label":"Romance"},{"id":"13","label":"Adventure"},{"id":"23","label":"Yaoi"},{"id":"49","label":"Seinen"},{"id":"25","label":"Trap"},{"id":"26","label":"Gender Blender"},{"id":"45","label":"Second Life"},{"id":"44","label":"Isekai"},{"id":"43","label":"School Life"},{"id":"32","label":"Mystery"},{"id":"48","label":"One Shot"},{"id":"47","label":"Horror"},{"id":"37","label":"Doujinshi"},{"id":"46","label":"Shounen"},{"id":"42","label":"Shoujo"},{"id":"24","label":"Yuri"},{"id":"41","label":"Gourmet"},{"id":"50","label":"Harem"},{"id":"51","label":"Reincanate"}]}');
         for (const tag of TagList.List) {
             const id = tag.id ?? ''
             const label = tag.label ?? ''
