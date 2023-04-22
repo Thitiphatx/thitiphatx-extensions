@@ -151,7 +151,7 @@ export const parseUpdatedManga = (data: HomeData, time: Date, ids: string[]): Up
 }
 
 export const parseHomeSections = (data: HomeData, sectionCallback: (section: HomeSection) => void): void => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true })
+    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true })
 
     const latestSection_Array: MangaTile[] = []
 
