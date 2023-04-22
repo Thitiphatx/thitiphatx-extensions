@@ -72,7 +72,7 @@ const parseChapters = ($, mangaId) => {
 exports.parseChapters = parseChapters;
 const parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
-    for (const images of $('img.lazy.loaded', '#manga-content').toArray()) {
+    for (const images of $('img', '#manga-content').toArray()) {
         let image = $(images).attr('data-src')?.trim();
         if (image && image.startsWith('/'))
             image = 'https:' + image;

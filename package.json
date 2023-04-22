@@ -1,7 +1,7 @@
 {
   "name": "thitiphatx-extensions",
   "version": "1.0.0",
-  "repositoryName": "thitiphatx-extensions",
+  "repositoryName": "Extensions TH Manga (Thitiphatx)",
   "description": "Thitiphatx's extensions for Paperback",
   "scripts": {
     "bundle": "paperback bundle",
