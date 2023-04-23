@@ -48,8 +48,8 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
     const chapters: Chapter[] = []
     let i = 0
-    if ($('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').length) {
-        for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
+    if ($('tbody').length != 0) {
+        for (const chapter of $('tr', 'tbody').toArray()) {
             i++
             const title: string = $('td > a', chapter).text().trim() ?? ''
             const chapterId: string = $('td > a', chapter).attr('href')?.split('/')[4] ?? ''
