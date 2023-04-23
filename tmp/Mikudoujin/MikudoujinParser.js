@@ -163,19 +163,19 @@ exports.parseViewMore = parseViewMore;
 const parseSearch = ($) => {
     const mangaItems = [];
     const collectedIds = [];
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
-        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
-        const image = $('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0") ?? '';
-        const title = $('div.det > a', manga).text().trim() ?? '';
-        const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
-        if (!id || !title || !image)
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? '';
+        const title = $('a.no-underline.inz-a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a.no-underline.inz-a', item).attr('href').split('/')[3] ?? '';
+        const subtitle = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', item).first().text().trim() ?? '';
+        if (!id || !title)
             continue;
         if (collectedIds.includes(id))
             continue;
         mangaItems.push(createMangaTile({
             id,
             image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: title }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
             subtitleText: createIconText({ text: subtitle }),
         }));
         collectedIds.push(id);
@@ -205,8 +205,8 @@ exports.isLastPage = isLastPage;
 const parseTags = ($) => {
     const arrayTags = [];
     for (const tag of $('a', 'div.container > div.row > div.col-sm-12.col-md-3 div.card > div.card-body').toArray()) {
-        const label = $('a', tag).text().trim();
-        const id = $('a', tag).attr('href')?.split("/")[4] ?? '';
+        const label = $(tag).text().trim();
+        const id = $(tag).attr('href')?.split("/")[4] ?? '';
         if (!id || !label)
             continue;
         arrayTags.push({ id: id, label: label });

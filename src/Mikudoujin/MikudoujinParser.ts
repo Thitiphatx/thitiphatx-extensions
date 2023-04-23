@@ -42,6 +42,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
         artist: author,
         tags: tagSections,
         desc: description,
+
     })
 }
 
@@ -54,6 +55,8 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
             i++
             const title: string = $('td > a', chapter).text().trim() ?? ''
             const chapterId: string = $('td > a', chapter).attr('href')?.split('/')[4] ?? ''
+            const time: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').text().trim()
+            const date: Date = parseDate(time);
             new Error(`${title}, ${chapterId}`);
             if (!chapterId) continue
     
@@ -67,6 +70,7 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
                 name: decodeHTMLEntity(title),
                 langCode: LanguageCode.THAI,
                 chapNum: isNaN(chapNum) ? i : chapNum,
+                time: date
             })
     
             i--
@@ -75,13 +79,15 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
     }
     else {
         const title: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()
-        // const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
+        const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
+        const time: Date = parseDate(date);
         chapters.push({
             id: 'null',
             mangaId,
             name: decodeHTMLEntity(title),
             langCode: LanguageCode.THAI,
             chapNum: 1,
+            time: time
         })
     }
     return chapters.map(chapter => {
@@ -247,4 +253,32 @@ export const parseTags = ($: CheerioStatic): TagSection[] | null => {
     const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
     console.log(tagSections)
     return tagSections
+}
+
+const parseDate = (date: string): Date => {
+    let time: Date
+    const number = Number(date.replace(/[^0-9]/g, ''))
+    if (date.includes('LESS THAN AN HOUR') || date.includes('JUST NOW')) {
+        time = new Date(Date.now())
+    } else if (date.includes('ปี') || date.includes('YEARS')) {
+        time = new Date(Date.now() - (number * 31556952000))
+    } else if (date.includes('เดือน') || date.includes('MONTHS')) {
+        time = new Date(Date.now() - (number * 2592000000))
+    } else if (date.includes('สัปดาห์') || date.includes('WEEKS')) {
+        time = new Date(Date.now() - (number * 604800000))
+    } else if (date.includes('YESTERDAY')) {
+        time = new Date(Date.now() - 86400000)
+    } else if (date.includes('วัน') || date.includes('DAYS')) {
+        time = new Date(Date.now() - (number * 86400000))
+    } else if (date.includes('ชั่วโมง') || date.includes('HOURS')) {
+        time = new Date(Date.now() - (number * 3600000))
+    } else if (date.includes('นาที') || date.includes('MINUTES')) {
+        time = new Date(Date.now() - (number * 60000))
+    } else if (date.includes('วินาที') || date.includes('SECONDS')) {
+        time = new Date(Date.now() - (number * 1000))
+    } else {
+        const split = date.split('-')
+        time = new Date(Number(split[2]), Number(split[0]) - 1, Number(split[1]))
+    }
+    return time
 }

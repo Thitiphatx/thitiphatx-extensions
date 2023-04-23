@@ -5,7 +5,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const MikudoujinParser_1 = require("./MikudoujinParser");
 const MD_DOMAIN = 'https://www.miku-doujin.com';
 exports.MikudoujinInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -138,16 +138,28 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             metadata,
         });
     }
-    async getSearchResults(query) {
-        const request = createRequestObject({
-            url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
-            method: 'GET',
-        });
+    async getSearchResults(query, metadata) {
+        const page = metadata?.page ?? 1;
+        let request;
+        if (query.title) {
+            request = createRequestObject({
+                url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
+                method: 'GET',
+            });
+        }
+        else {
+            request = createRequestObject({
+                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                method: 'GET',
+            });
+        }
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         const manga = (0, MikudoujinParser_1.parseSearch)($);
+        metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
         return createPagedResults({
             results: manga,
+            metadata
         });
     }
     async getTags() {

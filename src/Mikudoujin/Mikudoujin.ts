@@ -204,11 +204,11 @@ export class Mikudoujin extends Source {
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
         const manga = parseSearch($)
-
         metadata = !isLastPage($) ? { page: page + 1 } : undefined
 
         return createPagedResults({
             results: manga,
+            metadata
         })
     }
 
