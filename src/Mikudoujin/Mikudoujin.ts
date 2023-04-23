@@ -143,7 +143,7 @@ export class Mikudoujin extends Source {
         parseHomeSections($, sectionCallback)
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 1
+        const page: number = metadata?.page ?? 0
         let param = ''
         switch (homepageSectionId) {
             case 'latest_doujin':
