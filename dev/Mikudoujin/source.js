@@ -1340,8 +1340,8 @@ exports.isLastPage = isLastPage;
 const parseTags = ($) => {
     const arrayTags = [];
     for (const tag of $('a', 'div.container > div.row > div.col-sm-12.col-md-3 div.card > div.card-body').toArray()) {
-        const label = $('a', tag).text().trim();
-        const id = $('a', tag).attr('href')?.split("/")[4] ?? '';
+        const label = $(tag).text().trim();
+        const id = $(tag).attr('href')?.split("/")[4] ?? '';
         if (!id || !label)
             continue;
         arrayTags.push({ id: id, label: label });
