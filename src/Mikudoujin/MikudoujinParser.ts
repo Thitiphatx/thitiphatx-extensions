@@ -48,15 +48,15 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
     const chapters: Chapter[] = []
     let i = 0
-    if ($('tbody').length) {
+    if ($('tbody')) {
         for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
             i++
             const title: string = $('td > a', chapter).text().trim() ?? ''
-            const chapterId: string = $('td > a', chapter).attr('href')?.split('/')[4]?.replace("ep-", "") ?? ''
+            const chapterId: string = $('td > a', chapter).attr('href')?.split('/')[4] ?? ''
             
             if (!chapterId) continue
     
-            const chapNum = Number(chapterId) //We're manually setting the chapters regarless, however usually the ID equals the chapter number.
+            const chapNum = Number(chapterId)
             
             if (!chapterId || !title) continue
     
