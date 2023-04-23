@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const MikudoujinParser_1 = require("./MikudoujinParser");
 const MD_DOMAIN = 'https://www.miku-doujin.com';
 exports.MikudoujinInfo = {
-    version: '1.0.1',
+    version: '1.0.2',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
