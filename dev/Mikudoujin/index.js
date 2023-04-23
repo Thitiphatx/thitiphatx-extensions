@@ -1071,7 +1071,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${MD_DOMAIN}/?page=${page}`,
+            url: `${MD_DOMAIN}/?page=`,
             method: 'GET',
             param,
         });
