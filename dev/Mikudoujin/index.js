@@ -1011,23 +1011,33 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
-            url: `${MD_DOMAIN}/`,
+            url: `${MD_DOMAIN}`,
             method: 'GET',
-            param: mangaId,
+            param: `/${mangaId}/`,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         return (0, MikudoujinParser_1.parseChapters)($, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
-        const request = createRequestObject({
-            url: `${MD_DOMAIN}/${mangaId}/${chapterId}`,
-            method: 'GET',
-        });
-        console.log(`${MD_DOMAIN}/${mangaId}/${chapterId}`);
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        return (0, MikudoujinParser_1.parseChapterDetails)($, mangaId, chapterId);
+        if (mangaId.length != 0) {
+            const request = createRequestObject({
+                url: `${MD_DOMAIN}/${mangaId}/${chapterId}/`,
+                method: 'GET',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            const $ = this.cheerio.load(response.data);
+            return (0, MikudoujinParser_1.parseChapterDetails)($, mangaId, chapterId);
+        }
+        else {
+            const request = createRequestObject({
+                url: `${MD_DOMAIN}/${mangaId}/`,
+                method: 'GET',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            const $ = this.cheerio.load(response.data);
+            return (0, MikudoujinParser_1.parseChapterDetails)($, mangaId, chapterId);
+        }
     }
     async filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
         let page = 1;
@@ -1136,8 +1146,8 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = ($, mangaId) => {
     const chapters = [];
     let i = 0;
-    if ($('tbody').length != 0) {
-        for (const chapter of $('tr', 'tbody').toArray()) {
+    if ($('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').length != 0) {
+        for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
             i++;
             const title = $('td > a', chapter).text().trim() ?? '';
             const chapterId = $('td > a', chapter).attr('href')?.split('/')[4] ?? '';
