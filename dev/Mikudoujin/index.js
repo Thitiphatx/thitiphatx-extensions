@@ -1095,16 +1095,30 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query) {
-        const request = createRequestObject({
-            url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
-            method: 'GET',
-        });
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        const manga = (0, MikudoujinParser_1.parseSearch)($);
-        return createPagedResults({
-            results: manga,
-        });
+        if (query.title) {
+            const request = createRequestObject({
+                url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
+                method: 'GET',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            const $ = this.cheerio.load(response.data);
+            const manga = (0, MikudoujinParser_1.parseSearch)($);
+            return createPagedResults({
+                results: manga,
+            });
+        }
+        else {
+            const request = createRequestObject({
+                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}`,
+                method: 'GET',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            const $ = this.cheerio.load(response.data);
+            const manga = (0, MikudoujinParser_1.parseSearch)($);
+            return createPagedResults({
+                results: manga,
+            });
+        }
     }
     async getTags() {
         const request = createRequestObject({
@@ -1333,6 +1347,7 @@ const parseTags = ($) => {
         arrayTags.push({ id: id, label: label });
     }
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    console.log(tagSections);
     return tagSections;
 };
 exports.parseTags = parseTags;
