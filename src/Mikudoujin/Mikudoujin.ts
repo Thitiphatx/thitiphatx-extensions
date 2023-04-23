@@ -134,7 +134,7 @@ export class Mikudoujin extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: `${MD_DOMAIN}/?page=1`,
+            url: `${MD_DOMAIN}`,
             method: 'GET',
         })
 
@@ -143,7 +143,7 @@ export class Mikudoujin extends Source {
         parseHomeSections($, sectionCallback)
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 0
+        const page: number = metadata?.page ?? 1
         let param = ''
         switch (homepageSectionId) {
             case 'latest_doujin':
