@@ -31,7 +31,7 @@ import {
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -200,7 +200,8 @@ export class Mikudoujin extends Source {
         }
         else {
             const request = createRequestObject({
-                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}`,
+                
+                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/`,
                 method: 'GET',
             })
     
