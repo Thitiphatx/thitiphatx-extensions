@@ -4,6 +4,7 @@ exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = export
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = (data, mangaId) => {
+    let hentai = false;
     const manga = data;
     const titles = [];
     const id = manga.projectInfo.projectId ?? '';
@@ -16,7 +17,9 @@ const parseMangaDetails = (data, mangaId) => {
     const author = manga.projectInfo.authorName ?? '';
     const artist = manga.projectInfo.artistName ?? '';
     const info = manga.projectInfo.info ?? '';
-    let hentai = false;
+    const view = Number(manga.projectInfo.views) ?? 0;
+    if (manga.projectInfo.flgMature || manga.projectInfo.flgGlue || manga.projectInfo.flgIntense || manga.projectInfo.flgReligion || manga.projectInfo.flgViolent)
+        hentai = true;
     const arrayTags = [];
     for (const tag of manga?.listCate) {
         const label = tag.cateName ?? '';
@@ -42,6 +45,7 @@ const parseMangaDetails = (data, mangaId) => {
         artist: artist,
         tags: tagSections,
         desc: info,
+        views: view,
     });
 };
 exports.parseMangaDetails = parseMangaDetails;

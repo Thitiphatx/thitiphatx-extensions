@@ -39,6 +39,8 @@ const parseChapters = ($, mangaId) => {
             i++;
             const title = $('td > a', chapter).text().trim() ?? '';
             const chapterId = $('td > a', chapter).attr('href')?.split('/')[4] ?? '';
+            const time = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').text().trim();
+            const date = parseDate(time);
             new Error(`${title}, ${chapterId}`);
             if (!chapterId)
                 continue;
@@ -51,19 +53,22 @@ const parseChapters = ($, mangaId) => {
                 name: decodeHTMLEntity(title),
                 langCode: paperback_extensions_common_1.LanguageCode.THAI,
                 chapNum: isNaN(chapNum) ? i : chapNum,
+                time: date
             });
             i--;
         }
     }
     else {
         const title = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim();
-        // const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
+        const date = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim();
+        const time = parseDate(date);
         chapters.push({
             id: 'null',
             mangaId,
             name: decodeHTMLEntity(title),
             langCode: paperback_extensions_common_1.LanguageCode.THAI,
             chapNum: 1,
+            time: time
         });
     }
     return chapters.map(chapter => {
@@ -216,3 +221,39 @@ const parseTags = ($) => {
     return tagSections;
 };
 exports.parseTags = parseTags;
+const parseDate = (date) => {
+    let time;
+    const number = Number(date.replace(/[^0-9]/g, ''));
+    if (date.includes('LESS THAN AN HOUR') || date.includes('JUST NOW')) {
+        time = new Date(Date.now());
+    }
+    else if (date.includes('ปี') || date.includes('YEARS')) {
+        time = new Date(Date.now() - (number * 31556952000));
+    }
+    else if (date.includes('เดือน') || date.includes('MONTHS')) {
+        time = new Date(Date.now() - (number * 2592000000));
+    }
+    else if (date.includes('สัปดาห์') || date.includes('WEEKS')) {
+        time = new Date(Date.now() - (number * 604800000));
+    }
+    else if (date.includes('YESTERDAY')) {
+        time = new Date(Date.now() - 86400000);
+    }
+    else if (date.includes('วัน') || date.includes('DAYS')) {
+        time = new Date(Date.now() - (number * 86400000));
+    }
+    else if (date.includes('ชั่วโมง') || date.includes('HOURS')) {
+        time = new Date(Date.now() - (number * 3600000));
+    }
+    else if (date.includes('นาที') || date.includes('MINUTES')) {
+        time = new Date(Date.now() - (number * 60000));
+    }
+    else if (date.includes('วินาที') || date.includes('SECONDS')) {
+        time = new Date(Date.now() - (number * 1000));
+    }
+    else {
+        const split = date.split('-');
+        time = new Date(Number(split[2]), Number(split[0]) - 1, Number(split[1]));
+    }
+    return time;
+};

@@ -20,6 +20,7 @@ import {
 import entities = require('entities')
 
 export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga => {
+    let hentai = false
     const manga = data
     const titles: string[] = []
 
@@ -37,8 +38,9 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
     const author: string = manga.projectInfo.authorName ?? ''
     const artist: string = manga.projectInfo.artistName ?? ''
     const info: string = manga.projectInfo.info ?? ''
+    const view: number = Number(manga.projectInfo.views) ?? 0
 
-    let hentai = false
+    if (manga.projectInfo.flgMature || manga.projectInfo.flgGlue || manga.projectInfo.flgIntense || manga.projectInfo.flgReligion || manga.projectInfo.flgViolent) hentai = true
     
     const arrayTags: Tag[] = []
     for (const tag of manga?.listCate) {
@@ -65,6 +67,7 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
         artist: artist,
         tags: tagSections,
         desc: info,
+        views: view,
     })
 }
 

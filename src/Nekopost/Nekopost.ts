@@ -37,7 +37,7 @@ import {
 const NP_DOMAIN = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -222,56 +222,55 @@ export class Nekopost extends Source {
     }
 
     override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
+        let request
+
         if (query.title) {
-            const request = createRequestObject({
+            request = createRequestObject({
                 url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
                 method: 'POST',
                 data: JSON.stringify({
                     ipKeyword: `${(query.title ?? '')}`,
                 }),
             });
-    
-            const response = await this.requestManager.schedule(request, 1)
-            let data: SearchData
-            try {
-                data = JSON.parse(response.data)
-            } catch (e) {
-                throw new Error(`${e}`)
-            }
-    
-            const manga = parseSearch(data)
-    
-            return createPagedResults({
-                results: manga,
-            })
+        }
+        else if (query.title && query.includedTags){
+            request = createRequestObject({
+                url: 'https://api.osemocphoto.com/frontAPI/getProjectSearch',
+                method: 'POST',
+                data: JSON.stringify({
+                    ipCate: `${query?.includedTags?.map((x: any) => x.id)[0]}`,
+                    ipKeyword: `${(query.title ?? '')}`,
+                }),
+            });
         }
         else {
-            const request = createRequestObject({
+            request = createRequestObject({
                 url: `https://api.osemocphoto.com/frontAPI/getProjectExplore/${query?.includedTags?.map((x: any) => x.id)[0]}/n/1/S/`,
                 method: 'POST',
             });
-    
-            const response = await this.requestManager.schedule(request, 1)
-            let data: SearchData
-            try {
-                data = JSON.parse(response.data)
-            } catch (e) {
-                throw new Error(`${e}`)
-            }
-    
-            const manga = parseSearch(data)
-    
-            return createPagedResults({
-                results: manga,
-            })
         }
 
+        const response = await this.requestManager.schedule(request, 1)
+        let data: SearchData
+        try {
+            data = JSON.parse(response.data)
+        } catch (e) {
+            throw new Error(`${e}`)
+        }
+
+        const manga = parseSearch(data)
+
+        return createPagedResults({
+            results: manga,
+        })
 
     }
 
     override async getTags(): Promise<TagSection[]> {
         const arrayTags: Tag[] = []
-        const TagList = JSON.parse('{"List":[{"id":"1","label":"Fantasy"},{"id":"2","label":"Action"},{"id":"3","label":"Drama"},{"id":"5","label":"Sport"},{"id":"7","label":"Sci-fi"},{"id":"8","label":"Comedy"},{"id":"9","label":"Slice of Life"},{"id":"10","label":"Romance"},{"id":"13","label":"Adventure"},{"id":"23","label":"Yaoi"},{"id":"49","label":"Seinen"},{"id":"25","label":"Trap"},{"id":"26","label":"Gender Blender"},{"id":"45","label":"Second Life"},{"id":"44","label":"Isekai"},{"id":"43","label":"School Life"},{"id":"32","label":"Mystery"},{"id":"48","label":"One Shot"},{"id":"47","label":"Horror"},{"id":"37","label":"Doujinshi"},{"id":"46","label":"Shounen"},{"id":"42","label":"Shoujo"},{"id":"24","label":"Yuri"},{"id":"41","label":"Gourmet"},{"id":"50","label":"Harem"},{"id":"51","label":"Reincanate"}]}');
+        const TagList = JSON.parse(
+            '{"List":[{"id":"1","label":"Fantasy"},{"id":"2","label":"Action"},{"id":"3","label":"Drama"},{"id":"5","label":"Sport"},{"id":"7","label":"Sci-fi"},{"id":"8","label":"Comedy"},{"id":"9","label":"Slice of Life"},{"id":"10","label":"Romance"},{"id":"13","label":"Adventure"},{"id":"23","label":"Yaoi"},{"id":"49","label":"Seinen"},{"id":"25","label":"Trap"},{"id":"26","label":"Gender Blender"},{"id":"45","label":"Second Life"},{"id":"44","label":"Isekai"},{"id":"43","label":"School Life"},{"id":"32","label":"Mystery"},{"id":"48","label":"One Shot"},{"id":"47","label":"Horror"},{"id":"37","label":"Doujinshi"},{"id":"46","label":"Shounen"},{"id":"42","label":"Shoujo"},{"id":"24","label":"Yuri"},{"id":"41","label":"Gourmet"},{"id":"50","label":"Harem"},{"id":"51","label":"Reincanate"}]}'
+            );
         for (const tag of TagList.List) {
             const id = tag.id ?? ''
             const label = tag.label ?? ''
