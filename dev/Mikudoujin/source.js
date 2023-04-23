@@ -1020,7 +1020,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         return (0, MikudoujinParser_1.parseChapters)($, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
-        if (mangaId.length != 0) {
+        if (chapterId != "null") {
             const request = createRequestObject({
                 url: `${MD_DOMAIN}/${mangaId}/${chapterId}/`,
                 method: 'GET',
@@ -1106,13 +1106,22 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             results: manga,
         });
     }
+    async getTags() {
+        const request = createRequestObject({
+            url: MD_DOMAIN,
+            method: 'GET',
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data);
+        return (0, MikudoujinParser_1.parseTags)($) || [];
+    }
 }
 exports.Mikudoujin = Mikudoujin;
 
 },{"./MikudoujinParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -1171,7 +1180,7 @@ const parseChapters = ($, mangaId) => {
         const title = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim();
         // const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
         chapters.push({
-            id: '',
+            id: 'null',
             mangaId,
             name: decodeHTMLEntity(title),
             langCode: paperback_extensions_common_1.LanguageCode.THAI,
@@ -1314,6 +1323,19 @@ const isLastPage = ($) => {
     return isLast;
 };
 exports.isLastPage = isLastPage;
+const parseTags = ($) => {
+    const arrayTags = [];
+    for (const tag of $('a', 'div.container > div.row > div.col-sm-12.col-md-3 div.card > div.card-body').toArray()) {
+        const label = $('a', tag).text().trim();
+        const id = $('a', tag).attr('href')?.split("/")[4] ?? '';
+        if (!id || !label)
+            continue;
+        arrayTags.push({ id: id, label: label });
+    }
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    return tagSections;
+};
+exports.parseTags = parseTags;
 
 },{"entities":8,"paperback-extensions-common":12}]},{},[56])(56)
 });
