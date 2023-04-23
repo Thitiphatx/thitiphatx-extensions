@@ -183,37 +183,33 @@ export class Mikudoujin extends Source {
         })
     }
 
-    override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
+    override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
+        const page: number = metadata?.page ?? 1
+        let request
+
         if (query.title) {
-            const request = createRequestObject({
+            request = createRequestObject({
                 url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
                 method: 'GET',
             })
-    
-            const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
-            const manga = parseSearch($)
-    
-            return createPagedResults({
-                results: manga,
-            })
         }
         else {
-            const request = createRequestObject({
+            request = createRequestObject({
                 
-                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/`,
+                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
                 method: 'GET',
-            })
-    
-            const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
-            const manga = parseSearch($)
-    
-            return createPagedResults({
-                results: manga,
             })
         }
 
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data)
+        const manga = parseSearch($)
+
+        metadata = !isLastPage($) ? { page: page + 1 } : undefined
+
+        return createPagedResults({
+            results: manga,
+        })
     }
 
     override async getTags(): Promise<TagSection[]> {
