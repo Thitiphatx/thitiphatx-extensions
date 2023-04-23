@@ -34,14 +34,16 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = ($, mangaId) => {
     const chapters = [];
     let i = 0;
+    new Error(`${$('tbody').length}`);
     if ($('tbody').length) {
         for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
             i++;
             const title = $('td > a', chapter).text().trim() ?? '';
-            const chapterId = $('td > a', chapter).attr('href')?.split('/')[4]?.replace("ep-", "") ?? '';
+            const chapterId = $('td > a', chapter).attr('href')?.split('/')[4] ?? '';
+            new Error(`${title}, ${chapterId}`);
             if (!chapterId)
                 continue;
-            const chapNum = Number(chapterId); //We're manually setting the chapters regarless, however usually the ID equals the chapter number.
+            const chapNum = Number(chapterId.replace("ep-", ""));
             if (!chapterId || !title)
                 continue;
             chapters.push({
@@ -116,7 +118,7 @@ const parseUpdatedManga = ($, time, ids) => {
 };
 exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = ($, sectionCallback) => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Mangas', view_more: true });
+    const latestSection = createHomeSection({ id: 'latest_doujin', title: 'Latest Doujin', view_more: true });
     const latestSection_Array = [];
     for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
         let image = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? '';
@@ -188,14 +190,14 @@ const decodeHTMLEntity = (str) => {
 const isLastPage = ($) => {
     let isLast = false;
     const pages = [];
-    for (const page of $('li', 'ul.pgg').toArray()) {
+    for (const page of $('option', 'div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').toArray()) {
         const p = Number($(page).text().trim());
         if (isNaN(p))
             continue;
         pages.push(p);
     }
     const lastPage = Math.max(...pages);
-    const currentPage = Number($('li > a.sel').text().trim());
+    const currentPage = Number($('div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').val());
     if (currentPage >= lastPage)
         isLast = true;
     return isLast;

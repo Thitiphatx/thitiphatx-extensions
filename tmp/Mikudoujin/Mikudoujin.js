@@ -97,7 +97,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: MD_DOMAIN,
+            url: `${MD_DOMAIN}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -115,7 +115,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${MD_DOMAIN}/?page=${page}`,
+            url: `${MD_DOMAIN}/?page=`,
             method: 'GET',
             param,
         });
