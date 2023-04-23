@@ -1053,7 +1053,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: MD_DOMAIN,
+            url: `${MD_DOMAIN}/?page=1`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -1218,7 +1218,7 @@ const parseUpdatedManga = ($, time, ids) => {
 };
 exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = ($, sectionCallback) => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true });
+    const latestSection = createHomeSection({ id: 'latest_doujin', title: 'Latest Doujin', view_more: true });
     const latestSection_Array = [];
     for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
         let image = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? '';
