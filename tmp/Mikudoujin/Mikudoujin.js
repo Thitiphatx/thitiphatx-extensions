@@ -64,7 +64,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         return (0, MikudoujinParser_1.parseChapters)($, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
-        if (mangaId.length != 0) {
+        if (chapterId != "null") {
             const request = createRequestObject({
                 url: `${MD_DOMAIN}/${mangaId}/${chapterId}/`,
                 method: 'GET',
@@ -149,6 +149,15 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         return createPagedResults({
             results: manga,
         });
+    }
+    async getTags() {
+        const request = createRequestObject({
+            url: MD_DOMAIN,
+            method: 'GET',
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data);
+        return (0, MikudoujinParser_1.parseTags)($) || [];
     }
 }
 exports.Mikudoujin = Mikudoujin;

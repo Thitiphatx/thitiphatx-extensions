@@ -7,7 +7,7 @@ import {
     Manga,
     MangaStatus,
     MangaTile,
-    TagSection,
+    TagSection
 } from 'paperback-extensions-common'
 
 import entities = require('entities')
@@ -242,6 +242,8 @@ export const parseTags = ($: CheerioStatic): TagSection[] | null => {
         if (!id || !label) continue
         arrayTags.push({ id: id, label: label })
     }
+    
     const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
+    console.log(tagSections)
     return tagSections
 }

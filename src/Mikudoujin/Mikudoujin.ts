@@ -184,18 +184,34 @@ export class Mikudoujin extends Source {
     }
 
     override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
-        const request = createRequestObject({
-            url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
-            method: 'GET',
-        })
-
-        const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        const manga = parseSearch($)
-
-        return createPagedResults({
-            results: manga,
-        })
+        if (query.title) {
+            const request = createRequestObject({
+                url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
+                method: 'GET',
+            })
+    
+            const response = await this.requestManager.schedule(request, 1)
+            const $ = this.cheerio.load(response.data)
+            const manga = parseSearch($)
+    
+            return createPagedResults({
+                results: manga,
+            })
+        }
+        else {
+            const request = createRequestObject({
+                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}`,
+                method: 'GET',
+            })
+    
+            const response = await this.requestManager.schedule(request, 1)
+            const $ = this.cheerio.load(response.data)
+            const manga = parseSearch($)
+    
+            return createPagedResults({
+                results: manga,
+            })
+        }
 
     }
 
