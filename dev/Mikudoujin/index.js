@@ -1061,7 +1061,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         (0, MikudoujinParser_1.parseHomeSections)($, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 1;
+        const page = metadata?.page ?? 0;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_doujin':
