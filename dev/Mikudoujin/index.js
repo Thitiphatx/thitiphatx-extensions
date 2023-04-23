@@ -1290,14 +1290,14 @@ const decodeHTMLEntity = (str) => {
 const isLastPage = ($) => {
     let isLast = false;
     const pages = [];
-    for (const page of $('li', 'ul.pgg').toArray()) {
+    for (const page of $('option', 'div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').toArray()) {
         const p = Number($(page).text().trim());
         if (isNaN(p))
             continue;
         pages.push(p);
     }
     const lastPage = Math.max(...pages);
-    const currentPage = Number($('li > a.sel').text().trim());
+    const currentPage = Number($('div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').val());
     if (currentPage >= lastPage)
         isLast = true;
     return isLast;
