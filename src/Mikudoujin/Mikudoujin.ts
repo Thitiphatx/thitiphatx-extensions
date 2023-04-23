@@ -154,7 +154,7 @@ export class Mikudoujin extends Source {
         }
     
         const request = createRequestObject({
-            url: `${MD_DOMAIN}/?page=${page}`,
+            url: `${MD_DOMAIN}/?page=`,
             method: 'GET',
             param,
         })
