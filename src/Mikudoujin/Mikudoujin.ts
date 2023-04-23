@@ -10,6 +10,7 @@ import {
     ContentRating,
     MangaUpdates,
     TagType,
+    TagSection,
     Request,
     Response,
 } from 'paperback-extensions-common'
@@ -22,6 +23,7 @@ import {
     parseMangaDetails,
     parseViewMore,
     parseSearch,
+    parseTags,
     parseUpdatedManga,
     UpdatedManga,
 } from './MikudoujinParser'
@@ -96,7 +98,7 @@ export class Mikudoujin extends Source {
     }
 
     override async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        if (mangaId.length != 0) {
+        if (chapterId != "null") {
             const request = createRequestObject({
                 url: `${MD_DOMAIN}/${mangaId}/${chapterId}/`,
                 method: 'GET',
@@ -195,5 +197,16 @@ export class Mikudoujin extends Source {
             results: manga,
         })
 
+    }
+
+    override async getTags(): Promise<TagSection[]> {
+        const request = createRequestObject({
+            url: MD_DOMAIN,
+            method: 'GET',
+        })
+
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data)
+        return parseTags($) || []
     }
 }

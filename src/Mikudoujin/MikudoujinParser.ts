@@ -77,7 +77,7 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
         const title: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()
         // const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
         chapters.push({
-            id: '',
+            id: 'null',
             mangaId,
             name: decodeHTMLEntity(title),
             langCode: LanguageCode.THAI,
@@ -231,4 +231,17 @@ export const isLastPage = ($: CheerioStatic): boolean => {
     const currentPage = Number($('div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').val())
     if (currentPage >= lastPage) isLast = true
     return isLast
+}
+
+export const parseTags = ($: CheerioStatic): TagSection[] | null => {
+    const arrayTags: Tag[] = []
+
+    for (const tag of $('a', 'div.container > div.row > div.col-sm-12.col-md-3 div.card > div.card-body').toArray()) {
+        const label = $('a', tag).text().trim()
+        const id = $('a', tag).attr('href')?.split("/")[4] ?? ''
+        if (!id || !label) continue
+        arrayTags.push({ id: id, label: label })
+    }
+    const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
+    return tagSections
 }
