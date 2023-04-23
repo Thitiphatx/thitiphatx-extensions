@@ -34,8 +34,9 @@ exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = ($, mangaId) => {
     const chapters = [];
     let i = 0;
-    new Error(`${$('tbody').length}`);
-    if ($('tbody').length) {
+    const test = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').length;
+    console.log("test");
+    if ($('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').length != 0) {
         for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
             i++;
             const title = $('td > a', chapter).text().trim() ?? '';

@@ -85,9 +85,9 @@ export class Mikudoujin extends Source {
 
     override async getChapters(mangaId: string): Promise<Chapter[]> {
         const request = createRequestObject({
-            url: `${MD_DOMAIN}/`,
+            url: `${MD_DOMAIN}`,
             method: 'GET',
-            param: mangaId,
+            param: `/${mangaId}/`,
         })
 
         const response = await this.requestManager.schedule(request, 1)
@@ -96,14 +96,25 @@ export class Mikudoujin extends Source {
     }
 
     override async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const request = createRequestObject({
-            url: `${MD_DOMAIN}/${mangaId}/${chapterId}`,
-            method: 'GET',
-        })
-        console.log(`${MD_DOMAIN}/${mangaId}/${chapterId}`)
-        const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        return parseChapterDetails($, mangaId, chapterId)
+        if (mangaId.length != 0) {
+            const request = createRequestObject({
+                url: `${MD_DOMAIN}/${mangaId}/${chapterId}/`,
+                method: 'GET',
+            })
+            const response = await this.requestManager.schedule(request, 1)
+            const $ = this.cheerio.load(response.data)
+            return parseChapterDetails($, mangaId, chapterId)
+        }
+        else {
+            const request = createRequestObject({
+                url: `${MD_DOMAIN}/${mangaId}/`,
+                method: 'GET',
+            })
+            const response = await this.requestManager.schedule(request, 1)
+            const $ = this.cheerio.load(response.data)
+            return parseChapterDetails($, mangaId, chapterId)
+        }
+        
     }
 
     override async filterUpdatedManga(mangaUpdatesFoundCallback: (updates: MangaUpdates) => void, time: Date, ids: string[]): Promise<void> {
