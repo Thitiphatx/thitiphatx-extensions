@@ -134,7 +134,7 @@ export class Mikudoujin extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: MD_DOMAIN,
+            url: `${MD_DOMAIN}/?page=1`,
             method: 'GET',
         })
 

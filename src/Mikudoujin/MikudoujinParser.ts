@@ -140,7 +140,7 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
 }
 
 export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true })
+    const latestSection = createHomeSection({ id: 'latest_doujin', title: 'Latest Doujin', view_more: true })
 
     const latestSection_Array: MangaTile[] = []
 
