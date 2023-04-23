@@ -1053,7 +1053,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: `${MD_DOMAIN}/?page=1`,
+            url: `${MD_DOMAIN}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -1061,7 +1061,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         (0, MikudoujinParser_1.parseHomeSections)($, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 0;
+        const page = metadata?.page ?? 1;
         let param = '';
         switch (homepageSectionId) {
             case 'latest_doujin':
