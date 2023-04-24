@@ -27,9 +27,6 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
     const id: string = manga.projectInfo.projectId ?? ''
     const projectName: string = manga.projectInfo.projectName ?? ''
     const alias: string = manga.projectInfo.aliasName ?? ''
-    
-    titles.push(projectName)
-    titles.push(alias)
 
     let imageVersion: string = manga.projectInfo.imageVersion ?? ''
 
@@ -40,6 +37,10 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
     const info: string = manga.projectInfo.info ?? ''
     const view: number = Number(manga.projectInfo.views) ?? 0
 
+    titles.push(projectName)
+    titles.push(alias)
+    titles.push(author)
+    
     if (manga.projectInfo.flgMature || manga.projectInfo.flgGlue || manga.projectInfo.flgIntense || manga.projectInfo.flgReligion || manga.projectInfo.flgViolent) hentai = true
     
     const arrayTags: Tag[] = []
