@@ -191,10 +191,10 @@ export class Mikudoujin extends Source {
     override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         const page: number = metadata?.page ?? 1
         let request
-
+        let api = '';
         if (query.title) {
             request = createRequestObject({
-                url: `https://www.googleapis.com/customsearch/v1?key=AIzaSyAbZMZSRm8_FJlD32N9CVqAWwZv1VDh3Y0&cx=044d529bc9421486e&q=${encodeURI(query.title ?? '')}`,
+                url: `https://www.googleapis.com/customsearch/v1?key=${api}&cx=044d529bc9421486e&q=${encodeURI(query.title ?? '')}`,
                 method: 'GET',
             })
 
