@@ -1314,24 +1314,22 @@ exports.parseViewMore = parseViewMore;
 const parseSearch = (data) => {
     const mangaItems = [];
     const collectedIds = [];
-    for (const manga of data) {
+    data.forEach(manga => {
         let image = manga.pagemap.cse_image.src ?? '';
         if (!image.includes('https://miku-doujin.com/uploads/thumbnail/')) {
             console.log('found');
         }
         const title = manga.title ?? '';
         const id = manga.formattedUrl.split('/')[3] ?? '';
-        if (!id || !title)
-            continue;
-        if (collectedIds.includes(id))
-            continue;
-        mangaItems.push(createMangaTile({
-            id,
-            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
-        collectedIds.push(id);
-    }
+        if (!(collectedIds.includes(id))) {
+            mangaItems.push(createMangaTile({
+                id,
+                image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+                title: createIconText({ text: decodeHTMLEntity(title) }),
+            }));
+            collectedIds.push(id);
+        }
+    });
     return mangaItems;
 };
 exports.parseSearch = parseSearch;
