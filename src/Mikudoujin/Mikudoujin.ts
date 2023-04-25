@@ -22,11 +22,16 @@ import {
     parseHomeSections,
     parseMangaDetails,
     parseViewMore,
+    parseSearchtag,
     parseSearch,
     parseTags,
     parseUpdatedManga,
     UpdatedManga,
 } from './MikudoujinParser'
+
+import {
+    SearchData,
+} from './MikudoujinHelper'
 
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
@@ -189,8 +194,21 @@ export class Mikudoujin extends Source {
 
         if (query.title) {
             request = createRequestObject({
-                url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
+                url: `https://www.googleapis.com/customsearch/v1?key=AIzaSyAbZMZSRm8_FJlD32N9CVqAWwZv1VDh3Y0&cx=044d529bc9421486e&q=${encodeURI(query.title ?? '')}`,
                 method: 'GET',
+            })
+
+            const response = await this.requestManager.schedule(request, 1)
+            let data: SearchData[]
+            try {
+                data = JSON.parse(response.data)
+            } catch (e) {
+                throw new Error(`${e}`)
+            }
+            const manga = parseSearch(data)
+            return createPagedResults({
+                results: manga,
+                metadata
             })
         }
         else {
@@ -199,17 +217,18 @@ export class Mikudoujin extends Source {
                 url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
                 method: 'GET',
             })
+            
+            const response = await this.requestManager.schedule(request, 1)
+            const $ = this.cheerio.load(response.data)
+            metadata = !isLastPage($) ? { page: page + 1 } : undefined
+            
+            const manga = parseSearchtag($)
+
+            return createPagedResults({
+                results: manga,
+                metadata
+            })
         }
-
-        const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        const manga = parseSearch($)
-        metadata = !isLastPage($) ? { page: page + 1 } : undefined
-
-        return createPagedResults({
-            results: manga,
-            metadata
-        })
     }
 
     override async getTags(): Promise<TagSection[]> {

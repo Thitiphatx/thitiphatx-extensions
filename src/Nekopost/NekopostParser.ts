@@ -39,8 +39,7 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
 
     titles.push(projectName)
     titles.push(alias)
-    titles.push(author)
-    
+
     if (manga.projectInfo.flgMature || manga.projectInfo.flgGlue || manga.projectInfo.flgIntense || manga.projectInfo.flgReligion || manga.projectInfo.flgViolent) hentai = true
     
     const arrayTags: Tag[] = []
