@@ -1099,8 +1099,21 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         let request;
         if (query.title) {
             request = createRequestObject({
-                url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
+                url: `https://www.googleapis.com/customsearch/v1?key=AIzaSyAbZMZSRm8_FJlD32N9CVqAWwZv1VDh3Y0&cx=044d529bc9421486e&q=${encodeURI(query.title ?? '')}`,
                 method: 'GET',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            const manga = (0, MikudoujinParser_1.parseSearch)(data);
+            return createPagedResults({
+                results: manga,
+                metadata
             });
         }
         else {
@@ -1108,15 +1121,15 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
                 method: 'GET',
             });
+            const response = await this.requestManager.schedule(request, 1);
+            const $ = this.cheerio.load(response.data);
+            metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+            const manga = (0, MikudoujinParser_1.parseSearchtag)($);
+            return createPagedResults({
+                results: manga,
+                metadata
+            });
         }
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        const manga = (0, MikudoujinParser_1.parseSearch)($);
-        metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
-        return createPagedResults({
-            results: manga,
-            metadata
-        });
     }
     async getTags() {
         const request = createRequestObject({
@@ -1133,7 +1146,7 @@ exports.Mikudoujin = Mikudoujin;
 },{"./MikudoujinParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTags = exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.isLastPage = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -1298,7 +1311,31 @@ const parseViewMore = ($) => {
     return comics;
 };
 exports.parseViewMore = parseViewMore;
-const parseSearch = ($) => {
+const parseSearch = (data) => {
+    const mangaItems = [];
+    const collectedIds = [];
+    for (const manga of data) {
+        let image = manga.pagemap.cse_image.src ?? '';
+        if (!image.includes('https://miku-doujin.com/uploads/thumbnail/')) {
+            console.log('found');
+        }
+        const title = manga.title ?? '';
+        const id = manga.formattedUrl.split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        if (collectedIds.includes(id))
+            continue;
+        mangaItems.push(createMangaTile({
+            id,
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+        collectedIds.push(id);
+    }
+    return mangaItems;
+};
+exports.parseSearch = parseSearch;
+const parseSearchtag = ($) => {
     const mangaItems = [];
     const collectedIds = [];
     for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
@@ -1320,7 +1357,7 @@ const parseSearch = ($) => {
     }
     return mangaItems;
 };
-exports.parseSearch = parseSearch;
+exports.parseSearchtag = parseSearchtag;
 const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };

@@ -1196,7 +1196,6 @@ const parseMangaDetails = (data, mangaId) => {
     const view = Number(manga.projectInfo.views) ?? 0;
     titles.push(projectName);
     titles.push(alias);
-    titles.push(author);
     if (manga.projectInfo.flgMature || manga.projectInfo.flgGlue || manga.projectInfo.flgIntense || manga.projectInfo.flgReligion || manga.projectInfo.flgViolent)
         hentai = true;
     const arrayTags = [];
