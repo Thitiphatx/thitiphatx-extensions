@@ -205,7 +205,7 @@ export const parseSearch = (data: SearchData[]): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const manga of data) {
+    data.forEach(manga => {
         let image: string = manga.pagemap.cse_image.src ?? ''
         if (!image.includes('https://miku-doujin.com/uploads/thumbnail/')) {
             console.log('found');
@@ -213,17 +213,16 @@ export const parseSearch = (data: SearchData[]): MangaTile[] => {
         const title: string = manga.title ?? ''
         const id: string = manga.formattedUrl.split('/')[3] ?? ''
 
-        if (!id || !title) continue
-
-        if (collectedIds.includes(id)) continue
-        mangaItems.push(createMangaTile({
-            id,
-            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }))
-        collectedIds.push(id)
-
-    }
+        if (!(collectedIds.includes(id))) {
+            mangaItems.push(createMangaTile({
+                id,
+                image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+                title: createIconText({ text: decodeHTMLEntity(title) }),
+            }))
+            collectedIds.push(id)
+        }
+         
+    })
     return mangaItems
 }
 
