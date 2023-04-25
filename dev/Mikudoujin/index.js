@@ -1097,9 +1097,10 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
     async getSearchResults(query, metadata) {
         const page = metadata?.page ?? 1;
         let request;
+        let api = '';
         if (query.title) {
             request = createRequestObject({
-                url: `https://www.googleapis.com/customsearch/v1?key=AIzaSyAbZMZSRm8_FJlD32N9CVqAWwZv1VDh3Y0&cx=044d529bc9421486e&q=${encodeURI(query.title ?? '')}`,
+                url: `https://www.googleapis.com/customsearch/v1?key=${api}&cx=044d529bc9421486e&q=${encodeURI(query.title ?? '')}`,
                 method: 'GET',
             });
             const response = await this.requestManager.schedule(request, 1);
