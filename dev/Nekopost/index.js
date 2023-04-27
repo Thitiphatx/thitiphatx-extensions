@@ -1185,9 +1185,11 @@ const parseMangaDetails = (data, mangaId) => {
     let hentai = false;
     const manga = data;
     const titles = [];
+    const relate = [];
     const id = manga.projectInfo.projectId ?? '';
     const projectName = manga.projectInfo.projectName ?? '';
     const alias = manga.projectInfo.aliasName ?? '';
+    relate.push('9130');
     let imageVersion = manga.projectInfo.imageVersion ?? '';
     let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
     const author = manga.projectInfo.authorName ?? '';
@@ -1222,6 +1224,7 @@ const parseMangaDetails = (data, mangaId) => {
         author: author,
         artist: artist,
         tags: tagSections,
+        relatedIds: relate,
         desc: info,
         views: view,
     });
