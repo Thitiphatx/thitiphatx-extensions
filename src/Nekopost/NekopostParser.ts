@@ -23,11 +23,13 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
     let hentai = false
     const manga = data
     const titles: string[] = []
+    
+    const relate: string[] = []
 
     const id: string = manga.projectInfo.projectId ?? ''
     const projectName: string = manga.projectInfo.projectName ?? ''
     const alias: string = manga.projectInfo.aliasName ?? ''
-
+    relate.push('9130')
     let imageVersion: string = manga.projectInfo.imageVersion ?? ''
 
     let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
@@ -66,6 +68,7 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
         author: author,
         artist: artist,
         tags: tagSections,
+        relatedIds: relate,
         desc: info,
         views: view,
     })
