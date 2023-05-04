@@ -36,7 +36,7 @@ import {
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
