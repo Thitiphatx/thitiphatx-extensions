@@ -1244,12 +1244,12 @@ exports.parseChapterDetails = parseChapterDetails;
 const parseUpdatedManga = ($, time, ids) => {
     const updatedManga = [];
     let loadMore = true;
-    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        const id = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? '';
-        const date = $('a > b.dte', manga).last().text().trim();
+    for (const manga of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        const id = $('a.no-underline.inz-a', manga).attr('href').split('/')[3] ?? '';
+        const date = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', manga).first().text().trim() ?? '';
         let mangaDate = new Date();
         if (date !== 'วันนี้') {
-            mangaDate = new Date(date);
+            mangaDate = parseDate(date);
         }
         if (!id || !mangaDate)
             continue;
