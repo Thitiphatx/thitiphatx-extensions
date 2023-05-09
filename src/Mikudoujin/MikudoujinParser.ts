@@ -10,10 +10,6 @@ import {
     TagSection
 } from 'paperback-extensions-common'
 
-import {
-    SearchData,
-} from './MikudoujinHelper'
-
 import entities = require('entities')
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {

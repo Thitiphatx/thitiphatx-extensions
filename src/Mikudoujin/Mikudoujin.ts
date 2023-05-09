@@ -29,10 +29,6 @@ import {
     UpdatedManga,
 } from './MikudoujinParser'
 
-import {
-    SearchData,
-} from './MikudoujinHelper'
-
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
