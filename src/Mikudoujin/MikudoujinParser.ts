@@ -203,28 +203,22 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     return comics
 }
 
-export const parseSearch = (data: SearchData[]): MangaTile[] => {
+export const parseSearch = ($: CheerioStatic, mangaId: string): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
-    data.forEach(manga => {
-        let image: string = manga.pagemap.cse_image.src ?? ''
-        if (!image.includes('https://miku-doujin.com/uploads/thumbnail/')) {
-            console.log('found');
-        }
-        const title: string = manga.title ?? ''
-        const id: string = manga.formattedUrl.split('/')[3] ?? ''
+    let image: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-4 > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
+    
+    const title: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()
+    const subtitle: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > p:nth-child(4) > small > a').text().trim() ?? ''
 
-        if (!(collectedIds.includes(id))) {
-            mangaItems.push(createMangaTile({
-                id,
-                image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-                title: createIconText({ text: decodeHTMLEntity(title) }),
-            }))
-            collectedIds.push(id)
-        }
-         
-    })
+    mangaItems.push(createMangaTile({
+        id: mangaId,
+        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+        title: createIconText({ text: title }),
+        subtitleText: createIconText({ text: subtitle }),
+    }))
+    collectedIds.push(mangaId)
     return mangaItems
 }
 

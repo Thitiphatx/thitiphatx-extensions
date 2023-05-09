@@ -36,7 +36,7 @@ import {
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -191,21 +191,18 @@ export class Mikudoujin extends Source {
     override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         const page: number = metadata?.page ?? 1
         let request
-        let api = '';
         if (query.title) {
             request = createRequestObject({
-                url: `https://www.googleapis.com/customsearch/v1?key=${api}&cx=044d529bc9421486e&q=${encodeURI(query.title ?? '')}`,
+                url: `${encodeURI(query.title ?? '')}`,
                 method: 'GET',
             })
 
             const response = await this.requestManager.schedule(request, 1)
-            let data: SearchData[]
-            try {
-                data = JSON.parse(response.data)
-            } catch (e) {
-                throw new Error(`${e}`)
-            }
-            const manga = parseSearch(data)
+            const $ = this.cheerio.load(response.data)
+
+            let id = query.title.split('/')[3] ?? '';
+            const manga = parseSearch($, id)
+
             return createPagedResults({
                 results: manga,
                 metadata
