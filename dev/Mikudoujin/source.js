@@ -1108,7 +1108,6 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             const manga = (0, MikudoujinParser_1.parseSearch)($, id);
             return createPagedResults({
                 results: manga,
-                metadata
             });
         }
         else {
