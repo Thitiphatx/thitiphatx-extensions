@@ -201,7 +201,6 @@ export class Mikudoujin extends Source {
 
             return createPagedResults({
                 results: manga,
-                metadata
             })
         }
         else {
