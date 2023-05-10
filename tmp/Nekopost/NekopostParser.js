@@ -7,17 +7,19 @@ const parseMangaDetails = (data, mangaId) => {
     let hentai = false;
     const manga = data;
     const titles = [];
+    // const relate: string[] = []
     const id = manga.projectInfo.projectId ?? '';
     const projectName = manga.projectInfo.projectName ?? '';
     const alias = manga.projectInfo.aliasName ?? '';
-    titles.push(projectName);
-    titles.push(alias);
+    // relate.push('9130')
     let imageVersion = manga.projectInfo.imageVersion ?? '';
     let image = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg';
     const author = manga.projectInfo.authorName ?? '';
     const artist = manga.projectInfo.artistName ?? '';
     const info = manga.projectInfo.info ?? '';
     const view = Number(manga.projectInfo.views) ?? 0;
+    titles.push(projectName);
+    titles.push(alias);
     if (manga.projectInfo.flgMature || manga.projectInfo.flgGlue || manga.projectInfo.flgIntense || manga.projectInfo.flgReligion || manga.projectInfo.flgViolent)
         hentai = true;
     const arrayTags = [];
@@ -44,6 +46,7 @@ const parseMangaDetails = (data, mangaId) => {
         author: author,
         artist: artist,
         tags: tagSections,
+        // relatedIds: relate,
         desc: info,
         views: view,
     });

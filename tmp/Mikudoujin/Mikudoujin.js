@@ -5,7 +5,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const MikudoujinParser_1 = require("./MikudoujinParser");
 const MD_DOMAIN = 'https://www.miku-doujin.com';
 exports.MikudoujinInfo = {
-    version: '1.0.2',
+    version: '1.0.4',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -143,8 +143,15 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         let request;
         if (query.title) {
             request = createRequestObject({
-                url: `https://cse.google.com/cse?cx=009358231530793211456:xtfjzcegcz8&q=${encodeURI(query.title ?? '')}`,
+                url: `${encodeURI(query.title ?? '')}`,
                 method: 'GET',
+            });
+            const response = await this.requestManager.schedule(request, 1);
+            const $ = this.cheerio.load(response.data);
+            let id = query.title.split('/')[3] ?? '';
+            const manga = (0, MikudoujinParser_1.parseSearch)($, id);
+            return createPagedResults({
+                results: manga,
             });
         }
         else {
@@ -152,15 +159,15 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
                 method: 'GET',
             });
+            const response = await this.requestManager.schedule(request, 1);
+            const $ = this.cheerio.load(response.data);
+            metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+            const manga = (0, MikudoujinParser_1.parseSearchtag)($);
+            return createPagedResults({
+                results: manga,
+                metadata
+            });
         }
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        const manga = (0, MikudoujinParser_1.parseSearch)($);
-        metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
-        return createPagedResults({
-            results: manga,
-            metadata
-        });
     }
     async getTags() {
         const request = createRequestObject({

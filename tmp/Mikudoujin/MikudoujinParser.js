@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTags = exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.isLastPage = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -97,12 +97,12 @@ exports.parseChapterDetails = parseChapterDetails;
 const parseUpdatedManga = ($, time, ids) => {
     const updatedManga = [];
     let loadMore = true;
-    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        const id = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? '';
-        const date = $('a > b.dte', manga).last().text().trim();
+    for (const manga of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        const id = $('a.no-underline.inz-a', manga).attr('href').split('/')[3] ?? '';
+        const date = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', manga).first().text().trim() ?? '';
         let mangaDate = new Date();
         if (date !== 'วันนี้') {
-            mangaDate = new Date(date);
+            mangaDate = parseDate(date);
         }
         if (!id || !mangaDate)
             continue;
@@ -165,7 +165,23 @@ const parseViewMore = ($) => {
     return comics;
 };
 exports.parseViewMore = parseViewMore;
-const parseSearch = ($) => {
+const parseSearch = ($, mangaId) => {
+    const mangaItems = [];
+    const collectedIds = [];
+    let image = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-4 > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
+    const title = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim();
+    const subtitle = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > p:nth-child(4) > small > a').text().trim() ?? '';
+    mangaItems.push(createMangaTile({
+        id: mangaId,
+        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+        title: createIconText({ text: title }),
+        subtitleText: createIconText({ text: subtitle }),
+    }));
+    collectedIds.push(mangaId);
+    return mangaItems;
+};
+exports.parseSearch = parseSearch;
+const parseSearchtag = ($) => {
     const mangaItems = [];
     const collectedIds = [];
     for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
@@ -187,7 +203,7 @@ const parseSearch = ($) => {
     }
     return mangaItems;
 };
-exports.parseSearch = parseSearch;
+exports.parseSearchtag = parseSearchtag;
 const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };
