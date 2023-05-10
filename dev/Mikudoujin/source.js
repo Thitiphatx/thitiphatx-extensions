@@ -1173,8 +1173,8 @@ const parseMangaDetails = ($, mangaId) => {
             continue;
         arrayTags.push({ id: label, label: label });
     }
-    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     arrayTags.push({ id: encodeURI(`${author}`), label: author });
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     return createManga({
         id: mangaId,
         titles: titles,
