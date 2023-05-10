@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const MikudoujinParser_1 = require("./MikudoujinParser");
 const MD_DOMAIN = 'https://www.miku-doujin.com';
 exports.MikudoujinInfo = {
-    version: '1.0.4',
+    version: '1.0.5',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1117,12 +1117,28 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             });
             const response = await this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
-            metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
-            const manga = (0, MikudoujinParser_1.parseSearchtag)($);
-            return createPagedResults({
-                results: manga,
-                metadata
-            });
+            if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
+                metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+                const manga = (0, MikudoujinParser_1.parseSearchtag)($);
+                return createPagedResults({
+                    results: manga,
+                    metadata
+                });
+            }
+            else {
+                request = createRequestObject({
+                    url: `https://miku-doujin.com/artist/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                    method: 'GET',
+                });
+                const response = await this.requestManager.schedule(request, 1);
+                const $ = this.cheerio.load(response.data);
+                metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+                const manga = (0, MikudoujinParser_1.parseSearchtag)($);
+                return createPagedResults({
+                    results: manga,
+                    metadata
+                });
+            }
         }
     }
     async getTags() {
@@ -1158,6 +1174,7 @@ const parseMangaDetails = ($, mangaId) => {
         arrayTags.push({ id: label, label: label });
     }
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    arrayTags.push({ id: encodeURI(`${author}`), label: author });
     return createManga({
         id: mangaId,
         titles: titles,
