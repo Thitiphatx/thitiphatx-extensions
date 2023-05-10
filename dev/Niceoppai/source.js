@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
 exports.NiceoppaiInfo = {
-    version: '1.0.7',
+    version: '1.0.8',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1264,7 +1264,7 @@ const parseSearch = ($) => {
     for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
         const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
         const image = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0")) ?? '';
-        const title = $('div.det > a', manga).text().trim() ?? '';
+        const title = encodeURI($('div.det > a', manga).text().trim()) ?? '';
         const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
         if (!id || !title || !image)
             continue;
