@@ -1052,7 +1052,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: 'https://www.niceoppai.net/latest-chapters/1',
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
