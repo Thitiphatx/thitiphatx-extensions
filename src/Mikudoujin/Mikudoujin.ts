@@ -32,7 +32,7 @@ import {
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
-    version: '1.0.4',
+    version: '1.0.5',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -209,17 +209,34 @@ export class Mikudoujin extends Source {
                 url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
                 method: 'GET',
             })
-            
             const response = await this.requestManager.schedule(request, 1)
             const $ = this.cheerio.load(response.data)
-            metadata = !isLastPage($) ? { page: page + 1 } : undefined
+            if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
+                metadata = !isLastPage($) ? { page: page + 1 } : undefined
             
-            const manga = parseSearchtag($)
-
-            return createPagedResults({
-                results: manga,
-                metadata
-            })
+                const manga = parseSearchtag($)
+                return createPagedResults({
+                    results: manga,
+                    metadata
+                })
+            }
+            else {
+                request = createRequestObject({
+                
+                    url: `https://miku-doujin.com/artist/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
+                    method: 'GET',
+                })
+                const response = await this.requestManager.schedule(request, 1)
+                const $ = this.cheerio.load(response.data)
+                metadata = !isLastPage($) ? { page: page + 1 } : undefined
+            
+                const manga = parseSearchtag($)
+                return createPagedResults({
+                    results: manga,
+                    metadata
+                })
+            }
+            
         }
     }
 
