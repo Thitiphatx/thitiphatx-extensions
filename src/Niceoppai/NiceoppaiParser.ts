@@ -196,7 +196,7 @@ export const parseSearch = ($: CheerioStatic): MangaTile[] => {
         const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? ''
         const image: string = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0","350x0")) ?? ''
         
-        const title: string = $('div.det > a', manga).text().trim() ?? ''
+        const title: string = encodeURI($('div.det > a', manga).text().trim()) ?? ''
         const subtitle: string = $('div.det > div.vws', manga).text().trim() ?? ''
         if (!id || !title || !image) continue
 
