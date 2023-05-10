@@ -134,7 +134,7 @@ export class Niceoppai extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: 'https://www.niceoppai.net/latest-chapters/1',
             method: 'GET',
         })
 
