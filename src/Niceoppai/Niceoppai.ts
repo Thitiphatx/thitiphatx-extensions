@@ -10,7 +10,6 @@ import {
     ContentRating,
     MangaUpdates,
     TagType,
-    TagSection,
     Request,
     Response,
 } from 'paperback-extensions-common'
@@ -22,9 +21,7 @@ import {
     parseHomeSections,
     parseMangaDetails,
     parseViewMore,
-    parseSearchtag,
     parseSearch,
-    parseTags,
     parseUpdatedManga,
     UpdatedManga,
 } from './NiceoppaiParser'
@@ -32,12 +29,12 @@ import {
 const NO_DOMAIN = 'https://www.niceoppai.net'
 
 export const NiceoppaiInfo: SourceInfo = {
-    version: '1.1.0',
+    version: '1.0.8',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls comics from niceoppai.net',
+    description: 'Extension that pulls comics from Niceoppai.net.',
     contentRating: ContentRating.MATURE,
     websiteBaseURL: NO_DOMAIN,
     sourceTags: [
@@ -73,13 +70,13 @@ export class Niceoppai extends Source {
     })
 
 
-    override getMangaShareUrl(mangaId: string): string { return `${NO_DOMAIN}/${mangaId}/` }
+    override getMangaShareUrl(mangaId: string): string { return `${NO_DOMAIN}/${mangaId}` }
 
     override async getMangaDetails(mangaId: string): Promise<Manga> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/`,
             method: 'GET',
-            param: `/${mangaId}/`,
+            param: mangaId,
         })
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
@@ -88,9 +85,9 @@ export class Niceoppai extends Source {
 
     override async getChapters(mangaId: string): Promise<Chapter[]> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/`,
             method: 'GET',
-            param: `/${mangaId}/`,
+            param: mangaId,
         })
 
         const response = await this.requestManager.schedule(request, 1)
@@ -118,7 +115,7 @@ export class Niceoppai extends Source {
 
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/?page=${page}`,
+                url: `${NO_DOMAIN}/latest-chapters/${page}`,
                 method: 'GET',
             })
             page++
@@ -137,7 +134,7 @@ export class Niceoppai extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/1`,
+            url: 'https://www.niceoppai.net/latest-chapters/1',
             method: 'GET',
         })
 
@@ -149,7 +146,7 @@ export class Niceoppai extends Source {
         const page: number = metadata?.page ?? 1
         let param = ''
         switch (homepageSectionId) {
-            case 'latest_manga':
+            case 'latest_comic':
                 param = `${page}`
                 break
             default:
@@ -173,70 +170,19 @@ export class Niceoppai extends Source {
         })
     }
 
-    override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 1
-        let request
-        if (query.title) {
-            request = createRequestObject({
-                url: `${encodeURI(query.title ?? '')}`,
-                method: 'GET',
-            })
-
-            const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
-
-            let id = query.title.split('/')[3] ?? '';
-            const manga = parseSearch($, id)
-
-            return createPagedResults({
-                results: manga,
-            })
-        }
-        else {
-            request = createRequestObject({
-                
-                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
-                method: 'GET',
-            })
-            const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
-            if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
-                metadata = !isLastPage($) ? { page: page + 1 } : undefined
-            
-                const manga = parseSearchtag($)
-                return createPagedResults({
-                    results: manga,
-                    metadata
-                })
-            }
-            else {
-                request = createRequestObject({
-                
-                    url: `https://miku-doujin.com/artist/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
-                    method: 'GET',
-                })
-                const response = await this.requestManager.schedule(request, 1)
-                const $ = this.cheerio.load(response.data)
-                metadata = !isLastPage($) ? { page: page + 1 } : undefined
-            
-                const manga = parseSearchtag($)
-                return createPagedResults({
-                    results: manga,
-                    metadata
-                })
-            }
-            
-        }
-    }
-
-    override async getTags(): Promise<TagSection[]> {
+    override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
             method: 'GET',
         })
 
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
-        return parseTags($) || []
+        const manga = parseSearch($)
+
+        return createPagedResults({
+            results: manga,
+        })
+
     }
 }
