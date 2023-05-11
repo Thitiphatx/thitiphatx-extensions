@@ -131,21 +131,27 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
 
     const latestSection_Array: MangaTile[] = []
 
-    for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image: string = encodeURI($('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0")) ?? ''
+    // for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
+    //     let image: string = encodeURI($('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0")) ?? ''
 
-        const title: string = $('div.det > a', comic).first().text().trim() ?? ''
-        const id: string = $('div.det > a', comic).attr('href').split('/')[3] ?? ''
-        const subtitle: string = $('b.val.lng_', comic).first().text().trim() ?? ''
-        if (!id || !title) continue
-        latestSection_Array.push(createMangaTile({
-            id: id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-            subtitleText: createIconText({ text: subtitle }),
-        }))
-    }
-    
+    //     const title: string = $('div.det > a', comic).first().text().trim() ?? ''
+    //     const id: string = $('div.det > a', comic).attr('href').split('/')[3] ?? ''
+    //     const subtitle: string = $('b.val.lng_', comic).first().text().trim() ?? ''
+    //     if (!id || !title) continue
+    //     latestSection_Array.push(createMangaTile({
+    //         id: id,
+    //         image: image,
+    //         title: createIconText({ text: decodeHTMLEntity(title) }),
+    //         subtitleText: createIconText({ text: subtitle }),
+    //     }))
+    // }
+
+    latestSection_Array.push(createMangaTile({
+        id: 'test',
+        image: 'testimg',
+        title: createIconText({ text: decodeHTMLEntity('test') }),
+        subtitleText: createIconText({ text: 'testsub' }),
+    }))
     latestSection.items = latestSection_Array
     sectionCallback(latestSection)
 

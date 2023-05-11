@@ -134,17 +134,15 @@ export class Niceoppai extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: 'https://www.niceoppai.net/latest-chapters/1',
+            url: `${NO_DOMAIN}/latest-chapters/1`,
             method: 'GET',
-            headers: {
-                'Referer': 'niceoppai.net'
-            }
         })
 
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
         parseHomeSections($, sectionCallback)
     }
+
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
         const page: number = metadata?.page ?? 1
         let param = ''

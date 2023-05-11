@@ -5,12 +5,12 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
 exports.NiceoppaiInfo = {
-    version: '1.1.0',
+    version: '1.0.8',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls comics from niceoppai.net',
+    description: 'Extension that pulls comics from Niceoppai.net.',
     contentRating: paperback_extensions_common_1.ContentRating.MATURE,
     websiteBaseURL: NO_DOMAIN,
     sourceTags: [
@@ -42,12 +42,12 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             },
         });
     }
-    getMangaShareUrl(mangaId) { return `${NO_DOMAIN}/${mangaId}/`; }
+    getMangaShareUrl(mangaId) { return `${NO_DOMAIN}/${mangaId}`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/`,
             method: 'GET',
-            param: `/${mangaId}/`,
+            param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
@@ -55,9 +55,9 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/`,
             method: 'GET',
-            param: `/${mangaId}/`,
+            param: mangaId,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
@@ -80,7 +80,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         };
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/?page=${page}`,
+                url: `${NO_DOMAIN}/latest-chapters/${page}`,
                 method: 'GET',
             });
             page++;
@@ -107,7 +107,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         const page = metadata?.page ?? 1;
         let param = '';
         switch (homepageSectionId) {
-            case 'latest_manga':
+            case 'latest_comic':
                 param = `${page}`;
                 break;
             default:
@@ -117,6 +117,9 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             url: `${NO_DOMAIN}/latest-chapters/`,
             method: 'GET',
             param,
+            headers: {
+                'Referer': 'niceoppai.net'
+            }
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
@@ -127,61 +130,17 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             metadata,
         });
     }
-    async getSearchResults(query, metadata) {
-        const page = metadata?.page ?? 1;
-        let request;
-        if (query.title) {
-            request = createRequestObject({
-                url: `${encodeURI(query.title ?? '')}`,
-                method: 'GET',
-            });
-            const response = await this.requestManager.schedule(request, 1);
-            const $ = this.cheerio.load(response.data);
-            let id = query.title.split('/')[3] ?? '';
-            const manga = (0, NiceoppaiParser_1.parseSearch)($, id);
-            return createPagedResults({
-                results: manga,
-            });
-        }
-        else {
-            request = createRequestObject({
-                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
-                method: 'GET',
-            });
-            const response = await this.requestManager.schedule(request, 1);
-            const $ = this.cheerio.load(response.data);
-            if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
-                metadata = !(0, NiceoppaiParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
-                const manga = (0, NiceoppaiParser_1.parseSearchtag)($);
-                return createPagedResults({
-                    results: manga,
-                    metadata
-                });
-            }
-            else {
-                request = createRequestObject({
-                    url: `https://miku-doujin.com/artist/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
-                    method: 'GET',
-                });
-                const response = await this.requestManager.schedule(request, 1);
-                const $ = this.cheerio.load(response.data);
-                metadata = !(0, NiceoppaiParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
-                const manga = (0, NiceoppaiParser_1.parseSearchtag)($);
-                return createPagedResults({
-                    results: manga,
-                    metadata
-                });
-            }
-        }
-    }
-    async getTags() {
+    async getSearchResults(query) {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return (0, NiceoppaiParser_1.parseTags)($) || [];
+        const manga = (0, NiceoppaiParser_1.parseSearch)($);
+        return createPagedResults({
+            results: manga,
+        });
     }
 }
 exports.Niceoppai = Niceoppai;
