@@ -12,17 +12,6 @@ const parseMangaDetails = ($, mangaId) => {
     const author = $('div.det > p:nth-child(7) > a').text().trim() ?? '';
     const description = decodeHTMLEntity($('div.det > p:nth-child(3)').text().trim() ?? '');
     let hentai = false;
-    const arrayTags = [];
-    for (const tag of $('a', 'div.det > p:nth-child(9) a').toArray()) {
-        const label = $(tag).text().trim();
-        const id = $(tag).attr('href')?.split('/').pop() ?? '';
-        if (!id || !label)
-            continue;
-        if (['ADULT', 'SMUT', 'MATURE'].includes(label.toUpperCase()))
-            hentai = true;
-        arrayTags.push({ id: id, label: label });
-    }
-    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     const rawStatus = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? '';
     let status = paperback_extensions_common_1.MangaStatus.ONGOING;
     if (rawStatus.includes('แล้ว'))
@@ -35,7 +24,6 @@ const parseMangaDetails = ($, mangaId) => {
         status: status,
         author: author,
         artist: author,
-        tags: tagSections,
         desc: description,
     });
 };
