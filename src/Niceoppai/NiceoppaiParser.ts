@@ -7,7 +7,7 @@ import {
     Manga,
     MangaStatus,
     MangaTile,
-    TagSection,
+    TagSection
 } from 'paperback-extensions-common'
 
 import entities = require('entities')
@@ -15,28 +15,39 @@ import entities = require('entities')
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 
     const titles: string[] = []
-    titles.push(decodeHTMLEntity($('div.wpm_pag.mng_det > h1').first().text().trim()))
+    titles.push(decodeHTMLEntity($('#sct_content > div.con > div.wpm_pag.mng_det > h1.ttl').first().text().trim()))
 
-    let image: string = $('img', 'div.cvr_ara').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
-    if (image.startsWith('/')) image = 'https:' + image
+    let image: string = $('#sct_content > div.con > div.wpm_pag.mng_det > div.mng_ifo > div.cvr_ara > img.cvr').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
 
-    const author: string = $('div.det > p:nth-child(7) > a').text().trim() ?? ''
-    const description: string = decodeHTMLEntity($('div.det > p:nth-child(3)').text().trim() ?? '')
+    const author: string = $('#sct_content > div.con > div.wpm_pag.mng_det > div.mng_ifo > div.det > p:nth-child(6) > a').text().trim() ?? ''
+    const artist: string = $('#sct_content > div.con > div.wpm_pag.mng_det > div.mng_ifo > div.det > p:nth-child(7) > a').text().trim() ?? ''
 
-    let hentai = false
+    const description: string = $('#sct_content > div.con > div.wpm_pag.mng_det > div.mng_ifo > div.det > p:nth-child(3)').first().text().trim() ?? ''
 
-    const rawStatus: string = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? ''
-    let status = MangaStatus.ONGOING
-    if (rawStatus.includes('แล้ว')) status = MangaStatus.COMPLETED
+    let hentai = true
+    const arrayTags: Tag[] = []
+    for (const tag of $('a', '#sct_content > div.con > div.wpm_pag.mng_det > div.mng_ifo > div.det > p:nth-child(9)').toArray()) {
+        
+        const label: string = $(tag).text().trim()
+        if (!label) continue
+
+        arrayTags.push({ id: encodeURI(label), label: label })
+    }
+    const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
+
+    
+
     return createManga({
         id: mangaId,
         titles: titles,
         image: image,
         hentai: hentai,
-        status: status,
+        status: MangaStatus.ONGOING,
         author: author,
-        artist: author,
+        artist: artist,
+        tags: tagSections,
         desc: description,
+
     })
 }
 
@@ -103,15 +114,17 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
     const updatedManga: string[] = []
     let loadMore = true
 
-    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        const id: string = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? ''
-        const date = $('a > b.dte', manga).last().text().trim()
+    for (const manga of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        const id: string = $('a.no-underline.inz-a', manga).attr('href').split('/')[3] ?? ''
+
+        const date: string = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', manga).first().text().trim() ?? ''
         let mangaDate = new Date()
         if (date !== 'วันนี้') {
-            mangaDate = new Date(date)
+            mangaDate = parseDate(date);
         }
 
         if (!id || !mangaDate) continue
+
         if (mangaDate > time) {
             if (ids.includes(id)) {
                 updatedManga.push(id)
@@ -127,17 +140,18 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
 }
 
 export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
-    const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true })
+    const latestSection = createHomeSection({ id: 'latest_manga', title: 'Latest Manga', view_more: true })
 
     const latestSection_Array: MangaTile[] = []
 
-    for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image: string = encodeURI($('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0")) ?? ''
+    for (const item of $('div.row', '#sct_content > div.con > div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        let image: string = $('div.cvr > div.img_wrp > a > img', item).first().attr('src').replace('36x0', '350x0') ?? ''
 
-        const title: string = $('div.det > a', comic).first().text().trim() ?? ''
-        const id: string = $('div.det > a', comic).attr('href').split('/')[3] ?? ''
-        const subtitle: string = $('b.val.lng_', comic).first().text().trim() ?? ''
+        const title: string = $('div.det > a.ttl', item).first().text().trim() ?? ''
+        const id: string = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? ''
+        const subtitle: string = $('div.det > ul.lst > li > a.lst > b.val.lng_', item).first().text().trim() ?? ''
         if (!id || !title) continue
+
         latestSection_Array.push(createMangaTile({
             id: id,
             image: image,
@@ -155,13 +169,12 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     const comics: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image: string = encodeURI($('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0","350x0")) ?? ''
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image: string = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? ''
 
-        const title: string = $('div.det > a.ttl', item).first().text().trim() ?? ''
-        const id: string = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? ''
-        const subtitle: string = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? ''
-
+        const title: string = $('a.no-underline.inz-a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+        const id: string = $('a.no-underline.inz-a', item).attr('href').split('/')[3] ?? ''
+        const subtitle: string = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', item).first().text().trim() ?? ''
         if (!id || !title) continue
 
         if (collectedIds.includes(id)) continue
@@ -177,23 +190,42 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     return comics
 }
 
-export const parseSearch = ($: CheerioStatic): MangaTile[] => {
+export const parseSearch = ($: CheerioStatic, mangaId: string): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
-        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? ''
-        const image: string = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0","350x0")) ?? ''
-        
-        const title: string = $('div.det > a', manga).text().trim() ?? ''
-        const subtitle: string = $('div.det > div.vws', manga).text().trim() ?? ''
-        if (!id || !title || !image) continue
+    let image: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-4 > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
+    
+    const title: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()
+    const subtitle: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > p:nth-child(4) > small > a').text().trim() ?? ''
+
+    mangaItems.push(createMangaTile({
+        id: mangaId,
+        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+        title: createIconText({ text: title }),
+        subtitleText: createIconText({ text: subtitle }),
+    }))
+    collectedIds.push(mangaId)
+    return mangaItems
+}
+
+export const parseSearchtag = ($: CheerioStatic): MangaTile[] => {
+    const mangaItems: MangaTile[] = []
+    const collectedIds: string[] = []
+
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image: string = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? ''
+
+        const title: string = $('a.no-underline.inz-a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+        const id: string = $('a.no-underline.inz-a', item).attr('href').split('/')[3] ?? ''
+        const subtitle: string = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', item).first().text().trim() ?? ''
+        if (!id || !title) continue
 
         if (collectedIds.includes(id)) continue
         mangaItems.push(createMangaTile({
             id,
             image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: title }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
             subtitleText: createIconText({ text: subtitle }),
         }))
         collectedIds.push(id)
@@ -209,13 +241,56 @@ const decodeHTMLEntity = (str: string): string => {
 export const isLastPage = ($: CheerioStatic): boolean => {
     let isLast = false
     const pages = []
-    for (const page of $('li', 'ul.pgg').toArray()) {
+    for (const page of $('option', 'div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').toArray()) {
         const p = Number($(page).text().trim())
         if (isNaN(p)) continue
         pages.push(p)
     }
     const lastPage = Math.max(...pages)
-    const currentPage = Number($('li > a.sel').text().trim())
+    const currentPage = Number($('div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').val())
     if (currentPage >= lastPage) isLast = true
     return isLast
+}
+
+export const parseTags = ($: CheerioStatic): TagSection[] | null => {
+    const arrayTags: Tag[] = []
+
+    for (const tag of $('a', 'div.container > div.row > div.col-sm-12.col-md-3 div.card > div.card-body').toArray()) {
+        const label = $(tag).text().trim()
+        const id = $(tag).attr('href')?.split("/")[4] ?? ''
+        if (!id || !label) continue
+        arrayTags.push({ id: id, label: label })
+    }
+    
+    const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
+    console.log(tagSections)
+    return tagSections
+}
+
+const parseDate = (date: string): Date => {
+    let time: Date
+    const number = Number(date.replace(/[^0-9]/g, ''))
+    if (date.includes('LESS THAN AN HOUR') || date.includes('JUST NOW')) {
+        time = new Date(Date.now())
+    } else if (date.includes('ปี') || date.includes('YEARS')) {
+        time = new Date(Date.now() - (number * 31556952000))
+    } else if (date.includes('เดือน') || date.includes('MONTHS')) {
+        time = new Date(Date.now() - (number * 2592000000))
+    } else if (date.includes('สัปดาห์') || date.includes('WEEKS')) {
+        time = new Date(Date.now() - (number * 604800000))
+    } else if (date.includes('YESTERDAY')) {
+        time = new Date(Date.now() - 86400000)
+    } else if (date.includes('วัน') || date.includes('DAYS')) {
+        time = new Date(Date.now() - (number * 86400000))
+    } else if (date.includes('ชั่วโมง') || date.includes('HOURS')) {
+        time = new Date(Date.now() - (number * 3600000))
+    } else if (date.includes('นาที') || date.includes('MINUTES')) {
+        time = new Date(Date.now() - (number * 60000))
+    } else if (date.includes('วินาที') || date.includes('SECONDS')) {
+        time = new Date(Date.now() - (number * 1000))
+    } else {
+        const split = date.split('-')
+        time = new Date(Number(split[2]), Number(split[0]) - 1, Number(split[1]))
+    }
+    return time
 }
