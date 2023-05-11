@@ -1054,6 +1054,9 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         const request = createRequestObject({
             url: 'https://www.niceoppai.net/latest-chapters/1',
             method: 'GET',
+            headers: {
+                'Referer': 'niceoppai.net'
+            }
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
@@ -1073,6 +1076,9 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             url: `${NO_DOMAIN}/latest-chapters/`,
             method: 'GET',
             param,
+            headers: {
+                'Referer': 'niceoppai.net'
+            }
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
