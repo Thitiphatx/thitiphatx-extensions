@@ -1052,11 +1052,8 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: 'https://www.niceoppai.net/latest-chapters/1',
+            url: `${NO_DOMAIN}/latest-chapters/1`,
             method: 'GET',
-            headers: {
-                'Referer': 'niceoppai.net'
-            }
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
@@ -1211,20 +1208,25 @@ exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = ($, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true });
     const latestSection_Array = [];
-    for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = encodeURI($('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0")) ?? '';
-        const title = $('div.det > a', comic).first().text().trim() ?? '';
-        const id = $('div.det > a', comic).attr('href').split('/')[3] ?? '';
-        const subtitle = $('b.val.lng_', comic).first().text().trim() ?? '';
-        if (!id || !title)
-            continue;
-        latestSection_Array.push(createMangaTile({
-            id: id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-            subtitleText: createIconText({ text: subtitle }),
-        }));
-    }
+    // for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
+    //     let image: string = encodeURI($('div.cvr > div > a > img', comic).first().attr('src').replace("36x0","350x0")) ?? ''
+    //     const title: string = $('div.det > a', comic).first().text().trim() ?? ''
+    //     const id: string = $('div.det > a', comic).attr('href').split('/')[3] ?? ''
+    //     const subtitle: string = $('b.val.lng_', comic).first().text().trim() ?? ''
+    //     if (!id || !title) continue
+    //     latestSection_Array.push(createMangaTile({
+    //         id: id,
+    //         image: image,
+    //         title: createIconText({ text: decodeHTMLEntity(title) }),
+    //         subtitleText: createIconText({ text: subtitle }),
+    //     }))
+    // }
+    latestSection_Array.push(createMangaTile({
+        id: 'test',
+        image: 'testimg',
+        title: createIconText({ text: decodeHTMLEntity('test') }),
+        subtitleText: createIconText({ text: 'testsub' }),
+    }));
     latestSection.items = latestSection_Array;
     sectionCallback(latestSection);
 };
