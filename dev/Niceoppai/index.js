@@ -956,11 +956,11 @@ __exportStar(require("./SearchFilter"), exports);
 },{"./Chapter":13,"./ChapterDetails":14,"./Constants":15,"./DynamicUI":31,"./HomeSection":32,"./Languages":33,"./Manga":34,"./MangaTile":35,"./MangaUpdate":36,"./PagedResults":37,"./RawData":38,"./RequestHeaders":39,"./RequestInterceptor":40,"./RequestManager":41,"./RequestObject":42,"./ResponseObject":43,"./SearchField":44,"./SearchFilter":45,"./SearchRequest":46,"./SourceInfo":47,"./SourceManga":48,"./SourceStateManager":49,"./SourceTag":50,"./TagSection":51,"./TrackedManga":52,"./TrackedMangaChapterReadAction":53,"./TrackerActionQueue":54}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Mikudoujin = exports.MikudoujinInfo = void 0;
+exports.Niceoppai = exports.NiceoppaiInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
-exports.MikudoujinInfo = {
+exports.NiceoppaiInfo = {
     version: '1.1.0',
     name: 'Niceoppai',
     icon: 'icon.png',
@@ -976,7 +976,7 @@ exports.MikudoujinInfo = {
         },
     ],
 };
-class Mikudoujin extends paperback_extensions_common_1.Source {
+class Niceoppai extends paperback_extensions_common_1.Source {
     constructor() {
         super(...arguments);
         this.requestManager = createRequestManager({
@@ -1052,7 +1052,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/latest-chapters/1`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -1070,7 +1070,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/?page=`,
+            url: `${NO_DOMAIN}/latest-chapters/`,
             method: 'GET',
             param,
         });
@@ -1140,7 +1140,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         return (0, NiceoppaiParser_1.parseTags)($) || [];
     }
 }
-exports.Mikudoujin = Mikudoujin;
+exports.Niceoppai = Niceoppai;
 
 },{"./NiceoppaiParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
