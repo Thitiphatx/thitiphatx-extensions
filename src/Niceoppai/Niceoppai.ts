@@ -31,7 +31,7 @@ import {
 
 const NO_DOMAIN = 'https://www.niceoppai.net'
 
-export const MikudoujinInfo: SourceInfo = {
+export const NiceoppaiInfo: SourceInfo = {
     version: '1.1.0',
     name: 'Niceoppai',
     icon: 'icon.png',
@@ -48,7 +48,7 @@ export const MikudoujinInfo: SourceInfo = {
     ],
 }
 
-export class Mikudoujin extends Source {
+export class Niceoppai extends Source {
     requestManager = createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 15000,
@@ -137,7 +137,7 @@ export class Mikudoujin extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}`,
+            url: `${NO_DOMAIN}/latest-chapters/1`,
             method: 'GET',
         })
 
@@ -157,7 +157,7 @@ export class Mikudoujin extends Source {
         }
     
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/?page=`,
+            url: `${NO_DOMAIN}/latest-chapters/`,
             method: 'GET',
             param,
         })
