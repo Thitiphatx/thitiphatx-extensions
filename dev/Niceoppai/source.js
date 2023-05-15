@@ -960,6 +960,7 @@ exports.Niceoppai = exports.NiceoppaiInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
+let globalUA;
 exports.NiceoppaiInfo = {
     version: '1.0.8',
     name: 'Niceoppai',
@@ -979,15 +980,20 @@ exports.NiceoppaiInfo = {
 class Niceoppai extends paperback_extensions_common_1.Source {
     constructor() {
         super(...arguments);
+        this.cookies = [
+            createCookie({ name: 'wpm_wgt_mng_idx_2_tab', value: '0', domain: `${NO_DOMAIN}` })
+        ];
         this.requestManager = createRequestManager({
-            requestsPerSecond: 4,
-            requestTimeout: 15000,
+            requestsPerSecond: 3,
+            requestTimeout: 45000,
             interceptor: {
                 interceptRequest: async (request) => {
                     request.headers = {
                         ...(request.headers ?? {}),
                         ...{
                             'referer': NO_DOMAIN,
+                            'cookie': 'wpm_wgt_mng_idx_2_tab=0',
+                            'userAgent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.42",
                         },
                     };
                     return request;
@@ -1052,12 +1058,14 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/`,
+            url: encodeURI(`https://www.niceoppai.net/manga_list/all/any/last-updated/`),
             method: 'GET',
+            cookies: this.cookies,
         });
-        const response = await this.requestManager.schedule(request, 1);
+        const response = await this.requestManager.schedule(request, 3);
+        console.log('response is :', response);
         const $ = this.cheerio.load(response.data);
-        (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
+        return (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -1073,9 +1081,6 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             url: `${NO_DOMAIN}/latest-chapters/`,
             method: 'GET',
             param,
-            headers: {
-                'Referer': 'niceoppai.net'
-            }
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
@@ -1097,6 +1102,21 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         return createPagedResults({
             results: manga,
         });
+    }
+    getCloudflareBypassRequest() {
+        return createRequestObject({
+            url: NO_DOMAIN,
+            method: 'GET',
+            headers: {
+                ...(globalUA && { 'user-agent': globalUA }),
+                'referer': `${NO_DOMAIN}.`
+            }
+        });
+    }
+    CloudFlareError(status) {
+        if (status == 503) {
+            throw new Error('CLOUDFLARE BYPASS ERROR:\nPlease go to Settings > Sources > <The name of this source> and press Cloudflare Bypass');
+        }
     }
 }
 exports.Niceoppai = Niceoppai;
@@ -1208,18 +1228,16 @@ exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = ($, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true });
     const latestSection_Array = [];
-    for (const comic of $('div.row', 'div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = encodeURI($('div.cvr > div > a > img', comic).first().attr('src').replace("36x0", "350x0")) ?? '';
-        const title = $('div.det > a', comic).first().text().trim() ?? '';
-        const id = $('div.det > a', comic).attr('href').split('/')[3] ?? '';
-        const subtitle = $('b.val.lng_', comic).first().text().trim() ?? '';
+    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
+        const image = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0")) ?? '';
+        const title = $('div.det > a', manga).text().trim() ?? '';
         if (!id || !title)
             continue;
         latestSection_Array.push(createMangaTile({
             id: id,
             image: image,
             title: createIconText({ text: decodeHTMLEntity(title) }),
-            subtitleText: createIconText({ text: subtitle }),
         }));
     }
     latestSection.items = latestSection_Array;
@@ -1229,11 +1247,11 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
-    for (const item of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
-        let image = encodeURI($('div.cvr div.img_wrp > a > img', item).first().attr('src').replace("36x0", "350x0")) ?? '';
-        const title = $('div.det > a.ttl', item).first().text().trim() ?? '';
-        const id = $('div.det > a.ttl', item).attr('href').split('/')[3] ?? '';
-        const subtitle = $('div.det ul.lst li a > b.val.lng_', item).first().text().trim() ?? '';
+    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
+        const image = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0")) ?? '';
+        const title = $('div.det > a', manga).text().trim() ?? '';
+        const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
         if (!id || !title)
             continue;
         if (collectedIds.includes(id))
