@@ -4,8 +4,9 @@ exports.Niceoppai = exports.NiceoppaiInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
+let globalUA;
 exports.NiceoppaiInfo = {
-    version: '1.0.6',
+    version: '1.0.8',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -23,15 +24,20 @@ exports.NiceoppaiInfo = {
 class Niceoppai extends paperback_extensions_common_1.Source {
     constructor() {
         super(...arguments);
+        this.cookies = [
+            createCookie({ name: 'wpm_wgt_mng_idx_2_tab', value: '0', domain: `${NO_DOMAIN}` })
+        ];
         this.requestManager = createRequestManager({
-            requestsPerSecond: 4,
-            requestTimeout: 15000,
+            requestsPerSecond: 3,
+            requestTimeout: 45000,
             interceptor: {
                 interceptRequest: async (request) => {
                     request.headers = {
                         ...(request.headers ?? {}),
                         ...{
                             'referer': NO_DOMAIN,
+                            'cookie': 'wpm_wgt_mng_idx_2_tab=0',
+                            'userAgent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.42",
                         },
                     };
                     return request;
@@ -96,12 +102,14 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: NO_DOMAIN,
+            url: encodeURI(`https://www.niceoppai.net/manga_list/all/any/last-updated/`),
             method: 'GET',
+            cookies: this.cookies,
         });
-        const response = await this.requestManager.schedule(request, 1);
+        const response = await this.requestManager.schedule(request, 3);
+        console.log('response is :', response);
         const $ = this.cheerio.load(response.data);
-        (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
+        return (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -114,7 +122,7 @@ class Niceoppai extends paperback_extensions_common_1.Source {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/${page}`,
+            url: `${NO_DOMAIN}/latest-chapters/`,
             method: 'GET',
             param,
         });
@@ -138,6 +146,21 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         return createPagedResults({
             results: manga,
         });
+    }
+    getCloudflareBypassRequest() {
+        return createRequestObject({
+            url: NO_DOMAIN,
+            method: 'GET',
+            headers: {
+                ...(globalUA && { 'user-agent': globalUA }),
+                'referer': `${NO_DOMAIN}.`
+            }
+        });
+    }
+    CloudFlareError(status) {
+        if (status == 503) {
+            throw new Error('CLOUDFLARE BYPASS ERROR:\nPlease go to Settings > Sources > <The name of this source> and press Cloudflare Bypass');
+        }
     }
 }
 exports.Niceoppai = Niceoppai;

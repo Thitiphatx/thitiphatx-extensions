@@ -20,16 +20,16 @@ import {
 import entities = require('entities')
 
 export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga => {
+    let hentai = false
     const manga = data
     const titles: string[] = []
+    
+    // const relate: string[] = []
 
     const id: string = manga.projectInfo.projectId ?? ''
     const projectName: string = manga.projectInfo.projectName ?? ''
     const alias: string = manga.projectInfo.aliasName ?? ''
-    
-    titles.push(projectName)
-    titles.push(alias)
-
+    // relate.push('9130')
     let imageVersion: string = manga.projectInfo.imageVersion ?? ''
 
     let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
@@ -37,8 +37,12 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
     const author: string = manga.projectInfo.authorName ?? ''
     const artist: string = manga.projectInfo.artistName ?? ''
     const info: string = manga.projectInfo.info ?? ''
+    const view: number = Number(manga.projectInfo.views) ?? 0
 
-    let hentai = false
+    titles.push(projectName)
+    titles.push(alias)
+
+    if (manga.projectInfo.flgMature || manga.projectInfo.flgGlue || manga.projectInfo.flgIntense || manga.projectInfo.flgReligion || manga.projectInfo.flgViolent) hentai = true
     
     const arrayTags: Tag[] = []
     for (const tag of manga?.listCate) {
@@ -64,7 +68,9 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): Manga =>
         author: author,
         artist: artist,
         tags: tagSections,
+        // relatedIds: relate,
         desc: info,
+        views: view,
     })
 }
 
@@ -72,7 +78,7 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
     const chapters: Chapter[] = []
     let i = 0
 
-    for (const chapter of data?.listChapter) {
+    for (const chapter of data.listChapter) {
         i++
         const title: string = chapter.chapterName ?? ''
         const chapterId: string = chapter.chapterId ?? ''
@@ -105,9 +111,9 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
 
 export const parseChapterDetails = (data: ChapterImage, mangaId: string, chapterId: string): ChapterDetails => {
     const pages: string[] = []
-
     for (const images of data.pageItem) {
-        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${images.pageName}`
+        let imageFile: string = (images.pageName) ? `${images.pageName}` : `${images.fileName}`
+        let image: string | undefined = `https://www.osemocphoto.com/collectManga/${mangaId}/${chapterId}/${imageFile}`
         if (image) pages.push(image)
     }
 
@@ -130,7 +136,7 @@ export const parseUpdatedManga = (data: HomeData, time: Date, ids: string[]): Up
     const updatedManga: string[] = []
     let loadMore = true
 
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id: string = manga.projectId ?? ''
         const date = manga.createDate
         const mangaDate = new Date(date)
@@ -155,7 +161,7 @@ export const parseHomeSections = (data: HomeData, sectionCallback: (section: Hom
 
     const latestSection_Array: MangaTile[] = []
 
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id: string = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
         let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
@@ -181,7 +187,7 @@ export const parseViewMore = (data: HomeData): MangaTile[] => {
     const comics: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const manga of data.listChapter) {
+    for (const manga of data?.listChapter) {
         const id: string = manga.projectId ?? ''
         let imageVersion: string = manga.imageVersion ?? ''
         let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
@@ -207,25 +213,26 @@ export const parseViewMore = (data: HomeData): MangaTile[] => {
 export const parseSearch = (data: SearchData): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
-
-    for (const manga of data.listProject) {
-        const id = manga.projectId ?? ''
-        let imageVersion: string = manga.imageVersion ?? ''
-        let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
-        const title: string = manga.projectName ?? ''
-
-        const subtitle: string = `Ch.${manga.noChapter}` ?? ''
-        if (!id || !title || !image) continue
-
-        if (collectedIds.includes(id)) continue
-        mangaItems.push(createMangaTile({
-            id,
-            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle }),
-        }))
-        collectedIds.push(id)
-
+    if (data.listProject != null) {
+        for (const manga of data.listProject) {
+            const id = manga.projectId ?? ''
+            let imageVersion: string = manga.imageVersion ?? ''
+            let image: string = `https://www.osemocphoto.com/collectManga/${id}/${id}_cover.jpg?${imageVersion}` ?? 'https://www.nekopost.net/assets/demo/no_image.jpg'
+            const title: string = manga.projectName ?? ''
+    
+            const subtitle: string = `Ch.${manga.noChapter}` ?? ''
+            if (!id || !title || !image) continue
+    
+            if (collectedIds.includes(id)) continue
+            mangaItems.push(createMangaTile({
+                id,
+                image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+                title: createIconText({ text: title }),
+                subtitleText: createIconText({ text: subtitle }),
+            }))
+            collectedIds.push(id)
+    
+        }
     }
     return mangaItems
 }
@@ -233,3 +240,5 @@ export const parseSearch = (data: SearchData): MangaTile[] => {
 const decodeHTMLEntity = (str: string): string => {
     return entities.decodeHTML(str)
 }
+
+

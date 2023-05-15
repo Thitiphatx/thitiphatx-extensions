@@ -24,20 +24,19 @@ import {
     parseSearch,
     parseUpdatedManga,
     UpdatedManga,
-} from './NiceoppaiParser'
+} from './MangaThaiParser'
 
-const NO_DOMAIN = 'https://www.niceoppai.net'
-let globalUA: string | null
+const MT_DOMAIN = 'https://www.mangathai.com/'
 
-export const NiceoppaiInfo: SourceInfo = {
-    version: '1.0.8',
-    name: 'Niceoppai',
-    icon: 'icon.png', 
+export const MangaThaiInfo: SourceInfo = {
+    version: '1.0.0',
+    name: 'MangaThai',
+    icon: 'icon.png',
     author: 'Thitiphatx',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls comics from Niceoppai.net.',
+    description: 'Extension that pulls comics from mangathai.com',
     contentRating: ContentRating.MATURE,
-    websiteBaseURL: NO_DOMAIN,
+    websiteBaseURL: MT_DOMAIN,
     sourceTags: [
         {
             text: 'Recommend',
@@ -46,27 +45,24 @@ export const NiceoppaiInfo: SourceInfo = {
     ],
 }
 
-export class Niceoppai extends Source {
+export class MangaThai extends Source {
     readonly cookies = [
-        createCookie({ name: 'wpm_wgt_mng_idx_2_tab', value: '0', domain: `${NO_DOMAIN}` })
+        createCookie({ name: 'configPageView', value: 'all', domain: `${MT_DOMAIN}` })
     ]
 
     requestManager = createRequestManager({
-        requestsPerSecond: 3,
-        requestTimeout: 45000,
+        requestsPerSecond: 4,
+        requestTimeout: 15000,
         interceptor: {
             interceptRequest: async (request: Request): Promise<Request> => {
 
                 request.headers = {
                     ...(request.headers ?? {}),
                     ...{
-                        'referer': NO_DOMAIN,
-                        'cookie': 'wpm_wgt_mng_idx_2_tab=0',
-                        'userAgent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.42",
+                        'referer': MT_DOMAIN,
                     },
 
-                }
-
+                };
                 return request
             },
 
@@ -77,11 +73,11 @@ export class Niceoppai extends Source {
     })
 
 
-    override getMangaShareUrl(mangaId: string): string { return `${NO_DOMAIN}/${mangaId}` }
+    override getMangaShareUrl(mangaId: string): string { return `${MT_DOMAIN}/${mangaId}` }
 
     override async getMangaDetails(mangaId: string): Promise<Manga> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `${MT_DOMAIN}/`,
             method: 'GET',
             param: mangaId,
         })
@@ -92,7 +88,7 @@ export class Niceoppai extends Source {
 
     override async getChapters(mangaId: string): Promise<Chapter[]> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/`,
+            url: `${MT_DOMAIN}/`,
             method: 'GET',
             param: mangaId,
         })
@@ -101,11 +97,12 @@ export class Niceoppai extends Source {
         const $ = this.cheerio.load(response.data)
         return parseChapters($, mangaId)
     }
-
     override async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
+
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/${mangaId}/${chapterId}`,
+            url: `${MT_DOMAIN}/${mangaId}/${chapterId}/`,
             method: 'GET',
+            cookies: this.cookies,
         })
 
         const response = await this.requestManager.schedule(request, 1)
@@ -122,7 +119,7 @@ export class Niceoppai extends Source {
 
         while (updatedManga.loadMore) {
             const request = createRequestObject({
-                url: `${NO_DOMAIN}/latest-chapters/${page}`,
+                url: `${MT_DOMAIN}/page/${page}/`,
                 method: 'GET',
             })
             page++
@@ -141,17 +138,14 @@ export class Niceoppai extends Source {
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = createRequestObject({
-            url: encodeURI(`https://www.niceoppai.net/manga_list/all/any/last-updated/`),
+            url: `${MT_DOMAIN}/page/1/`,
             method: 'GET',
-            cookies: this.cookies,
         })
-        const response = await this.requestManager.schedule(request, 3)
-        console.log('response is :', response)
-        const $ = this.cheerio.load(response.data)
-        return parseHomeSections($, sectionCallback)
-            
-    }
 
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data)
+        parseHomeSections($,sectionCallback)
+    }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
         const page: number = metadata?.page ?? 1
         let param = ''
@@ -159,12 +153,21 @@ export class Niceoppai extends Source {
             case 'latest_comic':
                 param = `${page}`
                 break
+            case 'popular_manga':
+                param = `${page}/?s=mostviews`
+                break
+            case 'ongoing_manga':
+                param = `${page}/?s=manga-ongoing`
+                break
+            case 'complete_manga':
+                param = `${page}/?s=manga-end`
+                break
             default:
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist')
         }
     
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/latest-chapters/`,
+            url: `${MT_DOMAIN}/page/`,
             method: 'GET',
             param,
         })
@@ -182,7 +185,7 @@ export class Niceoppai extends Source {
 
     override async getSearchResults(query: SearchRequest): Promise<PagedResults> {
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
+            url: `${MT_DOMAIN}/?s=${encodeURI(query.title ?? '')}`,
             method: 'GET',
         })
 
@@ -194,22 +197,5 @@ export class Niceoppai extends Source {
             results: manga,
         })
 
-    }
-
-    override getCloudflareBypassRequest(): Request {
-        return createRequestObject({
-            url: NO_DOMAIN,
-            method: 'GET',
-            headers: {
-                ...(globalUA && { 'user-agent': globalUA }),
-                'referer': `${NO_DOMAIN}.`
-            }
-        })
-    }
-
-    CloudFlareError(status: any) {
-        if (status == 503) {
-            throw new Error('CLOUDFLARE BYPASS ERROR:\nPlease go to Settings > Sources > <The name of this source> and press Cloudflare Bypass')
-        }
     }
 }
