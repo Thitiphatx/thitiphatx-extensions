@@ -2,12 +2,13 @@ import {
     Chapter,
     ChapterDetails,
     Tag,
+    TagSection,
     HomeSection,
     LanguageCode,
     Manga,
     MangaStatus,
     MangaTile,
-    TagSection
+    
 } from 'paperback-extensions-common'
 
 import entities = require('entities')
