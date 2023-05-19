@@ -1,13 +1,13 @@
 import {
     Chapter,
     ChapterDetails,
-    Tag,
     HomeSection,
     LanguageCode,
     Manga,
     MangaStatus,
     MangaTile,
     TagSection,
+    Tag,
 } from 'paperback-extensions-common'
 
 import entities = require('entities')
@@ -25,6 +25,17 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 
     let hentai = false
 
+    const arrayTags: Tag[] = []
+    for (const tag of $('a', '#sct_content > div > div.wpm_pag.mng_det > div.mng_ifo > div.det > p:nth-child(9)').toArray()) {
+        const label = $(tag).text().trim()
+        const id = encodeURI($(tag).attr('href')?.split("/")[5] ?? '')
+
+        if (!label || !id) continue
+        if (label.includes('hotlink')) break
+        arrayTags.push({ id: id, label: label })
+    }
+    const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
+
     const rawStatus: string = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? ''
     let status = MangaStatus.ONGOING
     if (rawStatus.includes('แล้ว')) status = MangaStatus.COMPLETED
@@ -37,6 +48,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
         author: author,
         artist: author,
         desc: description,
+        tags: tagSections,
     })
 }
 
@@ -128,23 +140,24 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
 
 export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true })
-
     const latestSection_Array: MangaTile[] = []
 
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
-        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? ''
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id: string = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? ''
         const image: string = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0","350x0")) ?? ''
         
         const title: string = $('div.det > a', manga).text().trim() ?? ''
+        const subtitle: string = $('ul.lst > li:nth-child(1) > a.lst > b.val.lng_', manga).text().trim() ?? ''
         if (!id || !title) continue
+        
         latestSection_Array.push(createMangaTile({
-            id: id,
-            image: image,
+            id,
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
             title: createIconText({ text: decodeHTMLEntity(title) }),
+            subtitleText: createIconText({ text: subtitle }),
         }))
 
     }
-    
     latestSection.items = latestSection_Array
     sectionCallback(latestSection)
 
@@ -217,4 +230,19 @@ export const isLastPage = ($: CheerioStatic): boolean => {
     const currentPage = Number($('li > a.sel').text().trim())
     if (currentPage >= lastPage) isLast = true
     return isLast
+}
+
+export const parseTags = ($: CheerioStatic): TagSection[] | null => {
+    const arrayTags: Tag[] = []
+
+    for (const tag of $('li', '#wpm_wgt_mng_idx_2_tab_cat > ul').toArray()) {
+        const label = $(tag).text().trim()
+        const id = encodeURI($('a',tag).attr('href')?.split("/")[5] ?? '')
+        if (!id || !label) continue
+        if (label.includes('hotlink')) break
+        arrayTags.push({ id: id, label: label })
+    }
+    
+    const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
+    return tagSections
 }

@@ -4,6 +4,7 @@ import {
     Tag,
     TagSection,
     HomeSection,
+    HomeSectionType,
     LanguageCode,
     Manga,
     MangaStatus,
@@ -17,21 +18,23 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
 
     const titles: string[] = []
     titles.push(decodeHTMLEntity($('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()))
-
-    let image: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-4 > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
-
-    const author: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > p:nth-child(4) > small > a').text().trim() ?? ''
-    const description: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8').contents().first().text().trim() ?? ''
+    const row = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row');
+    let image: string = $('div.col-12.col-md-4 > img',row).attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
+    const story: string = $('div.col-12.col-md-8 > p:nth-child(3) > small > a',row).text().trim() ?? ''
+    const author: string = $('div.col-12.col-md-8 > p:nth-child(4) > small > a',row).text().trim() ?? ''
+    const description: string = $('div.col-12.col-md-8',row).contents().first().text().trim() ?? ''
 
     let hentai = true
     const arrayTags: Tag[] = []
     for (const tag of $('div.tags', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > small:nth-child(12)').toArray()) {
         const label: string = $('a.badge.badge-secondary.badge-up', tag).text().trim()
-
         if (!label) continue
         arrayTags.push({ id: label, label: label })
     }
     arrayTags.push({ id: encodeURI(`${author}`), label: author })
+    if (story != 'โดจินทั่วไป') {
+        arrayTags.push({ id: encodeURI(`${story}`), label:  `เรื่อง ${story}` })
+    }
     const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
 
     
@@ -152,30 +155,53 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
     }
 }
 
-export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
+export const parseHomeSections = (section: string, $: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
     const latestSection = createHomeSection({ id: 'latest_doujin', title: 'Latest Doujin', view_more: true })
+    const randomSection = createHomeSection({ id: 'random', title: 'Random', view_more: false, type: HomeSectionType.featured})
 
-    const latestSection_Array: MangaTile[] = []
+    switch (section) {
+        case 'latest_doujin':
+            const latestSection_Array: MangaTile[] = []
+            for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+                let image: string = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? ''
 
-    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-        let image: string = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? ''
+                const title: string = $('a.no-underline.inz-a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+                const id: string = $('a.no-underline.inz-a', item).attr('href').split('/')[3] ?? ''
+                const subtitle: string = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', item).first().text().trim() ?? ''
+                if (!id || !title) continue
 
-        const title: string = $('a.no-underline.inz-a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
-        const id: string = $('a.no-underline.inz-a', item).attr('href').split('/')[3] ?? ''
-        const subtitle: string = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', item).first().text().trim() ?? ''
-        if (!id || !title) continue
+                latestSection_Array.push(createMangaTile({
+                    id: id,
+                    image: image,
+                    title: createIconText({ text: decodeHTMLEntity(title) }),
+                    subtitleText: createIconText({ text: subtitle }),
+                }))
+            }
+            
+            latestSection.items = latestSection_Array
+            sectionCallback(latestSection)
+            break
+        case 'random':
+            const randomSection_Array: MangaTile[] = []
+            for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div:nth-child(5) > div > div.col-12.col-md-9 > div:nth-child(4) > div.card-body > div.row').toArray()) {
+                let image: string = $('a > img', item).first().attr('src') ?? ''
 
-        latestSection_Array.push(createMangaTile({
-            id: id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-            subtitleText: createIconText({ text: subtitle }),
-        }))
-    }
+                const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+                const id: string = $('a', item).attr('href').split('/')[3] ?? ''
+                if (!id || !title) continue
+                randomSection_Array.push(createMangaTile({
+                    id,
+                    image,
+                    title: createIconText({ text:  decodeHTMLEntity(title) }),
+                }))
+            }
     
-    latestSection.items = latestSection_Array
-    sectionCallback(latestSection)
-
+            randomSection.items = randomSection_Array
+            sectionCallback(randomSection)
+            break
+        default:
+            throw new Error(`Invalid homeSectionId | ${section}`)
+    }
 }
 
 export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
@@ -276,7 +302,6 @@ export const parseTags = ($: CheerioStatic): TagSection[] | null => {
     }
     
     const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]
-    console.log(tagSections)
     return tagSections
 }
 

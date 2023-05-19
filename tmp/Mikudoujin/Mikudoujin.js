@@ -155,23 +155,9 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             });
         }
         else {
-            request = createRequestObject({
-                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
-                method: 'GET',
-            });
-            const response = await this.requestManager.schedule(request, 1);
-            const $ = this.cheerio.load(response.data);
-            if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
-                metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
-                const manga = (0, MikudoujinParser_1.parseSearchtag)($);
-                return createPagedResults({
-                    results: manga,
-                    metadata
-                });
-            }
-            else {
+            if ((query?.includedTags?.map((x) => x.label)[0]).includes('เรื่อง')) {
                 request = createRequestObject({
-                    url: `https://miku-doujin.com/artist/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                    url: `${MD_DOMAIN}/story/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
                     method: 'GET',
                 });
                 const response = await this.requestManager.schedule(request, 1);
@@ -180,8 +166,38 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 const manga = (0, MikudoujinParser_1.parseSearchtag)($);
                 return createPagedResults({
                     results: manga,
-                    metadata
+                    metadata,
                 });
+            }
+            else {
+                request = createRequestObject({
+                    url: `${MD_DOMAIN}/artist/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                    method: 'GET',
+                });
+                const response = await this.requestManager.schedule(request, 1);
+                const $ = this.cheerio.load(response.data);
+                if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
+                    metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+                    const manga = (0, MikudoujinParser_1.parseSearchtag)($);
+                    return createPagedResults({
+                        results: manga,
+                        metadata
+                    });
+                }
+                else {
+                    request = createRequestObject({
+                        url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                        method: 'GET',
+                    });
+                    const response = await this.requestManager.schedule(request, 1);
+                    const $ = this.cheerio.load(response.data);
+                    metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+                    const manga = (0, MikudoujinParser_1.parseSearchtag)($);
+                    return createPagedResults({
+                        results: manga,
+                        metadata
+                    });
+                }
             }
         }
     }
