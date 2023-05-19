@@ -960,9 +960,9 @@ exports.Niceoppai = exports.NiceoppaiInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
-let globalUA;
+const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.44';
 exports.NiceoppaiInfo = {
-    version: '1.0.8',
+    version: '1.1.0',
     name: 'Niceoppai',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -980,20 +980,16 @@ exports.NiceoppaiInfo = {
 class Niceoppai extends paperback_extensions_common_1.Source {
     constructor() {
         super(...arguments);
-        this.cookies = [
-            createCookie({ name: 'wpm_wgt_mng_idx_2_tab', value: '0', domain: `${NO_DOMAIN}` })
-        ];
         this.requestManager = createRequestManager({
             requestsPerSecond: 3,
-            requestTimeout: 45000,
+            requestTimeout: 15000,
             interceptor: {
                 interceptRequest: async (request) => {
                     request.headers = {
                         ...(request.headers ?? {}),
                         ...{
+                            'user-agent': userAgent,
                             'referer': NO_DOMAIN,
-                            'cookie': 'wpm_wgt_mng_idx_2_tab=0',
-                            'userAgent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.42",
                         },
                     };
                     return request;
@@ -1058,12 +1054,11 @@ class Niceoppai extends paperback_extensions_common_1.Source {
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
-            url: encodeURI(`https://www.niceoppai.net/manga_list/all/any/last-updated/`),
+            url: `${NO_DOMAIN}/latest-chapters/1`,
             method: 'GET',
-            cookies: this.cookies,
+            incognito: true,
         });
-        const response = await this.requestManager.schedule(request, 3);
-        console.log('response is :', response);
+        const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         return (0, NiceoppaiParser_1.parseHomeSections)($, sectionCallback);
     }
@@ -1092,9 +1087,18 @@ class Niceoppai extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query) {
+        let param;
+        if (query.title) {
+            param = `search/${encodeURI(query.title ?? '')}`;
+        }
+        else {
+            param = `category/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/`;
+        }
         const request = createRequestObject({
-            url: `${NO_DOMAIN}/manga_list/search/${encodeURI(query.title ?? '')}`,
+            url: `${NO_DOMAIN}/manga_list/`,
             method: 'GET',
+            param,
+            incognito: true,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
@@ -1103,20 +1107,14 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             results: manga,
         });
     }
-    getCloudflareBypassRequest() {
-        return createRequestObject({
+    async getTags() {
+        const request = createRequestObject({
             url: NO_DOMAIN,
             method: 'GET',
-            headers: {
-                ...(globalUA && { 'user-agent': globalUA }),
-                'referer': `${NO_DOMAIN}.`
-            }
         });
-    }
-    CloudFlareError(status) {
-        if (status == 503) {
-            throw new Error('CLOUDFLARE BYPASS ERROR:\nPlease go to Settings > Sources > <The name of this source> and press Cloudflare Bypass');
-        }
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data);
+        return (0, NiceoppaiParser_1.parseTags)($) || [];
     }
 }
 exports.Niceoppai = Niceoppai;
@@ -1124,7 +1122,7 @@ exports.Niceoppai = Niceoppai;
 },{"./NiceoppaiParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -1136,6 +1134,17 @@ const parseMangaDetails = ($, mangaId) => {
     const author = $('div.det > p:nth-child(7) > a').text().trim() ?? '';
     const description = decodeHTMLEntity($('div.det > p:nth-child(3)').text().trim() ?? '');
     let hentai = false;
+    const arrayTags = [];
+    for (const tag of $('a', '#sct_content > div > div.wpm_pag.mng_det > div.mng_ifo > div.det > p:nth-child(9)').toArray()) {
+        const label = $(tag).text().trim();
+        const id = encodeURI($(tag).attr('href')?.split("/")[5] ?? '');
+        if (!label || !id)
+            continue;
+        if (label.includes('hotlink'))
+            break;
+        arrayTags.push({ id: id, label: label });
+    }
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     const rawStatus = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? '';
     let status = paperback_extensions_common_1.MangaStatus.ONGOING;
     if (rawStatus.includes('แล้ว'))
@@ -1149,6 +1158,7 @@ const parseMangaDetails = ($, mangaId) => {
         author: author,
         artist: author,
         desc: description,
+        tags: tagSections,
     });
 };
 exports.parseMangaDetails = parseMangaDetails;
@@ -1228,16 +1238,18 @@ exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = ($, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true });
     const latestSection_Array = [];
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
-        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? '';
         const image = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0")) ?? '';
         const title = $('div.det > a', manga).text().trim() ?? '';
+        const subtitle = $('ul.lst > li:nth-child(1) > a.lst > b.val.lng_', manga).text().trim() ?? '';
         if (!id || !title)
             continue;
         latestSection_Array.push(createMangaTile({
-            id: id,
-            image: image,
+            id,
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
             title: createIconText({ text: decodeHTMLEntity(title) }),
+            subtitleText: createIconText({ text: subtitle }),
         }));
     }
     latestSection.items = latestSection_Array;
@@ -1309,6 +1321,21 @@ const isLastPage = ($) => {
     return isLast;
 };
 exports.isLastPage = isLastPage;
+const parseTags = ($) => {
+    const arrayTags = [];
+    for (const tag of $('li', '#wpm_wgt_mng_idx_2_tab_cat > ul').toArray()) {
+        const label = $(tag).text().trim();
+        const id = encodeURI($('a', tag).attr('href')?.split("/")[5] ?? '');
+        if (!id || !label)
+            continue;
+        if (label.includes('hotlink'))
+            break;
+        arrayTags.push({ id: id, label: label });
+    }
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    return tagSections;
+};
+exports.parseTags = parseTags;
 
 },{"entities":8,"paperback-extensions-common":12}]},{},[56])(56)
 });
