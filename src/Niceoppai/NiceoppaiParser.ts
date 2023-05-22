@@ -167,12 +167,12 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     const comics: MangaTile[] = []
     const collectedIds: string[] = []
 
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+    for (const manga of $('#sct_content > div.con > div.wpm_pag.mng_lts_chp.grp > div.row').toArray()) {
         const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? ''
         const image: string = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0","350x0")) ?? ''
-        
+
         const title: string = $('div.det > a', manga).text().trim() ?? ''
-        const subtitle: string = $('div.det > div.vws', manga).text().trim() ?? ''
+        const subtitle: string = $('div.det > ul.lst > li:nth-child(1) > a.lst > b.val.lng_', manga).text().trim() ?? ''
 
         if (!id || !title) continue
 

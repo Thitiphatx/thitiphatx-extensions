@@ -32,7 +32,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
         arrayTags.push({ id: label, label: label })
     }
     arrayTags.push({ id: encodeURI(`${author}`), label: author })
-    if (story != 'โดจินทั่วไป') {
+    if (!(story.includes('ทั่วไป'))) {
         arrayTags.push({ id: encodeURI(`${story}`), label:  `เรื่อง ${story}` })
     }
     const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })]

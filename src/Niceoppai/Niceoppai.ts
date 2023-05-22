@@ -29,7 +29,7 @@ import {
 } from './NiceoppaiParser'
 
 const NO_DOMAIN = 'https://www.niceoppai.net'
-const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.44'
+const userAgent = 'Mozilla / 5.0 (compatible; MSIE 7.0; Windows; U; Windows NT 6.0; Win64; x64 Trident / 4.0)'
 
 export const NiceoppaiInfo: SourceInfo = {
     version: '1.1.0',
@@ -190,7 +190,6 @@ export class Niceoppai extends Source {
             url: `${NO_DOMAIN}/manga_list/`,
             method: 'GET',
             param,
-            incognito: true,
         })
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data)
