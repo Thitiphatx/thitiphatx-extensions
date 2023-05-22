@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTags = exports.isLastPage = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.isLastPage = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseRandomSections = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -20,7 +20,7 @@ const parseMangaDetails = ($, mangaId) => {
         arrayTags.push({ id: label, label: label });
     }
     arrayTags.push({ id: encodeURI(`${author}`), label: author });
-    if (story != 'โดจินทั่วไป') {
+    if (!(story.includes('ทั่วไป'))) {
         arrayTags.push({ id: encodeURI(`${story}`), label: `เรื่อง ${story}` });
     }
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
@@ -148,6 +148,25 @@ const parseHomeSections = ($, sectionCallback) => {
     sectionCallback(latestSection);
 };
 exports.parseHomeSections = parseHomeSections;
+const parseRandomSections = ($, sectionCallback) => {
+    const randomSection = createHomeSection({ id: 'random', title: 'Random', view_more: false, type: paperback_extensions_common_1.HomeSectionType.featured });
+    const randomSection_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a > img', item).first().attr('src') ?? '';
+        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a', item).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        randomSection_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    randomSection.items = randomSection_Array;
+    sectionCallback(randomSection);
+};
+exports.parseRandomSections = parseRandomSections;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];

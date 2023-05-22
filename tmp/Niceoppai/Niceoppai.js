@@ -4,7 +4,7 @@ exports.Niceoppai = exports.NiceoppaiInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const NiceoppaiParser_1 = require("./NiceoppaiParser");
 const NO_DOMAIN = 'https://www.niceoppai.net';
-const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.44';
+const userAgent = 'Mozilla / 5.0 (compatible; MSIE 7.0; Windows; U; Windows NT 6.0; Win64; x64 Trident / 4.0)';
 exports.NiceoppaiInfo = {
     version: '1.1.0',
     name: 'Niceoppai',
@@ -142,7 +142,6 @@ class Niceoppai extends paperback_extensions_common_1.Source {
             url: `${NO_DOMAIN}/manga_list/`,
             method: 'GET',
             param,
-            incognito: true,
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);

@@ -137,11 +137,11 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+    for (const manga of $('#sct_content > div.con > div.wpm_pag.mng_lts_chp.grp > div.row').toArray()) {
         const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
         const image = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0")) ?? '';
         const title = $('div.det > a', manga).text().trim() ?? '';
-        const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
+        const subtitle = $('div.det > ul.lst > li:nth-child(1) > a.lst > b.val.lng_', manga).text().trim() ?? '';
         if (!id || !title)
             continue;
         if (collectedIds.includes(id))

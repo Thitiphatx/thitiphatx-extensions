@@ -20,6 +20,7 @@ import {
     isLastPage,
     parseChapters,
     parseHomeSections,
+    parseRandomSections,
     parseMangaDetails,
     parseViewMore,
     parseSearchtag,
@@ -147,22 +148,24 @@ export class Mikudoujin extends Source {
     }
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const sections = ['latest_doujin','random']
-        for (const sec of sections) {
-            let url = `${MD_DOMAIN}`
-            if (sec == 'random') {
-                url = `${MD_DOMAIN}/e9l99/`
-            }
-            const request = createRequestObject({
-                url,
-                method: 'GET',
-            })
-    
-            const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
-            parseHomeSections(sec, $, sectionCallback)
-        }
-        
+
+        // Recent update
+        const request1 = createRequestObject({
+            url: `${MD_DOMAIN}`,
+            method: 'GET',
+        })
+        const response1 = await this.requestManager.schedule(request1, 1)
+        const $1 = this.cheerio.load(response1.data)
+        parseHomeSections($1, sectionCallback)
+
+        // Random
+        const request2 = createRequestObject({
+            url: `${MD_DOMAIN}/e9l99/`,
+            method: 'GET',
+        })
+        const response2 = await this.requestManager.schedule(request2, 1)
+        const $2 = this.cheerio.load(response2.data)
+        parseRandomSections($2, sectionCallback)
         
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {

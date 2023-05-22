@@ -106,13 +106,22 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         }
     }
     async getHomePageSections(sectionCallback) {
-        const request = createRequestObject({
+        // Recent update
+        const request1 = createRequestObject({
             url: `${MD_DOMAIN}`,
             method: 'GET',
         });
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        (0, MikudoujinParser_1.parseHomeSections)($, sectionCallback);
+        const response1 = await this.requestManager.schedule(request1, 1);
+        const $1 = this.cheerio.load(response1.data);
+        (0, MikudoujinParser_1.parseHomeSections)($1, sectionCallback);
+        // Random
+        const request2 = createRequestObject({
+            url: `${MD_DOMAIN}/e9l99/`,
+            method: 'GET',
+        });
+        const response2 = await this.requestManager.schedule(request2, 1);
+        const $2 = this.cheerio.load(response2.data);
+        (0, MikudoujinParser_1.parseRandomSections)($2, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
