@@ -1062,20 +1062,22 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         }
     }
     async getHomePageSections(sectionCallback) {
-        const sections = ['latest_doujin', 'random'];
-        for (const sec of sections) {
-            let url = `${MD_DOMAIN}`;
-            if (sec == 'random') {
-                url = `${MD_DOMAIN}/e9l99/`;
-            }
-            const request = createRequestObject({
-                url,
-                method: 'GET',
-            });
-            const response = await this.requestManager.schedule(request, 1);
-            const $ = this.cheerio.load(response.data);
-            (0, MikudoujinParser_1.parseHomeSections)(sec, $, sectionCallback);
-        }
+        // Recent update
+        const request1 = createRequestObject({
+            url: `${MD_DOMAIN}`,
+            method: 'GET',
+        });
+        const response1 = await this.requestManager.schedule(request1, 1);
+        const $1 = this.cheerio.load(response1.data);
+        (0, MikudoujinParser_1.parseHomeSections)($1, sectionCallback);
+        // Random
+        const request2 = createRequestObject({
+            url: `${MD_DOMAIN}/e9l99/`,
+            method: 'GET',
+        });
+        const response2 = await this.requestManager.schedule(request2, 1);
+        const $2 = this.cheerio.load(response2.data);
+        (0, MikudoujinParser_1.parseRandomSections)($2, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -1179,7 +1181,7 @@ exports.Mikudoujin = Mikudoujin;
 },{"./MikudoujinParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTags = exports.isLastPage = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.isLastPage = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseRandomSections = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -1306,51 +1308,46 @@ const parseUpdatedManga = ($, time, ids) => {
     };
 };
 exports.parseUpdatedManga = parseUpdatedManga;
-const parseHomeSections = (section, $, sectionCallback) => {
+const parseHomeSections = ($, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_doujin', title: 'Latest Doujin', view_more: true });
-    const randomSection = createHomeSection({ id: 'random', title: 'Random', view_more: false, type: paperback_extensions_common_1.HomeSectionType.featured });
-    switch (section) {
-        case 'latest_doujin':
-            const latestSection_Array = [];
-            for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-                let image = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? '';
-                const title = $('a.no-underline.inz-a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
-                const id = $('a.no-underline.inz-a', item).attr('href').split('/')[3] ?? '';
-                const subtitle = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', item).first().text().trim() ?? '';
-                if (!id || !title)
-                    continue;
-                latestSection_Array.push(createMangaTile({
-                    id: id,
-                    image: image,
-                    title: createIconText({ text: decodeHTMLEntity(title) }),
-                    subtitleText: createIconText({ text: subtitle }),
-                }));
-            }
-            latestSection.items = latestSection_Array;
-            sectionCallback(latestSection);
-            break;
-        case 'random':
-            const randomSection_Array = [];
-            for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div:nth-child(5) > div > div.col-12.col-md-9 > div:nth-child(4) > div.card-body > div.row').toArray()) {
-                let image = $('a > img', item).first().attr('src') ?? '';
-                const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
-                const id = $('a', item).attr('href').split('/')[3] ?? '';
-                if (!id || !title)
-                    continue;
-                randomSection_Array.push(createMangaTile({
-                    id,
-                    image,
-                    title: createIconText({ text: decodeHTMLEntity(title) }),
-                }));
-            }
-            randomSection.items = randomSection_Array;
-            sectionCallback(randomSection);
-            break;
-        default:
-            throw new Error(`Invalid homeSectionId | ${section}`);
+    const latestSection_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? '';
+        const title = $('a.no-underline.inz-a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a.no-underline.inz-a', item).attr('href').split('/')[3] ?? '';
+        const subtitle = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', item).first().text().trim() ?? '';
+        if (!id || !title)
+            continue;
+        latestSection_Array.push(createMangaTile({
+            id: id,
+            image: image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+            subtitleText: createIconText({ text: subtitle }),
+        }));
     }
+    latestSection.items = latestSection_Array;
+    sectionCallback(latestSection);
 };
 exports.parseHomeSections = parseHomeSections;
+const parseRandomSections = ($, sectionCallback) => {
+    const randomSection = createHomeSection({ id: 'random', title: 'Random', view_more: false, type: paperback_extensions_common_1.HomeSectionType.featured });
+    const randomSection_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a > img', item).first().attr('src') ?? '';
+        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a', item).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        randomSection_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    randomSection.items = randomSection_Array;
+    sectionCallback(randomSection);
+};
+exports.parseRandomSections = parseRandomSections;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
