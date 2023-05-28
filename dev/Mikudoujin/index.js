@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const MikudoujinParser_1 = require("./MikudoujinParser");
 const MD_DOMAIN = 'https://www.miku-doujin.com';
 exports.MikudoujinInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1071,13 +1071,16 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         const $1 = this.cheerio.load(response1.data);
         (0, MikudoujinParser_1.parseHomeSections)($1, sectionCallback);
         // Random
-        const request2 = createRequestObject({
-            url: `${MD_DOMAIN}/e9l99/`,
-            method: 'GET',
-        });
-        const response2 = await this.requestManager.schedule(request2, 1);
-        const $2 = this.cheerio.load(response2.data);
-        (0, MikudoujinParser_1.parseRandomSections)($2, sectionCallback);
+        const urls = ['wfxsq', 'e9l99', 'ayca0', 'ycf7s'];
+        for (const id of urls) {
+            const request2 = createRequestObject({
+                url: `${MD_DOMAIN}/${id}/`,
+                method: 'GET',
+            });
+            const response2 = await this.requestManager.schedule(request2, 1);
+            const $2 = this.cheerio.load(response2.data);
+            (0, MikudoujinParser_1.parseRandomSections)($2, sectionCallback);
+        }
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
