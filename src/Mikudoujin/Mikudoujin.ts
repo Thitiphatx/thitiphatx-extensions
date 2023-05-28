@@ -33,7 +33,7 @@ import {
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -159,13 +159,17 @@ export class Mikudoujin extends Source {
         parseHomeSections($1, sectionCallback)
 
         // Random
-        const request2 = createRequestObject({
-            url: `${MD_DOMAIN}/e9l99/`,
-            method: 'GET',
-        })
-        const response2 = await this.requestManager.schedule(request2, 1)
-        const $2 = this.cheerio.load(response2.data)
-        parseRandomSections($2, sectionCallback)
+        const urls: string[] = ['wfxsq','e9l99','ayca0','ycf7s']
+        for (const id of urls) {
+            const request2 = createRequestObject({
+                url: `${MD_DOMAIN}/${id}/`,
+                method: 'GET',
+            })
+            const response2 = await this.requestManager.schedule(request2, 1)
+            const $2 = this.cheerio.load(response2.data)
+            parseRandomSections($2, sectionCallback)
+        }
+        
         
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
