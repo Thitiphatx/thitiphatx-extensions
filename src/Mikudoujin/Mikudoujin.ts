@@ -159,8 +159,10 @@ export class Mikudoujin extends Source {
         parseHomeSections($1, sectionCallback)
 
         // Random
-        const urls: string[] = ['wfxsq','e9l99','ayca0','ycf7s']
-        for (const id of urls) {
+
+        const ids: string[] = ['52e6d','wfxsq','ng709','sbjdo','3xuxg','3p47g']
+
+        for (const id of ids) {
             const request2 = createRequestObject({
                 url: `${MD_DOMAIN}/${id}/`,
                 method: 'GET',

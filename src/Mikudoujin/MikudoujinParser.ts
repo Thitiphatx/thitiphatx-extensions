@@ -180,24 +180,112 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
 }
 
 export const parseRandomSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
-    const randomSection = createHomeSection({ id: 'random', title: 'Random', view_more: false, type: HomeSectionType.featured})
+
+    const randomSection0 = createHomeSection({ id: 'random0', title: 'Random', view_more: false, type: HomeSectionType.featured})
+    const randomSection1 = createHomeSection({ id: 'random1', title: 'Random', view_more: false})
+    const randomSection2 = createHomeSection({ id: 'random2', title: 'Random', view_more: false})
+    const randomSection3 = createHomeSection({ id: 'random3', title: 'Random', view_more: false})
+    const randomSection4 = createHomeSection({ id: 'random4', title: 'Random', view_more: false})
+    const randomSection5 = createHomeSection({ id: 'random5', title: 'Random', view_more: false})
     
-    const randomSection_Array: MangaTile[] = []
+    const randomSection0_Array: MangaTile[] = []
     for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
         let image: string = $('a > img', item).first().attr('src') ?? ''
 
         const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
         const id: string = $('a', item).attr('href').split('/')[3] ?? ''
         if (!id || !title) continue
-        randomSection_Array.push(createMangaTile({
+        randomSection0_Array.push(createMangaTile({
             id,
             image,
             title: createIconText({ text:  decodeHTMLEntity(title) }),
         }))
     }
 
-    randomSection.items = randomSection_Array
-    sectionCallback(randomSection)
+    const randomSection1_Array: MangaTile[] = []
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image: string = $('a > img', item).first().attr('src') ?? ''
+
+        const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+        const id: string = $('a', item).attr('href').split('/')[3] ?? ''
+        if (!id || !title) continue
+        randomSection1_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text:  decodeHTMLEntity(title) }),
+        }))
+    }
+
+    const randomSection2_Array: MangaTile[] = []
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image: string = $('a > img', item).first().attr('src') ?? ''
+
+        const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+        const id: string = $('a', item).attr('href').split('/')[3] ?? ''
+        if (!id || !title) continue
+        randomSection2_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text:  decodeHTMLEntity(title) }),
+        }))
+    }
+
+    const randomSection3_Array: MangaTile[] = []
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image: string = $('a > img', item).first().attr('src') ?? ''
+
+        const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+        const id: string = $('a', item).attr('href').split('/')[3] ?? ''
+        if (!id || !title) continue
+        randomSection3_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text:  decodeHTMLEntity(title) }),
+        }))
+    }
+
+    const randomSection4_Array: MangaTile[] = []
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image: string = $('a > img', item).first().attr('src') ?? ''
+
+        const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+        const id: string = $('a', item).attr('href').split('/')[3] ?? ''
+        if (!id || !title) continue
+        randomSection4_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text:  decodeHTMLEntity(title) }),
+        }))
+    }
+
+    const randomSection5_Array: MangaTile[] = []
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image: string = $('a > img', item).first().attr('src') ?? ''
+
+        const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+        const id: string = $('a', item).attr('href').split('/')[3] ?? ''
+        if (!id || !title) continue
+        randomSection5_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text:  decodeHTMLEntity(title) }),
+        }))
+    }
+    
+    randomSection0.items = randomSection0_Array
+    randomSection1.items = randomSection1_Array
+    randomSection2.items = randomSection2_Array
+    randomSection3.items = randomSection3_Array
+    randomSection4.items = randomSection4_Array
+    randomSection5.items = randomSection5_Array
+
+    sectionCallback(randomSection0)
+    sectionCallback(randomSection1)
+    sectionCallback(randomSection2)
+    sectionCallback(randomSection3)
+    sectionCallback(randomSection4)
+    sectionCallback(randomSection5)
+    
 }
 export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     const comics: MangaTile[] = []
