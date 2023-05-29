@@ -1071,8 +1071,8 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         const $1 = this.cheerio.load(response1.data);
         (0, MikudoujinParser_1.parseHomeSections)($1, sectionCallback);
         // Random
-        const urls = ['wfxsq', 'e9l99', 'ayca0', 'ycf7s'];
-        for (const id of urls) {
+        const ids = ['52e6d', 'wfxsq', 'ng709', 'sbjdo', '3xuxg', '3p47g'];
+        for (const id of ids) {
             const request2 = createRequestObject({
                 url: `${MD_DOMAIN}/${id}/`,
                 method: 'GET',
@@ -1333,22 +1333,102 @@ const parseHomeSections = ($, sectionCallback) => {
 };
 exports.parseHomeSections = parseHomeSections;
 const parseRandomSections = ($, sectionCallback) => {
-    const randomSection = createHomeSection({ id: 'random', title: 'Random', view_more: false, type: paperback_extensions_common_1.HomeSectionType.featured });
-    const randomSection_Array = [];
+    const randomSection0 = createHomeSection({ id: 'random0', title: 'Random', view_more: false, type: paperback_extensions_common_1.HomeSectionType.featured });
+    const randomSection1 = createHomeSection({ id: 'random1', title: 'Random', view_more: false });
+    const randomSection2 = createHomeSection({ id: 'random2', title: 'Random', view_more: false });
+    const randomSection3 = createHomeSection({ id: 'random3', title: 'Random', view_more: false });
+    const randomSection4 = createHomeSection({ id: 'random4', title: 'Random', view_more: false });
+    const randomSection5 = createHomeSection({ id: 'random5', title: 'Random', view_more: false });
+    const randomSection0_Array = [];
     for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
         let image = $('a > img', item).first().attr('src') ?? '';
         const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
         const id = $('a', item).attr('href').split('/')[3] ?? '';
         if (!id || !title)
             continue;
-        randomSection_Array.push(createMangaTile({
+        randomSection0_Array.push(createMangaTile({
             id,
             image,
             title: createIconText({ text: decodeHTMLEntity(title) }),
         }));
     }
-    randomSection.items = randomSection_Array;
-    sectionCallback(randomSection);
+    const randomSection1_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a > img', item).first().attr('src') ?? '';
+        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a', item).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        randomSection1_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    const randomSection2_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a > img', item).first().attr('src') ?? '';
+        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a', item).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        randomSection2_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    const randomSection3_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a > img', item).first().attr('src') ?? '';
+        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a', item).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        randomSection3_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    const randomSection4_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a > img', item).first().attr('src') ?? '';
+        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a', item).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        randomSection4_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    const randomSection5_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a > img', item).first().attr('src') ?? '';
+        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a', item).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        randomSection5_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    randomSection0.items = randomSection0_Array;
+    randomSection1.items = randomSection1_Array;
+    randomSection2.items = randomSection2_Array;
+    randomSection3.items = randomSection3_Array;
+    randomSection4.items = randomSection4_Array;
+    randomSection5.items = randomSection5_Array;
+    sectionCallback(randomSection0);
+    sectionCallback(randomSection1);
+    sectionCallback(randomSection2);
+    sectionCallback(randomSection3);
+    sectionCallback(randomSection4);
+    sectionCallback(randomSection5);
 };
 exports.parseRandomSections = parseRandomSections;
 const parseViewMore = ($) => {
