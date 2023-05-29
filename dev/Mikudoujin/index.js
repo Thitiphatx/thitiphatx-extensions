@@ -1079,7 +1079,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             });
             const response2 = await this.requestManager.schedule(request2, 1);
             const $2 = this.cheerio.load(response2.data);
-            (0, MikudoujinParser_1.parseRandomSections)($2, sectionCallback);
+            (0, MikudoujinParser_1.parseRandomSections)(id, $2, sectionCallback);
         }
     }
     async getViewMoreItems(homepageSectionId, metadata) {
@@ -1184,7 +1184,7 @@ exports.Mikudoujin = Mikudoujin;
 },{"./MikudoujinParser":57,"paperback-extensions-common":12}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTags = exports.isLastPage = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseRandomSections = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.isLastPage = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseRandomManga = exports.parseRandomSections = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -1332,105 +1332,60 @@ const parseHomeSections = ($, sectionCallback) => {
     sectionCallback(latestSection);
 };
 exports.parseHomeSections = parseHomeSections;
-const parseRandomSections = ($, sectionCallback) => {
+const parseRandomSections = (id, $, sectionCallback) => {
     const randomSection0 = createHomeSection({ id: 'random0', title: 'Random', view_more: false, type: paperback_extensions_common_1.HomeSectionType.featured });
     const randomSection1 = createHomeSection({ id: 'random1', title: 'Random', view_more: false });
     const randomSection2 = createHomeSection({ id: 'random2', title: 'Random', view_more: false });
     const randomSection3 = createHomeSection({ id: 'random3', title: 'Random', view_more: false });
     const randomSection4 = createHomeSection({ id: 'random4', title: 'Random', view_more: false });
     const randomSection5 = createHomeSection({ id: 'random5', title: 'Random', view_more: false });
-    const randomSection0_Array = [];
-    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-        let image = $('a > img', item).first().attr('src') ?? '';
-        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
-        const id = $('a', item).attr('href').split('/')[3] ?? '';
-        if (!id || !title)
-            continue;
-        randomSection0_Array.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
+    switch (id) {
+        case '52e6d':
+            randomSection0.items = (0, exports.parseRandomManga)($);
+            sectionCallback(randomSection0);
+            break;
+        case 'wfxsq':
+            randomSection1.items = (0, exports.parseRandomManga)($);
+            sectionCallback(randomSection1);
+            break;
+        case 'ng709':
+            randomSection2.items = (0, exports.parseRandomManga)($);
+            sectionCallback(randomSection2);
+            break;
+        case 'sbjdo':
+            randomSection3.items = (0, exports.parseRandomManga)($);
+            sectionCallback(randomSection3);
+            break;
+        case '3xuxg':
+            randomSection4.items = (0, exports.parseRandomManga)($);
+            sectionCallback(randomSection4);
+            break;
+        case '3p47g':
+            randomSection5.items = (0, exports.parseRandomManga)($);
+            sectionCallback(randomSection5);
+            break;
+        default:
+            throw new Error('Requested to section for a section ID which doesn\'t exist');
     }
-    const randomSection1_Array = [];
-    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-        let image = $('a > img', item).first().attr('src') ?? '';
-        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
-        const id = $('a', item).attr('href').split('/')[3] ?? '';
-        if (!id || !title)
-            continue;
-        randomSection1_Array.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
-    }
-    const randomSection2_Array = [];
-    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-        let image = $('a > img', item).first().attr('src') ?? '';
-        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
-        const id = $('a', item).attr('href').split('/')[3] ?? '';
-        if (!id || !title)
-            continue;
-        randomSection2_Array.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
-    }
-    const randomSection3_Array = [];
-    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-        let image = $('a > img', item).first().attr('src') ?? '';
-        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
-        const id = $('a', item).attr('href').split('/')[3] ?? '';
-        if (!id || !title)
-            continue;
-        randomSection3_Array.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
-    }
-    const randomSection4_Array = [];
-    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-        let image = $('a > img', item).first().attr('src') ?? '';
-        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
-        const id = $('a', item).attr('href').split('/')[3] ?? '';
-        if (!id || !title)
-            continue;
-        randomSection4_Array.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
-    }
-    const randomSection5_Array = [];
-    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-        let image = $('a > img', item).first().attr('src') ?? '';
-        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
-        const id = $('a', item).attr('href').split('/')[3] ?? '';
-        if (!id || !title)
-            continue;
-        randomSection5_Array.push(createMangaTile({
-            id,
-            image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
-    }
-    randomSection0.items = randomSection0_Array;
-    randomSection1.items = randomSection1_Array;
-    randomSection2.items = randomSection2_Array;
-    randomSection3.items = randomSection3_Array;
-    randomSection4.items = randomSection4_Array;
-    randomSection5.items = randomSection5_Array;
-    sectionCallback(randomSection0);
-    sectionCallback(randomSection1);
-    sectionCallback(randomSection2);
-    sectionCallback(randomSection3);
-    sectionCallback(randomSection4);
-    sectionCallback(randomSection5);
 };
 exports.parseRandomSections = parseRandomSections;
+const parseRandomManga = ($) => {
+    const manga_Array = [];
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image = $('a > img', item).first().attr('src') ?? '';
+        const title = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+        const id = $('a', item).attr('href').split('/')[3] ?? '';
+        if (!id || !title)
+            continue;
+        manga_Array.push(createMangaTile({
+            id,
+            image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    return manga_Array;
+};
+exports.parseRandomManga = parseRandomManga;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
