@@ -159,7 +159,6 @@ export class Mikudoujin extends Source {
         parseHomeSections($1, sectionCallback)
 
         // Random
-
         const ids: string[] = ['52e6d','wfxsq','ng709','sbjdo','3xuxg','3p47g']
 
         for (const id of ids) {
@@ -169,7 +168,7 @@ export class Mikudoujin extends Source {
             })
             const response2 = await this.requestManager.schedule(request2, 1)
             const $2 = this.cheerio.load(response2.data)
-            parseRandomSections($2, sectionCallback)
+            parseRandomSections(id ,$2, sectionCallback)
         }
         
         
