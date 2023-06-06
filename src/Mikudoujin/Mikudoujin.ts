@@ -74,7 +74,7 @@ export class Mikudoujin extends Source {
     })
 
 
-    override getMangaShareUrl(mangaId: string): string { return `${MD_DOMAIN}/${mangaId}` }
+    override getMangaShareUrl(mangaId: string): string { return `${MD_DOMAIN}/${mangaId}/` }
 
     override async getMangaDetails(mangaId: string): Promise<Manga> {
         const request = createRequestObject({
