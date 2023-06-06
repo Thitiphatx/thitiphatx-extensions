@@ -998,7 +998,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             },
         });
     }
-    getMangaShareUrl(mangaId) { return `${MD_DOMAIN}/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${MD_DOMAIN}/${mangaId}/`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
             url: `${MD_DOMAIN}`,
