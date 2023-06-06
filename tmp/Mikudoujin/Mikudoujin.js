@@ -106,13 +106,22 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         }
     }
     async getHomePageSections(sectionCallback) {
-        const request = createRequestObject({
+        // Recent update
+        const request1 = createRequestObject({
             url: `${MD_DOMAIN}`,
             method: 'GET',
         });
-        const response = await this.requestManager.schedule(request, 1);
-        const $ = this.cheerio.load(response.data);
-        (0, MikudoujinParser_1.parseHomeSections)($, sectionCallback);
+        const response1 = await this.requestManager.schedule(request1, 1);
+        const $1 = this.cheerio.load(response1.data);
+        (0, MikudoujinParser_1.parseHomeSections)($1, sectionCallback);
+        // Random
+        const request2 = createRequestObject({
+            url: `${MD_DOMAIN}/e9l99/`,
+            method: 'GET',
+        });
+        const response2 = await this.requestManager.schedule(request2, 1);
+        const $2 = this.cheerio.load(response2.data);
+        (0, MikudoujinParser_1.parseRandomSections)($2, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -155,23 +164,9 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             });
         }
         else {
-            request = createRequestObject({
-                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
-                method: 'GET',
-            });
-            const response = await this.requestManager.schedule(request, 1);
-            const $ = this.cheerio.load(response.data);
-            if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
-                metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
-                const manga = (0, MikudoujinParser_1.parseSearchtag)($);
-                return createPagedResults({
-                    results: manga,
-                    metadata
-                });
-            }
-            else {
+            if ((query?.includedTags?.map((x) => x.label)[0]).includes('เรื่อง')) {
                 request = createRequestObject({
-                    url: `https://miku-doujin.com/artist/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                    url: `${MD_DOMAIN}/story/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
                     method: 'GET',
                 });
                 const response = await this.requestManager.schedule(request, 1);
@@ -180,8 +175,38 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 const manga = (0, MikudoujinParser_1.parseSearchtag)($);
                 return createPagedResults({
                     results: manga,
-                    metadata
+                    metadata,
                 });
+            }
+            else {
+                request = createRequestObject({
+                    url: `${MD_DOMAIN}/artist/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                    method: 'GET',
+                });
+                const response = await this.requestManager.schedule(request, 1);
+                const $ = this.cheerio.load(response.data);
+                if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
+                    metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+                    const manga = (0, MikudoujinParser_1.parseSearchtag)($);
+                    return createPagedResults({
+                        results: manga,
+                        metadata
+                    });
+                }
+                else {
+                    request = createRequestObject({
+                        url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                        method: 'GET',
+                    });
+                    const response = await this.requestManager.schedule(request, 1);
+                    const $ = this.cheerio.load(response.data);
+                    metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+                    const manga = (0, MikudoujinParser_1.parseSearchtag)($);
+                    return createPagedResults({
+                        results: manga,
+                        metadata
+                    });
+                }
             }
         }
     }

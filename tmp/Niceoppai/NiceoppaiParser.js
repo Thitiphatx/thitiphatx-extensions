@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.parseTags = exports.isLastPage = exports.parseSearch = exports.parseViewMore = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -12,6 +12,17 @@ const parseMangaDetails = ($, mangaId) => {
     const author = $('div.det > p:nth-child(7) > a').text().trim() ?? '';
     const description = decodeHTMLEntity($('div.det > p:nth-child(3)').text().trim() ?? '');
     let hentai = false;
+    const arrayTags = [];
+    for (const tag of $('a', '#sct_content > div > div.wpm_pag.mng_det > div.mng_ifo > div.det > p:nth-child(9)').toArray()) {
+        const label = $(tag).text().trim();
+        const id = encodeURI($(tag).attr('href')?.split("/")[5] ?? '');
+        if (!label || !id)
+            continue;
+        if (label.includes('hotlink'))
+            break;
+        arrayTags.push({ id: id, label: label });
+    }
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     const rawStatus = $('div.det > p:nth-child(13)').text().trim().split(' ')[1] ?? '';
     let status = paperback_extensions_common_1.MangaStatus.ONGOING;
     if (rawStatus.includes('แล้ว'))
@@ -25,6 +36,7 @@ const parseMangaDetails = ($, mangaId) => {
         author: author,
         artist: author,
         desc: description,
+        tags: tagSections,
     });
 };
 exports.parseMangaDetails = parseMangaDetails;
@@ -104,16 +116,18 @@ exports.parseUpdatedManga = parseUpdatedManga;
 const parseHomeSections = ($, sectionCallback) => {
     const latestSection = createHomeSection({ id: 'latest_comic', title: 'Latest Manga', view_more: true });
     const latestSection_Array = [];
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
-        const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
+    for (const manga of $('div.row', '#sct_content div.con div.wpm_pag.mng_lts_chp.grp').toArray()) {
+        const id = $('div.det > a.ttl', manga).attr('href').split('/')[3] ?? '';
         const image = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0")) ?? '';
         const title = $('div.det > a', manga).text().trim() ?? '';
+        const subtitle = $('ul.lst > li:nth-child(1) > a.lst > b.val.lng_', manga).text().trim() ?? '';
         if (!id || !title)
             continue;
         latestSection_Array.push(createMangaTile({
-            id: id,
-            image: image,
+            id,
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
             title: createIconText({ text: decodeHTMLEntity(title) }),
+            subtitleText: createIconText({ text: subtitle }),
         }));
     }
     latestSection.items = latestSection_Array;
@@ -123,11 +137,11 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMore = ($) => {
     const comics = [];
     const collectedIds = [];
-    for (const manga of $('#sct_content div.con div.wpm_pag.mng_lst.tbn div.nde').toArray()) {
+    for (const manga of $('#sct_content > div.con > div.wpm_pag.mng_lts_chp.grp > div.row').toArray()) {
         const id = $('div.det > a', manga).attr('href')?.split('/')[3] ?? '';
         const image = encodeURI($('div.cvr > div.img_wrp > a > img', manga).first().attr('src').replace("36x0", "350x0")) ?? '';
         const title = $('div.det > a', manga).text().trim() ?? '';
-        const subtitle = $('div.det > div.vws', manga).text().trim() ?? '';
+        const subtitle = $('div.det > ul.lst > li:nth-child(1) > a.lst > b.val.lng_', manga).text().trim() ?? '';
         if (!id || !title)
             continue;
         if (collectedIds.includes(id))
@@ -185,3 +199,18 @@ const isLastPage = ($) => {
     return isLast;
 };
 exports.isLastPage = isLastPage;
+const parseTags = ($) => {
+    const arrayTags = [];
+    for (const tag of $('li', '#wpm_wgt_mng_idx_2_tab_cat > ul').toArray()) {
+        const label = $(tag).text().trim();
+        const id = encodeURI($('a', tag).attr('href')?.split("/")[5] ?? '');
+        if (!id || !label)
+            continue;
+        if (label.includes('hotlink'))
+            break;
+        arrayTags.push({ id: id, label: label });
+    }
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    return tagSections;
+};
+exports.parseTags = parseTags;

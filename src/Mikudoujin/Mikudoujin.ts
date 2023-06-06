@@ -20,6 +20,7 @@ import {
     isLastPage,
     parseChapters,
     parseHomeSections,
+    parseRandomSections,
     parseMangaDetails,
     parseViewMore,
     parseSearchtag,
@@ -32,7 +33,7 @@ import {
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -73,7 +74,7 @@ export class Mikudoujin extends Source {
     })
 
 
-    override getMangaShareUrl(mangaId: string): string { return `${MD_DOMAIN}/${mangaId}` }
+    override getMangaShareUrl(mangaId: string): string { return `${MD_DOMAIN}/${mangaId}/` }
 
     override async getMangaDetails(mangaId: string): Promise<Manga> {
         const request = createRequestObject({
@@ -147,14 +148,30 @@ export class Mikudoujin extends Source {
     }
 
     override async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const request = createRequestObject({
+
+        // Recent update
+        const request1 = createRequestObject({
             url: `${MD_DOMAIN}`,
             method: 'GET',
         })
+        const response1 = await this.requestManager.schedule(request1, 1)
+        const $1 = this.cheerio.load(response1.data)
+        parseHomeSections($1, sectionCallback)
 
-        const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        parseHomeSections($, sectionCallback)
+        // Random
+        const ids: string[] = ['52e6d','wfxsq','ng709','sbjdo','3xuxg','3p47g']
+
+        for (const id of ids) {
+            const request2 = createRequestObject({
+                url: `${MD_DOMAIN}/${id}/`,
+                method: 'GET',
+            })
+            const response2 = await this.requestManager.schedule(request2, 1)
+            const $2 = this.cheerio.load(response2.data)
+            parseRandomSections(id ,$2, sectionCallback)
+        }
+        
+        
     }
     override async getViewMoreItems(homepageSectionId: string, metadata: { page?: number }): Promise<PagedResults> {
         const page: number = metadata?.page ?? 1
@@ -204,39 +221,55 @@ export class Mikudoujin extends Source {
             })
         }
         else {
-            request = createRequestObject({
-                
-                url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
-                method: 'GET',
-            })
-            const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
-            if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
+            if ((query?.includedTags?.map((x: any) => x.label)[0]).includes('เรื่อง')) {
+                request = createRequestObject({
+                    url: `${MD_DOMAIN}/story/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
+                    method: 'GET',
+                })
+    
+                const response = await this.requestManager.schedule(request, 1)
+                const $ = this.cheerio.load(response.data)
+
                 metadata = !isLastPage($) ? { page: page + 1 } : undefined
-            
                 const manga = parseSearchtag($)
                 return createPagedResults({
                     results: manga,
-                    metadata
+                    metadata,
                 })
             }
             else {
                 request = createRequestObject({
-                
-                    url: `https://miku-doujin.com/artist/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
+                    url: `${MD_DOMAIN}/artist/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
                     method: 'GET',
                 })
+    
                 const response = await this.requestManager.schedule(request, 1)
                 const $ = this.cheerio.load(response.data)
-                metadata = !isLastPage($) ? { page: page + 1 } : undefined
-            
-                const manga = parseSearchtag($)
-                return createPagedResults({
-                    results: manga,
-                    metadata
-                })
+                if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
+                    metadata = !isLastPage($) ? { page: page + 1 } : undefined
+                
+                    const manga = parseSearchtag($)
+                    return createPagedResults({
+                        results: manga,
+                        metadata
+                    })
+                }
+                else {
+                    request = createRequestObject({
+                        url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
+                        method: 'GET',
+                    })
+                    const response = await this.requestManager.schedule(request, 1)
+                    const $ = this.cheerio.load(response.data)
+                    metadata = !isLastPage($) ? { page: page + 1 } : undefined
+                
+                    const manga = parseSearchtag($)
+                    return createPagedResults({
+                        results: manga,
+                        metadata
+                    })
+                }
             }
-            
         }
     }
 
