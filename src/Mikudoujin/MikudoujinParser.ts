@@ -261,7 +261,7 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
     return comics
 }
 
-export const parseSearch = ($: CheerioStatic, mangaId: string): MangaTile[] => {
+export const parseSearch = ($: CheerioStatic): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
@@ -270,16 +270,19 @@ export const parseSearch = ($: CheerioStatic, mangaId: string): MangaTile[] => {
 
     for (const results of $('#main > div:nth-child(n+4) > div').toArray()) {
         const title:string = $('div > div.egMi0.kCrYT > a > div > div.j039Wc > h3 > div', results).text().replace(" - miku-doujin", "").trim()
-        const mangaId:string = $('div > div.egMi0.kCrYT > a', results).attr("href")?.split("&")[0]?.replace(`/url?q=http://miku-doujin.com/`,"").trim() ?? ""
+        const id:string = $('div > div.egMi0.kCrYT > a', results).attr("href")?.split("&")[0]?.replace(`/url?q=http://miku-doujin.com/`,"").trim() ?? ""
+        
+        if (!id || !title) continue
+        
+        if (collectedIds.includes(id)) continue
         mangaItems.push(createMangaTile({
-            id: mangaId,
+            id,
             image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: title }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
         }))
+        collectedIds.push(id)
     }
 
-    
-    collectedIds.push(mangaId)
     return mangaItems
 }
 

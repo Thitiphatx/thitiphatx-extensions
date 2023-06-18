@@ -33,7 +33,7 @@ import {
 const MD_DOMAIN = 'https://www.miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
-    version: '1.0.6',
+    version: '1.1.0',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -213,8 +213,7 @@ export class Mikudoujin extends Source {
             const response = await this.requestManager.schedule(request, 1)
             const $ = this.cheerio.load(response.data)
 
-            let id = query.title.split('/')[3] ?? '';
-            const manga = parseSearch($, id)
+            const manga = parseSearch($)
 
             return createPagedResults({
                 results: manga,
