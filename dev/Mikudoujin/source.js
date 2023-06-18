@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const MikudoujinParser_1 = require("./MikudoujinParser");
 const MD_DOMAIN = 'https://www.miku-doujin.com';
 exports.MikudoujinInfo = {
-    version: '1.0.6',
+    version: '1.1.0',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -1116,8 +1116,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             });
             const response = await this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
-            let id = query.title.split('/')[3] ?? '';
-            const manga = (0, MikudoujinParser_1.parseSearch)($, id);
+            const manga = (0, MikudoujinParser_1.parseSearch)($);
             return createPagedResults({
                 results: manga,
                 metadata,
@@ -1410,20 +1409,24 @@ const parseViewMore = ($) => {
     return comics;
 };
 exports.parseViewMore = parseViewMore;
-const parseSearch = ($, mangaId) => {
+const parseSearch = ($) => {
     const mangaItems = [];
     const collectedIds = [];
     let image = 'https://i.imgur.com/GYUxEX8.png';
     for (const results of $('#main > div:nth-child(n+4) > div').toArray()) {
         const title = $('div > div.egMi0.kCrYT > a > div > div.j039Wc > h3 > div', results).text().replace(" - miku-doujin", "").trim();
-        const mangaId = $('div > div.egMi0.kCrYT > a', results).attr("href")?.split("&")[0]?.replace(`/url?q=http://miku-doujin.com/`, "").trim() ?? "";
+        const id = $('div > div.egMi0.kCrYT > a', results).attr("href")?.split("&")[0]?.replace(`/url?q=http://miku-doujin.com/`, "").trim() ?? "";
+        if (!id || !title)
+            continue;
+        if (collectedIds.includes(id))
+            continue;
         mangaItems.push(createMangaTile({
-            id: mangaId,
+            id,
             image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: createIconText({ text: title }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
         }));
+        collectedIds.push(id);
     }
-    collectedIds.push(mangaId);
     return mangaItems;
 };
 exports.parseSearch = parseSearch;
