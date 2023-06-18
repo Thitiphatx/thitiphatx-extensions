@@ -199,7 +199,7 @@ export class Manga168 extends Source {
 
     override async getTags(): Promise<TagSection[]> {
         const request = createRequestObject({
-            url: M1_DOMAIN,
+            url: `${M1_DOMAIN}/manga`,
             method: 'GET',
         })
 
