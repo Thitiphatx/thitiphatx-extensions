@@ -1107,11 +1107,11 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query, metadata) {
-        const page = metadata?.page ?? 1;
+        const page = metadata?.page ?? 0;
         let request;
         if (query.title) {
             request = createRequestObject({
-                url: `${encodeURI(query.title ?? '')}`,
+                url: `https://www.google.com/search?q=site:${MD_DOMAIN} ${encodeURI(query.title ?? '')}&start=${page}`,
                 method: 'GET',
             });
             const response = await this.requestManager.schedule(request, 1);
@@ -1120,6 +1120,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             const manga = (0, MikudoujinParser_1.parseSearch)($, id);
             return createPagedResults({
                 results: manga,
+                metadata,
             });
         }
         else {
@@ -1130,7 +1131,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 });
                 const response = await this.requestManager.schedule(request, 1);
                 const $ = this.cheerio.load(response.data);
-                metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+                metadata = page + 10;
                 const manga = (0, MikudoujinParser_1.parseSearchtag)($);
                 return createPagedResults({
                     results: manga,
@@ -1412,15 +1413,16 @@ exports.parseViewMore = parseViewMore;
 const parseSearch = ($, mangaId) => {
     const mangaItems = [];
     const collectedIds = [];
-    let image = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-4 > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
-    const title = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim();
-    const subtitle = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > p:nth-child(4) > small > a').text().trim() ?? '';
-    mangaItems.push(createMangaTile({
-        id: mangaId,
-        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-        title: createIconText({ text: title }),
-        subtitleText: createIconText({ text: subtitle }),
-    }));
+    let image = 'https://i.imgur.com/GYUxEX8.png';
+    for (const results of $('#main > div:nth-child(n+4) > div').toArray()) {
+        const title = $('div > div.egMi0.kCrYT > a > div > div.j039Wc > h3 > div', results).text().replace(" - miku-doujin", "").trim();
+        const mangaId = $('div > div.egMi0.kCrYT > a', results).attr("href")?.split("&")[0]?.replace(`/url?q=http://miku-doujin.com/`, "").trim() ?? "";
+        mangaItems.push(createMangaTile({
+            id: mangaId,
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            title: createIconText({ text: title }),
+        }));
+    }
     collectedIds.push(mangaId);
     return mangaItems;
 };
