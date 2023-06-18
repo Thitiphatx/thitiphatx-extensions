@@ -1106,7 +1106,7 @@ class Manga168 extends paperback_extensions_common_1.Source {
     }
     async getTags() {
         const request = createRequestObject({
-            url: M1_DOMAIN,
+            url: `${M1_DOMAIN}/manga`,
             method: 'GET',
         });
         const response = await this.requestManager.schedule(request, 1);
