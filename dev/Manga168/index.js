@@ -961,7 +961,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const Manga168Parser_1 = require("./Manga168Parser");
 const M1_DOMAIN = 'https://manga168.com';
 exports.Manga168Info = {
-    version: '1.0.0',
+    version: '1.1.0',
     name: 'Manga168',
     icon: 'icon.png',
     author: 'Thitiphatx',
