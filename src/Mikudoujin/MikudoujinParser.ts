@@ -265,17 +265,20 @@ export const parseSearch = ($: CheerioStatic, mangaId: string): MangaTile[] => {
     const mangaItems: MangaTile[] = []
     const collectedIds: string[] = []
 
-    let image: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-4 > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
     
-    const title: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()
-    const subtitle: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > p:nth-child(4) > small > a').text().trim() ?? ''
+    let image: string = 'https://i.imgur.com/GYUxEX8.png'
 
-    mangaItems.push(createMangaTile({
-        id: mangaId,
-        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-        title: createIconText({ text: title }),
-        subtitleText: createIconText({ text: subtitle }),
-    }))
+    for (const results of $('#main > div:nth-child(n+4) > div').toArray()) {
+        const title:string = $('div > div.egMi0.kCrYT > a > div > div.j039Wc > h3 > div', results).text().replace(" - miku-doujin", "").trim()
+        const mangaId:string = $('div > div.egMi0.kCrYT > a', results).attr("href")?.split("&")[0]?.replace(`/url?q=http://miku-doujin.com/`,"").trim() ?? ""
+        mangaItems.push(createMangaTile({
+            id: mangaId,
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+            title: createIconText({ text: title }),
+        }))
+    }
+
+    
     collectedIds.push(mangaId)
     return mangaItems
 }

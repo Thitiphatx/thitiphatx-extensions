@@ -202,11 +202,11 @@ export class Mikudoujin extends Source {
     }
 
     override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 1
+        const page: number = metadata?.page ?? 0
         let request
         if (query.title) {
             request = createRequestObject({
-                url: `${encodeURI(query.title ?? '')}`,
+                url: `https://www.google.com/search?q=site:${MD_DOMAIN} ${encodeURI(query.title ?? '')}&start=${page}`,
                 method: 'GET',
             })
 
@@ -218,6 +218,7 @@ export class Mikudoujin extends Source {
 
             return createPagedResults({
                 results: manga,
+                metadata,
             })
         }
         else {
@@ -229,8 +230,7 @@ export class Mikudoujin extends Source {
     
                 const response = await this.requestManager.schedule(request, 1)
                 const $ = this.cheerio.load(response.data)
-
-                metadata = !isLastPage($) ? { page: page + 1 } : undefined
+                metadata = page + 10
                 const manga = parseSearchtag($)
                 return createPagedResults({
                     results: manga,
