@@ -202,22 +202,22 @@ export class Mikudoujin extends Source {
     }
 
     override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 0
+        const page: number = metadata?.page ?? 1
         let request
         if (query.title) {
             request = createRequestObject({
-                url: `https://www.google.com/search?q=site:${MD_DOMAIN} ${encodeURI(query.title ?? '')}&start=${page}`,
+                url: `${encodeURI(query.title ?? '')}`,
                 method: 'GET',
             })
 
             const response = await this.requestManager.schedule(request, 1)
             const $ = this.cheerio.load(response.data)
 
-            const manga = parseSearch($)
+            let id = query.title.split('/')[3] ?? '';
+            const manga = parseSearch($, id)
 
             return createPagedResults({
                 results: manga,
-                metadata,
             })
         }
         else {
