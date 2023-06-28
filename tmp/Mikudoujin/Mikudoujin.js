@@ -5,7 +5,7 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 const MikudoujinParser_1 = require("./MikudoujinParser");
 const MD_DOMAIN = 'https://www.miku-doujin.com';
 exports.MikudoujinInfo = {
-    version: '1.0.5',
+    version: '1.1.0',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphatx',
@@ -42,7 +42,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
             },
         });
     }
-    getMangaShareUrl(mangaId) { return `${MD_DOMAIN}/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${MD_DOMAIN}/${mangaId}/`; }
     async getMangaDetails(mangaId) {
         const request = createRequestObject({
             url: `${MD_DOMAIN}`,
@@ -115,13 +115,16 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
         const $1 = this.cheerio.load(response1.data);
         (0, MikudoujinParser_1.parseHomeSections)($1, sectionCallback);
         // Random
-        const request2 = createRequestObject({
-            url: `${MD_DOMAIN}/e9l99/`,
-            method: 'GET',
-        });
-        const response2 = await this.requestManager.schedule(request2, 1);
-        const $2 = this.cheerio.load(response2.data);
-        (0, MikudoujinParser_1.parseRandomSections)($2, sectionCallback);
+        const ids = ['52e6d', 'wfxsq', 'ng709', 'sbjdo', '3xuxg', '3p47g'];
+        for (const id of ids) {
+            const request2 = createRequestObject({
+                url: `${MD_DOMAIN}/${id}/`,
+                method: 'GET',
+            });
+            const response2 = await this.requestManager.schedule(request2, 1);
+            const $2 = this.cheerio.load(response2.data);
+            (0, MikudoujinParser_1.parseRandomSections)(id, $2, sectionCallback);
+        }
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -171,7 +174,7 @@ class Mikudoujin extends paperback_extensions_common_1.Source {
                 });
                 const response = await this.requestManager.schedule(request, 1);
                 const $ = this.cheerio.load(response.data);
-                metadata = !(0, MikudoujinParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
+                metadata = page + 10;
                 const manga = (0, MikudoujinParser_1.parseSearchtag)($);
                 return createPagedResults({
                     results: manga,
