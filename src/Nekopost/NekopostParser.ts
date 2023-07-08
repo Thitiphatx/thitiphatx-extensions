@@ -71,10 +71,8 @@ export const parseMangaDetails = (data: MangaDetails, mangaId: string): SourceMa
 
 export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] => {
     const chapters: Chapter[] = []
-    let sortingIndex = 0
 
     for (const chapter of data.listChapter) {
-        sortingIndex++
         const title: string = chapter.chapterName ?? ''
         const chapterId: string = chapter.chapterId ?? ''
 
@@ -87,17 +85,14 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
 
         if (!chapterId || !title) continue
 
-        chapters.push({
+        chapters.push(App.createChapter({
             id: chapterId,
             name: title,
-            langCode: 'ᴛʜ',
-            chapNum: chapNum,
-            time: date,
-            sortingIndex,
+            langCode: 'th',
+            chapNum: isNaN(chapNum) ? 0 : chapNum,
             volume: 0,
-            group: ''
-        })
-        sortingIndex--
+            time: date
+        }))
 
     }
     return chapters.map(chapter => {
