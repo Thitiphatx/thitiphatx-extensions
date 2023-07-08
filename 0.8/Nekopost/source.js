@@ -1541,7 +1541,7 @@ class Nekopost {
         const page = metadata?.page ?? 0;
         let param;
         switch (homepageSectionId) {
-            case 'latest_comic':
+            case 'update':
                 param = `${page}`;
                 break;
             default:
@@ -1676,9 +1676,7 @@ const parseMangaDetails = (data, mangaId) => {
 exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = (data, mangaId) => {
     const chapters = [];
-    let sortingIndex = 0;
     for (const chapter of data.listChapter) {
-        sortingIndex++;
         const title = chapter.chapterName ?? '';
         const chapterId = chapter.chapterId ?? '';
         if (!chapterId)
@@ -1687,20 +1685,17 @@ const parseChapters = (data, mangaId) => {
         const date = new Date(chapter.publishDate);
         if (!chapterId || !title)
             continue;
-        chapters.push({
+        chapters.push(App.createChapter({
             id: chapterId,
             name: title,
-            langCode: 'ᴛʜ',
-            chapNum: chapNum,
-            time: date,
-            sortingIndex,
+            langCode: 'th',
+            chapNum: isNaN(chapNum) ? 0 : chapNum,
             volume: 0,
-            group: ''
-        });
-        sortingIndex--;
+            time: date
+        }));
+        chapters.reverse();
     }
     return chapters.map(chapter => {
-        chapter.sortingIndex += chapters.length;
         return App.createChapter(chapter);
     });
 };
