@@ -93,10 +93,9 @@ export const parseChapters = (data: MangaDetails, mangaId: string): Chapter[] =>
             volume: 0,
             time: date
         }))
-
+        chapters.reverse();
     }
     return chapters.map(chapter => {
-        chapter.sortingIndex += chapters.length
         return App.createChapter(chapter)
     })
 }

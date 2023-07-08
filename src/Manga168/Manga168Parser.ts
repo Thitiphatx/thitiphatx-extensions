@@ -20,7 +20,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
         titles.push(decodeHTMLEntity(title))
     }
     
-    let image: string = encodeURI($('div.seriestucon > div.seriestucontent > div.seriestucontl > div.thumb > img').attr('src')) ?? 'https://i.imgur.com/GYUxEX8.png'
+    let image: string = encodeURI($('div.seriestucon > div.seriestucontent > div.seriestucontl > div.thumb > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png')
     const description: string = decodeHTMLEntity($('div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestuhead > div.entry-content.entry-content-single > p:nth-child(1)').text().trim() ?? '')
     const infomation = $('div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestucont > div.seriestucontr > table.infotable > tbody').text()
     const author: string = parseInfo(infomation, 'Author')
@@ -30,7 +30,7 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
     const arrayTags: Tag[] = []
     for (const tag of $('a', 'div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestucont > div.seriestucontr > div.seriestugenre').toArray()) {
         const label: string = $(tag).text().trim()
-        const id: string = $(tag).attr('href').split('/')[4] ?? label
+        const id: string = $(tag).attr('href')?.split('/')[4] ?? label
 
         if (!label) continue
         arrayTags.push({ id: id, label: label })
@@ -91,7 +91,7 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
     if (chapters.length == 0) {
         throw new Error(`Couldn't find any chapters for mangaId: ${mangaId}!`)
     }
-
+    chapters.reverse();
     return chapters.map(chapter => {
         return App.createChapter(chapter)
     })
@@ -102,7 +102,7 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
 
     for (const images of $('#readerarea').text().trim().split('<br />')) {
 
-        let image: string | undefined = parseInfo(images, 'src=').replaceAll('"', '').split(' ')[0]
+        let image: string | undefined = parseInfo(images, 'src=').replace(/"/g, '').split(' ')[0]
         if (image && image.startsWith('/')) image = 'https:' + image
         if (image) pages.push(encodeURI(image))
     }
@@ -149,7 +149,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
     for (const comic of $('li', '#wpop-items > div.serieslist.pop.wpop.wpop-alltime > ul').toArray()) {
         const image: string = $('div.imgseries > a > img', comic).first().attr('src') ?? ''
         const title: string = $('div.leftseries > h3 > a.series', comic).text() ?? ''
-        const id: string = $('div.leftseries > h3 > a.series', comic).attr('href').split('/')[4] ?? ''
+        const id: string = $('div.leftseries > h3 > a.series', comic).attr('href')?.split('/')[4] ?? ''
         if (!id || !title) continue
 
         popularSection_Array.push(App.createPartialSourceManga({
@@ -167,7 +167,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
         let image: string = $('div.imgu > a.series > img', comic).first().attr('src') ?? ''
 
         const title: string = $('div.luf > a.series', comic).first().attr('title') ?? ''
-        const id: string = $('div.luf > a.series', comic).attr('href').split('/')[4] ?? ''
+        const id: string = $('div.luf > a.series', comic).attr('href')?.split('/')[4] ?? ''
         const subtitle: string = $('div.luf > ul > li:nth-child(1) > a', comic).text() ?? ''
         if (!id || !title) continue
 
@@ -186,7 +186,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
     for (const comic of $('li', '#wpop-items > div.serieslist.pop.wpop.wpop-weekly > ul').toArray()) {
         const image: string = $('div.imgseries > a > img', comic).first().attr('src') ?? ''
         const title: string = $('div.leftseries > h3 > a.series', comic).text() ?? ''
-        const id: string = $('div.leftseries > h3 > a.series', comic).attr('href').split('/')[4] ?? ''
+        const id: string = $('div.leftseries > h3 > a.series', comic).attr('href')?.split('/')[4] ?? ''
         if (!id || !title) continue
 
         weeklySection_Array.push(App.createPartialSourceManga({
@@ -203,7 +203,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
    for (const comic of $('li', '#wpop-items > div.serieslist.pop.wpop.wpop-monthly > ul').toArray()) {
        const image: string = $('div.imgseries > a > img', comic).first().attr('src') ?? ''
        const title: string = $('div.leftseries > h3 > a.series', comic).text() ?? ''
-       const id: string = $('div.leftseries > h3 > a.series', comic).attr('href').split('/')[4] ?? ''
+       const id: string = $('div.leftseries > h3 > a.series', comic).attr('href')?.split('/')[4] ?? ''
        if (!id || !title) continue
 
        monthlySection_Array.push(App.createPartialSourceManga({
@@ -220,10 +220,10 @@ export const parseViewMore = ($: CheerioStatic): PartialSourceManga[] => {
     const comics: PartialSourceManga[] = []
 
     for (const item of $('div.col-lg-3.col-md-3.col-sm-4.col-smx-4.col-xs-6 > div.aniframe', 'div.container').toArray()) {
-        let image: string = encodeURI($('a:nth-child(2) > img', item).first().attr('src')) ?? ''
+        let image: string = encodeURI($('a:nth-child(2) > img', item).first().attr('src') ?? "")
 
         const title: string = $('a.manga-title', item).first().text().trim() ?? ''
-        const id: string = $('a.manga-title', item).attr('href').split('/')[3] ?? ''
+        const id: string = $('a.manga-title', item).attr('href')?.split('/')[3] ?? ''
         const sub: string[] = $('span.label-update.label.label-default.label-ago', item).first().text().trim().split(' ') ?? ''
         const subtitle: string = `${sub[0]} ${sub[1]}${sub[2]}` ?? ''
 
@@ -245,10 +245,10 @@ export const parseSearch = ($: CheerioStatic): PartialSourceManga[] => {
     const collectedIds: string[] = []
 
     for (const manga of $('div.bs', '#content > div.wrapper > div.postbody > div.bixbox > div.listupd').toArray()) {
-        let image: string = encodeURI($('div.bsx > a > div.limit > img', manga).first().attr('src')) ?? ''
+        let image: string = encodeURI($('div.bsx > a > div.limit > img', manga).first().attr('src') ?? "")
 
         const title: string = $('div.bsx > a > div.bigor > div.tt', manga).first().text().trim() ?? ''
-        const id: string = $('div.bsx > a', manga).attr('href').split('/')[4] ?? ''
+        const id: string = $('div.bsx > a', manga).attr('href')?.split('/')[4] ?? ''
         const subtitle: string = $('div.bsx > a > div.bigor > div.adds > div.epxs', manga).first().text().trim() ?? ''
         
         if (!id || !title || !image) continue

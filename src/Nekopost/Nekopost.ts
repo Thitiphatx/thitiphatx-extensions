@@ -154,7 +154,7 @@ export class Nekopost implements SearchResultsProviding, MangaProviding, Chapter
         const page: number = metadata?.page ?? 0
         let param;
         switch (homepageSectionId) {
-            case 'latest_comic':
+            case 'update':
                 param = `${page}`
                 break
             default:
