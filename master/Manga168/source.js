@@ -1595,7 +1595,7 @@ const parseMangaDetails = ($, mangaId) => {
     for (const title of $('div.seriestucon > div.seriestuheader > div.seriestualt').text().trim().split(', ')) {
         titles.push(decodeHTMLEntity(title));
     }
-    let image = encodeURI($('div.seriestucon > div.seriestucontent > div.seriestucontl > div.thumb > img').attr('src')) ?? 'https://i.imgur.com/GYUxEX8.png';
+    let image = encodeURI($('div.seriestucon > div.seriestucontent > div.seriestucontl > div.thumb > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png');
     const description = decodeHTMLEntity($('div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestuhead > div.entry-content.entry-content-single > p:nth-child(1)').text().trim() ?? '');
     const infomation = $('div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestucont > div.seriestucontr > table.infotable > tbody').text();
     const author = parseInfo(infomation, 'Author');
@@ -1604,7 +1604,7 @@ const parseMangaDetails = ($, mangaId) => {
     const arrayTags = [];
     for (const tag of $('a', 'div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestucont > div.seriestucontr > div.seriestugenre').toArray()) {
         const label = $(tag).text().trim();
-        const id = $(tag).attr('href').split('/')[4] ?? label;
+        const id = $(tag).attr('href')?.split('/')[4] ?? label;
         if (!label)
             continue;
         arrayTags.push({ id: id, label: label });
@@ -1660,6 +1660,7 @@ const parseChapters = ($, mangaId) => {
     if (chapters.length == 0) {
         throw new Error(`Couldn't find any chapters for mangaId: ${mangaId}!`);
     }
+    chapters.reverse();
     return chapters.map(chapter => {
         return App.createChapter(chapter);
     });
@@ -1668,7 +1669,7 @@ exports.parseChapters = parseChapters;
 const parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
     for (const images of $('#readerarea').text().trim().split('<br />')) {
-        let image = parseInfo(images, 'src=').replaceAll('"', '').split(' ')[0];
+        let image = parseInfo(images, 'src=').replace(/"/g, '').split(' ')[0];
         if (image && image.startsWith('/'))
             image = 'https:' + image;
         if (image)
@@ -1712,7 +1713,7 @@ const parseHomeSections = ($, sectionCallback) => {
     for (const comic of $('li', '#wpop-items > div.serieslist.pop.wpop.wpop-alltime > ul').toArray()) {
         const image = $('div.imgseries > a > img', comic).first().attr('src') ?? '';
         const title = $('div.leftseries > h3 > a.series', comic).text() ?? '';
-        const id = $('div.leftseries > h3 > a.series', comic).attr('href').split('/')[4] ?? '';
+        const id = $('div.leftseries > h3 > a.series', comic).attr('href')?.split('/')[4] ?? '';
         if (!id || !title)
             continue;
         popularSection_Array.push(App.createPartialSourceManga({
@@ -1728,7 +1729,7 @@ const parseHomeSections = ($, sectionCallback) => {
     for (const comic of $('div.utao.styletwo > div.uta', '#content > div.wrapper > div.postbody > div.bixbox > div.listupd').toArray()) {
         let image = $('div.imgu > a.series > img', comic).first().attr('src') ?? '';
         const title = $('div.luf > a.series', comic).first().attr('title') ?? '';
-        const id = $('div.luf > a.series', comic).attr('href').split('/')[4] ?? '';
+        const id = $('div.luf > a.series', comic).attr('href')?.split('/')[4] ?? '';
         const subtitle = $('div.luf > ul > li:nth-child(1) > a', comic).text() ?? '';
         if (!id || !title)
             continue;
@@ -1746,7 +1747,7 @@ const parseHomeSections = ($, sectionCallback) => {
     for (const comic of $('li', '#wpop-items > div.serieslist.pop.wpop.wpop-weekly > ul').toArray()) {
         const image = $('div.imgseries > a > img', comic).first().attr('src') ?? '';
         const title = $('div.leftseries > h3 > a.series', comic).text() ?? '';
-        const id = $('div.leftseries > h3 > a.series', comic).attr('href').split('/')[4] ?? '';
+        const id = $('div.leftseries > h3 > a.series', comic).attr('href')?.split('/')[4] ?? '';
         if (!id || !title)
             continue;
         weeklySection_Array.push(App.createPartialSourceManga({
@@ -1762,7 +1763,7 @@ const parseHomeSections = ($, sectionCallback) => {
     for (const comic of $('li', '#wpop-items > div.serieslist.pop.wpop.wpop-monthly > ul').toArray()) {
         const image = $('div.imgseries > a > img', comic).first().attr('src') ?? '';
         const title = $('div.leftseries > h3 > a.series', comic).text() ?? '';
-        const id = $('div.leftseries > h3 > a.series', comic).attr('href').split('/')[4] ?? '';
+        const id = $('div.leftseries > h3 > a.series', comic).attr('href')?.split('/')[4] ?? '';
         if (!id || !title)
             continue;
         monthlySection_Array.push(App.createPartialSourceManga({
@@ -1778,9 +1779,9 @@ exports.parseHomeSections = parseHomeSections;
 const parseViewMore = ($) => {
     const comics = [];
     for (const item of $('div.col-lg-3.col-md-3.col-sm-4.col-smx-4.col-xs-6 > div.aniframe', 'div.container').toArray()) {
-        let image = encodeURI($('a:nth-child(2) > img', item).first().attr('src')) ?? '';
+        let image = encodeURI($('a:nth-child(2) > img', item).first().attr('src') ?? "");
         const title = $('a.manga-title', item).first().text().trim() ?? '';
-        const id = $('a.manga-title', item).attr('href').split('/')[3] ?? '';
+        const id = $('a.manga-title', item).attr('href')?.split('/')[3] ?? '';
         const sub = $('span.label-update.label.label-default.label-ago', item).first().text().trim().split(' ') ?? '';
         const subtitle = `${sub[0]} ${sub[1]}${sub[2]}` ?? '';
         if (!id || !title)
@@ -1799,9 +1800,9 @@ const parseSearch = ($) => {
     const mangaItems = [];
     const collectedIds = [];
     for (const manga of $('div.bs', '#content > div.wrapper > div.postbody > div.bixbox > div.listupd').toArray()) {
-        let image = encodeURI($('div.bsx > a > div.limit > img', manga).first().attr('src')) ?? '';
+        let image = encodeURI($('div.bsx > a > div.limit > img', manga).first().attr('src') ?? "");
         const title = $('div.bsx > a > div.bigor > div.tt', manga).first().text().trim() ?? '';
-        const id = $('div.bsx > a', manga).attr('href').split('/')[4] ?? '';
+        const id = $('div.bsx > a', manga).attr('href')?.split('/')[4] ?? '';
         const subtitle = $('div.bsx > a > div.bigor > div.adds > div.epxs', manga).first().text().trim() ?? '';
         if (!id || !title || !image)
             continue;

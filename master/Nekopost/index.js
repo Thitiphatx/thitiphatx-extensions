@@ -1541,7 +1541,7 @@ class Nekopost {
         const page = metadata?.page ?? 0;
         let param;
         switch (homepageSectionId) {
-            case 'latest_comic':
+            case 'update':
                 param = `${page}`;
                 break;
             default:
@@ -1693,9 +1693,9 @@ const parseChapters = (data, mangaId) => {
             volume: 0,
             time: date
         }));
+        chapters.reverse();
     }
     return chapters.map(chapter => {
-        chapter.sortingIndex += chapters.length;
         return App.createChapter(chapter);
     });
 };
