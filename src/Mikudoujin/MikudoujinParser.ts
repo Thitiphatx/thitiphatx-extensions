@@ -117,7 +117,7 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
 
 export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
     const latestSection = App.createHomeSection({
-        id: 'latest',
+        id: 'latest_doujin',
         title: 'Latest Doujin',
         containsMoreItems: true,
         type: HomeSectionType.singleRowNormal
