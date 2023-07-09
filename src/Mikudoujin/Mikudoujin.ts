@@ -16,6 +16,8 @@ import {
     MangaProviding,
     SearchResultsProviding,
     HomePageSectionsProviding,
+    HomeSectionType,
+    PartialSourceManga,
 } from '@paperback/types'
 
 import {
@@ -135,17 +137,41 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
         parseHomeSections($1, sectionCallback)
 
         // Random
+        
         const ids: string[] = ['52e6d','wfxsq','ng709','sbjdo','3xuxg','3p47g']
+        const manga_array: PartialSourceManga[] = []
+        const randomSection = App.createHomeSection({
+            id: 'random',
+            title: 'Random Doujin',
+            containsMoreItems: true,
+            type: HomeSectionType.singleRowNormal
+        })
 
         for (const id of ids) {
+
             const request2 = App.createRequest({
                 url: `${BASE_URL}/${id}/`,
                 method: 'GET',
             })
+
             const response2 = await this.requestManager.schedule(request2, 1)
             const $2 = this.cheerio.load(response2.data)
-            parseRandomSections(id ,$2, sectionCallback)
+        
+            for (const item of $2('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+                let image: string = $2('a > img', item).first().attr('src') ?? ''
+        
+                const title: string = $2('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+                const id: string = $2('a', item).attr('href').split('/')[3] ?? ''
+                if (!id || !title) continue
+                manga_array.push(App.createPartialSourceManga({
+                    mangaId: id,
+                    image: encodeURI(image),
+                    title: decodeURI(title),
+                }))
+            }
         }
+        randomSection.items = manga_array
+        sectionCallback(randomSection)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
