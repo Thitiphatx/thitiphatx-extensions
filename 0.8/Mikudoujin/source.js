@@ -1751,7 +1751,7 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
 exports.parseChapterDetails = parseChapterDetails;
 const parseHomeSections = ($, sectionCallback) => {
     const latestSection = App.createHomeSection({
-        id: 'latest',
+        id: 'latest_doujin',
         title: 'Latest Doujin',
         containsMoreItems: true,
         type: types_1.HomeSectionType.singleRowNormal
