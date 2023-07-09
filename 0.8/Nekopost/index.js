@@ -1560,7 +1560,7 @@ class Nekopost {
             throw new Error(`${e}`);
         }
         const manga = (0, NekopostParser_1.parseViewMore)(data);
-        metadata = page + 1;
+        metadata = page + 12;
         return App.createPagedResults({
             results: manga,
             metadata
