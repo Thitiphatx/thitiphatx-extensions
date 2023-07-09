@@ -1533,7 +1533,7 @@ class Manga168 {
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
         }
         const request = App.createRequest({
-            url: `${BASE_URL}/page/${param}`,
+            url: `${BASE_URL}/page/${param}/`,
             method: 'GET'
         });
         const response = await this.requestManager.schedule(request, 1);
@@ -1778,12 +1778,11 @@ const parseHomeSections = ($, sectionCallback) => {
 exports.parseHomeSections = parseHomeSections;
 const parseViewMore = ($) => {
     const comics = [];
-    for (const item of $('div.col-lg-3.col-md-3.col-sm-4.col-smx-4.col-xs-6 > div.aniframe', 'div.container').toArray()) {
-        let image = encodeURI($('a:nth-child(2) > img', item).first().attr('src') ?? "");
-        const title = $('a.manga-title', item).first().text().trim() ?? '';
-        const id = $('a.manga-title', item).attr('href')?.split('/')[3] ?? '';
-        const sub = $('span.label-update.label.label-default.label-ago', item).first().text().trim().split(' ') ?? '';
-        const subtitle = `${sub[0]} ${sub[1]}${sub[2]}` ?? '';
+    for (const comic of $('div.utao.styletwo > div.uta', '#content > div.wrapper > div.postbody > div.bixbox > div.listupd').toArray()) {
+        let image = $('div.imgu > a.series > img', comic).first().attr('src') ?? '';
+        const title = $('div.luf > a.series', comic).first().attr('title') ?? '';
+        const id = $('div.luf > a.series', comic).attr('href')?.split('/')[4] ?? '';
+        const subtitle = $('div.luf > ul > li:nth-child(1) > a', comic).text() ?? '';
         if (!id || !title)
             continue;
         comics.push(App.createPartialSourceManga({

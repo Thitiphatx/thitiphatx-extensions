@@ -1536,8 +1536,6 @@ class Nekopost {
         (0, NekopostParser_1.parseHomeSections)(data, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        if (metadata?.completed)
-            return metadata;
         const page = metadata?.page ?? 0;
         let param;
         switch (homepageSectionId) {
@@ -1560,7 +1558,7 @@ class Nekopost {
             throw new Error(`${e}`);
         }
         const manga = (0, NekopostParser_1.parseViewMore)(data);
-        metadata = page + 12;
+        metadata = data ? { page: page + 12 } : {};
         return App.createPagedResults({
             results: manga,
             metadata

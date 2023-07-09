@@ -1580,6 +1580,11 @@ class Mikudoujin {
     async getSearchResults(query, metadata) {
         const page = metadata?.page ?? 1;
         let request;
+        if (query.title === '') {
+            return App.createPagedResults({
+                results: [],
+            });
+        }
         if (query.title) {
             request = App.createRequest({
                 url: `${encodeURI(query.title ?? '')}`,
