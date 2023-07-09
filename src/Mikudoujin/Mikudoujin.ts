@@ -15,7 +15,7 @@ import {
     ChapterProviding,
     MangaProviding,
     SearchResultsProviding,
-    HomePageSectionsProviding
+    HomePageSectionsProviding,
 } from '@paperback/types'
 
 import {
@@ -193,6 +193,11 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
         const page: number = metadata?.page ?? 1
 
         let request
+        if (query.title === '') {
+            return App.createPagedResults({
+                results: [],
+            })
+        }
         if (query.title) {
             request = App.createRequest({
                 url: `${encodeURI(query.title ?? '')}`,

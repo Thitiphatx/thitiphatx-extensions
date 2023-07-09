@@ -139,7 +139,7 @@ export class Manga168 implements SearchResultsProviding, MangaProviding, Chapter
         }
 
         const request = App.createRequest({
-            url: `${BASE_URL}/page/${param}`,
+            url: `${BASE_URL}/page/${param}/`,
             method: 'GET'
         })
 

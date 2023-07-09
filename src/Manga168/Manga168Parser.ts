@@ -219,14 +219,12 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
 export const parseViewMore = ($: CheerioStatic): PartialSourceManga[] => {
     const comics: PartialSourceManga[] = []
 
-    for (const item of $('div.col-lg-3.col-md-3.col-sm-4.col-smx-4.col-xs-6 > div.aniframe', 'div.container').toArray()) {
-        let image: string = encodeURI($('a:nth-child(2) > img', item).first().attr('src') ?? "")
+    for (const comic of $('div.utao.styletwo > div.uta', '#content > div.wrapper > div.postbody > div.bixbox > div.listupd').toArray()) {
+        let image: string = $('div.imgu > a.series > img', comic).first().attr('src') ?? ''
 
-        const title: string = $('a.manga-title', item).first().text().trim() ?? ''
-        const id: string = $('a.manga-title', item).attr('href')?.split('/')[3] ?? ''
-        const sub: string[] = $('span.label-update.label.label-default.label-ago', item).first().text().trim().split(' ') ?? ''
-        const subtitle: string = `${sub[0]} ${sub[1]}${sub[2]}` ?? ''
-
+        const title: string = $('div.luf > a.series', comic).first().attr('title') ?? ''
+        const id: string = $('div.luf > a.series', comic).attr('href')?.split('/')[4] ?? ''
+        const subtitle: string = $('div.luf > ul > li:nth-child(1) > a', comic).text() ?? ''
         if (!id || !title) continue
 
         comics.push(App.createPartialSourceManga({

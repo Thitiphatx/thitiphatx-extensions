@@ -149,8 +149,6 @@ export class Nekopost implements SearchResultsProviding, MangaProviding, Chapter
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        if (metadata?.completed) return metadata
-
         const page: number = metadata?.page ?? 0
         let param;
         switch (homepageSectionId) {
@@ -177,7 +175,7 @@ export class Nekopost implements SearchResultsProviding, MangaProviding, Chapter
 
         const manga = parseViewMore(data)
 
-        metadata = page + 12
+        metadata = data ? { page: page + 12 } : {}
         return App.createPagedResults({
             results: manga,
             metadata
