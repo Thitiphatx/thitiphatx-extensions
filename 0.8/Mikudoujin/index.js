@@ -1533,6 +1533,13 @@ class Mikudoujin {
         (0, MikudoujinParser_1.parseHomeSections)($1, sectionCallback);
         // Random
         const ids = ['52e6d', 'wfxsq', 'ng709', 'sbjdo', '3xuxg', '3p47g'];
+        const manga_array = [];
+        const randomSection = App.createHomeSection({
+            id: 'random',
+            title: 'Random Doujin',
+            containsMoreItems: true,
+            type: types_1.HomeSectionType.singleRowNormal
+        });
         for (const id of ids) {
             const request2 = App.createRequest({
                 url: `${BASE_URL}/${id}/`,
@@ -1540,8 +1547,21 @@ class Mikudoujin {
             });
             const response2 = await this.requestManager.schedule(request2, 1);
             const $2 = this.cheerio.load(response2.data);
-            (0, MikudoujinParser_1.parseRandomSections)(id, $2, sectionCallback);
+            for (const item of $2('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+                let image = $2('a > img', item).first().attr('src') ?? '';
+                const title = $2('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? '';
+                const id = $2('a', item).attr('href').split('/')[3] ?? '';
+                if (!id || !title)
+                    continue;
+                manga_array.push(App.createPartialSourceManga({
+                    mangaId: id,
+                    image: encodeURI(image),
+                    title: decodeURI(title),
+                }));
+            }
         }
+        randomSection.items = manga_array;
+        sectionCallback(randomSection);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         if (metadata?.completed)
