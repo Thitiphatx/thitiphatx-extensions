@@ -177,7 +177,7 @@ export class Nekopost implements SearchResultsProviding, MangaProviding, Chapter
 
         const manga = parseViewMore(data)
 
-        metadata = page + 1
+        metadata = page + 12
         return App.createPagedResults({
             results: manga,
             metadata
