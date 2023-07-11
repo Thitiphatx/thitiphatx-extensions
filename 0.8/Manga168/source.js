@@ -1450,11 +1450,11 @@ exports.Manga168Info = {
     websiteBaseURL: BASE_URL,
     sourceTags: [
         {
-            text: 'Thai',
+            text: 'th',
             type: types_1.BadgeColor.BLUE
         }
     ],
-    language: 'Thai',
+    language: 'th',
     intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS
 };
 class Manga168 {
@@ -1592,9 +1592,8 @@ const types_1 = require("@paperback/types");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
     const titles = [];
-    for (const title of $('div.seriestucon > div.seriestuheader > div.seriestualt').text().trim().split(', ')) {
-        titles.push(decodeHTMLEntity(title));
-    }
+    const title = $('div.seriestucon > div.seriestuheader > h1').text().trim();
+    titles.push(decodeHTMLEntity(title));
     let image = encodeURI($('div.seriestucon > div.seriestucontent > div.seriestucontl > div.thumb > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png');
     const description = decodeHTMLEntity($('div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestuhead > div.entry-content.entry-content-single > p:nth-child(1)').text().trim() ?? '');
     const infomation = $('div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestucont > div.seriestucontr > table.infotable > tbody').text();

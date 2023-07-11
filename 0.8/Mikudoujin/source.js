@@ -1506,7 +1506,7 @@ class Mikudoujin {
     }
     async getChapterDetails(mangaId, chapterId) {
         let request;
-        if (chapterId != "null") {
+        if (chapterId != mangaId) {
             request = App.createRequest({
                 url: `${BASE_URL}/${mangaId}/${chapterId}/`,
                 method: 'GET',
@@ -1741,7 +1741,7 @@ const parseChapters = ($, mangaId) => {
         const date = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim();
         const time = parseDate(date);
         chapters.push(App.createChapter({
-            id: 'null',
+            id: mangaId,
             name: decodeHTMLEntity(title),
             langCode: 'th',
             chapNum: 1,
