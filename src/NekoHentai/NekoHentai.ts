@@ -27,36 +27,37 @@ import {
     parseViewMore,
     parseTags,
     parseSearch
-} from './Manga168Parser'
+} from './NekoHentaiParser'
+import { encode } from 'entities';
 
-const BASE_URL = 'https://manga168.com'
+const BASE_URL = 'https://neko-hentai.net'
 
-export const Manga168Info: SourceInfo = {
+export const NekoHentaiInfo: SourceInfo = {
     version: '1.0.0',
-    name: 'Manga168',
+    name: 'Neko-Hentai',
     icon: 'icon.png',
     author: 'Thitiphat',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls manga from manga168',
+    description: `Extension that pulls manga from ${BASE_URL}`,
     contentRating: ContentRating.MATURE,
     websiteBaseURL: BASE_URL,
     sourceTags: [
         {
             text: 'th',
             type: BadgeColor.BLUE
+        },
+        {
+            text: 'Hentai',
+            type: BadgeColor.RED
         }
     ],
     language: 'th',
-    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
 }
 
-export class Manga168 implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding {
+export class NekoHentai implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding {
 
     constructor(private cheerio: CheerioAPI) { }
-
-    readonly cookies = [
-        App.createCookie({ name: 'configPageView', value: 'all', domain: `${BASE_URL}` })
-    ]
     
     requestManager = App.createRequestManager({
         requestsPerSecond: 4,
@@ -67,6 +68,7 @@ export class Manga168 implements SearchResultsProviding, MangaProviding, Chapter
                     ...(request.headers ?? {}),
                     ...{
                         'referer': `${BASE_URL}/`,
+                        'user-agent': await this.requestManager.getDefaultUserAgent()
                     }
                 }
                 return request
@@ -81,45 +83,57 @@ export class Manga168 implements SearchResultsProviding, MangaProviding, Chapter
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
         const request = App.createRequest({
-            url: `${BASE_URL}/manga/${mangaId}/`,
+            url: `${BASE_URL}/${mangaId}/`,
             method: 'GET'
         })
 
         const response = await this.requestManager.schedule(request, 1)
+        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data as string)
         return parseMangaDetails($, mangaId)
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
         const request = App.createRequest({
-            url: `${BASE_URL}/manga/${mangaId}/`,
+            url: `${BASE_URL}/${mangaId}/`,
             method: 'GET'
         })
 
         const response = await this.requestManager.schedule(request, 1)
+        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data as string)
         return parseChapters($, mangaId)
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const request = App.createRequest({
-            url: `${BASE_URL}/${chapterId}/`,
-            method: 'GET',
-            cookies: this.cookies,
-        })
+        let request
+        if (mangaId == chapterId) {
+            request = App.createRequest({
+                url: `${BASE_URL}/${mangaId}/`,
+                method: 'GET',
+            })
+        }
+        else {
+            request = App.createRequest({
+                url: `${BASE_URL}/${mangaId}/${chapterId}/`,
+                method: 'GET',
+            })
+        }
 
         const response = await this.requestManager.schedule(request, 1)
+        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data as string)
         return parseChapterDetails($, mangaId, chapterId)
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const request = App.createRequest({
-            url: `${BASE_URL}/page/1/`,
+            url: `${BASE_URL}`,
             method: 'GET',
         })
 
         const response = await this.requestManager.schedule(request, 1)
+        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data as string)
         parseHomeSections($, sectionCallback)
     }
@@ -139,11 +153,12 @@ export class Manga168 implements SearchResultsProviding, MangaProviding, Chapter
         }
 
         const request = App.createRequest({
-            url: `${BASE_URL}/page/${param}/`,
+            url: `${BASE_URL}/?page=${param}`,
             method: 'GET'
         })
 
         const response = await this.requestManager.schedule(request, 1)
+        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data as string)
         const manga = parseViewMore($)
 
@@ -156,41 +171,72 @@ export class Manga168 implements SearchResultsProviding, MangaProviding, Chapter
 
     async getSearchTags(): Promise<TagSection[]> {
         const request = App.createRequest({
-            url: `${BASE_URL}/manga`,
+            url: `${BASE_URL}`,
             method: 'GET'
         })
 
         const response = await this.requestManager.schedule(request, 1)
+        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data as string)
         return parseTags($)
     }
 
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         const page: number = metadata?.page ?? 1
-
         let request
         // Regular search
         if (query.title) {
+            const keysearch = encodeURI(query.title).replace("%20", "+")
             request = App.createRequest({
-                url: `${BASE_URL}/page/${page}/?s=${encodeURI(query.title ?? '')}`,
-                method: 'GET'
-                
+                url: `${BASE_URL}/controller/search.php`,
+                method: 'POST',
+                headers: {
+                    'referer': `${BASE_URL}/search/?s=${keysearch}`,
+                    'user-agent': await this.requestManager.getDefaultUserAgent()
+                },
+                data: `keysearch=${keysearch}`,
+            })
+            const response = await this.requestManager.schedule(request, 1)
+            this.CloudFlareError(response.status)
+            const $ = this.cheerio.load(response.data as string)
+            const manga = parseSearch($)
+    
+            return App.createPagedResults({
+                results: manga,
             })
         } else {
             request = App.createRequest({
-                url: `${BASE_URL}/genres/${query?.includedTags?.map((x: any) => x.id)[0]}/`,
+                url: `${BASE_URL}/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
                 method: 'GET'
+            })
+            const response = await this.requestManager.schedule(request, 1)
+            this.CloudFlareError(response.status)
+            const $ = this.cheerio.load(response.data as string)
+            const manga = parseSearch($)
+
+            metadata = !isLastPage($) ? { page: page + 1 } : undefined
+            return App.createPagedResults({
+                results: manga,
+                metadata
             })
         }
 
-        const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data as string)
-        const manga = parseSearch($)
+        
+    }
+    CloudFlareError(status: number): void {
+        if (status == 503 || status == 403) {
+            throw new Error(`CLOUDFLARE BYPASS ERROR:\nPlease go to the homepage of <${NekoHentai.name}> and press the cloud icon.`)
+        }
+    }
 
-        metadata = !isLastPage($) ? { page: page + 1 } : undefined
-        return App.createPagedResults({
-            results: manga,
-            metadata
+    async getCloudflareBypassRequestAsync(): Promise<Request> {
+        return App.createRequest({
+            url: BASE_URL,
+            method: 'GET',
+            headers: {
+                'referer': `${BASE_URL}/`,
+                'user-agent': await this.requestManager.getDefaultUserAgent()
+            }
         })
     }
 

@@ -109,7 +109,7 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
         let request;
-        if (chapterId != "null") {
+        if (chapterId != mangaId) {
             request = App.createRequest({
                 url: `${BASE_URL}/${mangaId}/${chapterId}/`,
                 method: 'GET',

@@ -16,9 +16,8 @@ import entities = require('entities')
 
 export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceManga => {
     const titles: string[] = []
-    for (const title of $('div.seriestucon > div.seriestuheader > div.seriestualt').text().trim().split(', ')) {
-        titles.push(decodeHTMLEntity(title))
-    }
+    const title = $('div.seriestucon > div.seriestuheader > h1').text().trim();
+    titles.push(decodeHTMLEntity(title))
     
     let image: string = encodeURI($('div.seriestucon > div.seriestucontent > div.seriestucontl > div.thumb > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png')
     const description: string = decodeHTMLEntity($('div.seriestucon > div.seriestucontent > div.seriestucontentr > div.seriestuhead > div.entry-content.entry-content-single > p:nth-child(1)').text().trim() ?? '')
