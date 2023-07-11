@@ -1670,6 +1670,7 @@ const parseMangaDetails = ($, mangaId) => {
 exports.parseMangaDetails = parseMangaDetails;
 const parseChapters = ($, mangaId) => {
     const chapters = [];
+    const collectedIds = [];
     if ($('div:nth-child(5) > div > div.col-sm-12.col-md-9 > div:nth-child(1) > h2').text().includes("ตอนของ")) {
         for (const chapter of $('div', 'div.box').toArray()) {
             const title = $('div:nth-child(1) > a', chapter).text().trim() ?? '';
@@ -1679,8 +1680,11 @@ const parseChapters = ($, mangaId) => {
             const chapNum = Number(title?.split("ตอนที่ ")[1]?.trim());
             const time = $('div:nth-child(2)', chapter).text().trim();
             const date = parseDate(time);
+            if (collectedIds.includes(chapterId))
+                continue;
             if (!chapterId || !title)
                 continue;
+            collectedIds.push(chapterId);
             chapters.push(App.createChapter({
                 id: chapterId,
                 name: title,
