@@ -191,24 +191,6 @@ export const parseViewMore = ($: CheerioStatic): PartialSourceManga[] => {
     return comics
 }
 
-export const parseSearch = ($: CheerioStatic, mangaId: string): PartialSourceManga[] => {
-    const mangaItems: PartialSourceManga[] = []
-    const collectedIds: string[] = []
-
-    let image: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-4 > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
-    const title: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()
-    const subtitle: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > p:nth-child(4) > small > a').text().trim() ?? ''
-
-    mangaItems.push(App.createPartialSourceManga({
-        mangaId: mangaId,
-        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-        title: decodeHTMLEntity(title),
-        subtitle: decodeHTMLEntity(subtitle),
-    }))
-    collectedIds.push(mangaId)
-    return mangaItems
-}
-
 export const parseSearchtag = ($: CheerioStatic): PartialSourceManga[] => {
     const mangaItems: PartialSourceManga[] = []
     const collectedIds: string[] = []

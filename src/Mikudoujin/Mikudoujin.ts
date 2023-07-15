@@ -18,6 +18,8 @@ import {
     HomePageSectionsProviding,
     HomeSectionType,
     PartialSourceManga,
+    DUISection,
+    SourceStateManager,
 } from '@paperback/types'
 
 import {
@@ -28,10 +30,17 @@ import {
     parseMangaDetails,
     parseViewMore,
     parseTags,
-    parseSearch,
     parseRandomSections,
     parseSearchtag
 } from './MikudoujinParser'
+
+import { SearchResponse } from './MikudoujinInterfaces'
+
+import {
+    getCSEapi,
+    resetSettings,
+    settings
+} from './MikudoujinSettings'
 
 const BASE_URL = 'http://miku-doujin.com'
 
@@ -55,7 +64,7 @@ export const MikudoujinInfo: SourceInfo = {
         }
     ],
     language: 'th',
-    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.SETTINGS_UI
 }
 
 export class Mikudoujin implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding {
@@ -80,6 +89,19 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
             }
         }
     });
+
+    stateManager = App.createSourceStateManager()
+    async getSourceMenu(): Promise<DUISection> {
+        return Promise.resolve(App.createDUISection({
+            id: 'main',
+            header: 'Source Settings',
+            rows: () => Promise.resolve([
+                settings(this.stateManager),
+                resetSettings(this.stateManager)
+            ]),
+            isHidden: false
+        }))
+    }
 
     getMangaShareUrl(mangaId: string): string { return `${BASE_URL}/${mangaId}` }
 
@@ -219,25 +241,59 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
         const page: number = metadata?.page ?? 1
 
         let request
-        if (query.title === '') {
-            return App.createPagedResults({
-                results: [],
-            })
-        }
         if (query.title) {
+            const apikey = await this.CSEapi(this.stateManager)
+            const searchEngineId = '009358231530793211456:xtfjzcegcz8';
+
             request = App.createRequest({
-                url: `${encodeURI(query.title ?? '')}`,
+                url: `https://www.googleapis.com/customsearch/v1?key=${apikey}&cx=${searchEngineId}&q=${encodeURIComponent(query.title ?? '')}`,
                 method: 'GET',
             })
 
             const response = await this.requestManager.schedule(request, 1)
-            const $ = this.cheerio.load(response.data)
+            let data: SearchResponse
+            try {
+                data = JSON.parse(response.data as string)
+            } catch (e) {
+                throw new Error(`${e}`)
+            }
 
-            let id = query.title.split('/')[3] ?? '';
-            const manga = parseSearch($, id)
-
+            // parseSearch
+            const mangaItems: PartialSourceManga[] = []
+            const collectedIds: string[] = []
+        
+            if(data.items) {
+                for (const manga of data.items) {
+                    const id: string = manga.link?.split("/")[3] ?? "";
+                    const title: string = manga.title.trim()
+    
+                    const request2 = App.createRequest({
+                        url: `${BASE_URL}/${id}/`,
+                        method: 'GET',
+                    })
+            
+                    const response2 = await this.requestManager.schedule(request2, 1)
+                    const $2 = this.cheerio.load(response2.data)
+            
+                    const row = $2('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row');
+                    let image: string = $2('div.col-12.col-md-4 > img',row).attr('src') ?? 'https://i.imgur.com/GYUxEX8.png'
+    
+                    if (!id || !title) continue
+    
+                    if (collectedIds.includes(id)) continue
+    
+                    mangaItems.push(App.createPartialSourceManga({
+                        mangaId: id,
+                        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+                        title: title,
+                    }))
+                    collectedIds.push(id)
+    
+                }
+            }
+            
             return App.createPagedResults({
-                results: manga,
+                results: mangaItems,
             })
         }
         else {
@@ -292,4 +348,8 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
         }
     }
 
+    async CSEapi(stateManager: SourceStateManager): Promise<string> {
+        const key = await getCSEapi(stateManager)
+        return key
+    }
 }
