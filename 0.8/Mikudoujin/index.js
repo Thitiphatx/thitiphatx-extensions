@@ -1438,6 +1438,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mikudoujin = exports.MikudoujinInfo = void 0;
 const types_1 = require("@paperback/types");
 const MikudoujinParser_1 = require("./MikudoujinParser");
+const MikudoujinSettings_1 = require("./MikudoujinSettings");
 const BASE_URL = 'http://miku-doujin.com';
 exports.MikudoujinInfo = {
     version: '1.0.0',
@@ -1459,7 +1460,7 @@ exports.MikudoujinInfo = {
         }
     ],
     language: 'th',
-    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS
+    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS | types_1.SourceIntents.SETTINGS_UI
 };
 class Mikudoujin {
     constructor(cheerio) {
@@ -1482,6 +1483,18 @@ class Mikudoujin {
                 }
             }
         });
+        this.stateManager = App.createSourceStateManager();
+    }
+    async getSourceMenu() {
+        return Promise.resolve(App.createDUISection({
+            id: 'main',
+            header: 'Source Settings',
+            rows: () => Promise.resolve([
+                (0, MikudoujinSettings_1.settings)(this.stateManager),
+                (0, MikudoujinSettings_1.resetSettings)(this.stateManager)
+            ]),
+            isHidden: false
+        }));
     }
     getMangaShareUrl(mangaId) { return `${BASE_URL}/${mangaId}`; }
     async getMangaDetails(mangaId) {
@@ -1600,22 +1613,50 @@ class Mikudoujin {
     async getSearchResults(query, metadata) {
         const page = metadata?.page ?? 1;
         let request;
-        if (query.title === '') {
-            return App.createPagedResults({
-                results: [],
-            });
-        }
         if (query.title) {
+            const apikey = await this.CSEapi(this.stateManager);
+            const searchEngineId = '009358231530793211456:xtfjzcegcz8';
             request = App.createRequest({
-                url: `${encodeURI(query.title ?? '')}`,
+                url: `https://www.googleapis.com/customsearch/v1?key=${apikey}&cx=${searchEngineId}&q=${encodeURIComponent(query.title ?? '')}`,
                 method: 'GET',
             });
             const response = await this.requestManager.schedule(request, 1);
-            const $ = this.cheerio.load(response.data);
-            let id = query.title.split('/')[3] ?? '';
-            const manga = (0, MikudoujinParser_1.parseSearch)($, id);
+            let data;
+            try {
+                data = JSON.parse(response.data);
+            }
+            catch (e) {
+                throw new Error(`${e}`);
+            }
+            // parseSearch
+            const mangaItems = [];
+            const collectedIds = [];
+            if (data.items) {
+                for (const manga of data.items) {
+                    const id = manga.link?.split("/")[3] ?? "";
+                    const title = manga.title.trim();
+                    const request2 = App.createRequest({
+                        url: `${BASE_URL}/${id}/`,
+                        method: 'GET',
+                    });
+                    const response2 = await this.requestManager.schedule(request2, 1);
+                    const $2 = this.cheerio.load(response2.data);
+                    const row = $2('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row');
+                    let image = $2('div.col-12.col-md-4 > img', row).attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
+                    if (!id || !title)
+                        continue;
+                    if (collectedIds.includes(id))
+                        continue;
+                    mangaItems.push(App.createPartialSourceManga({
+                        mangaId: id,
+                        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
+                        title: title,
+                    }));
+                    collectedIds.push(id);
+                }
+            }
             return App.createPagedResults({
-                results: manga,
+                results: mangaItems,
             });
         }
         else {
@@ -1665,15 +1706,19 @@ class Mikudoujin {
             }
         }
     }
+    async CSEapi(stateManager) {
+        const key = await (0, MikudoujinSettings_1.getCSEapi)(stateManager);
+        return key;
+    }
 }
 exports.Mikudoujin = Mikudoujin;
 
-},{"./MikudoujinParser":71,"@paperback/types":61}],71:[function(require,module,exports){
+},{"./MikudoujinParser":71,"./MikudoujinSettings":72,"@paperback/types":61}],71:[function(require,module,exports){
 "use strict";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseTags = exports.parseSearchtag = exports.parseSearch = exports.parseViewMore = exports.parseRandomSections = exports.parseHomeSections = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.isLastPage = exports.parseTags = exports.parseSearchtag = exports.parseViewMore = exports.parseRandomSections = exports.parseHomeSections = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const types_1 = require("@paperback/types");
 const entities = require("entities");
 const parseMangaDetails = ($, mangaId) => {
@@ -1844,22 +1889,6 @@ const parseViewMore = ($) => {
     return comics;
 };
 exports.parseViewMore = parseViewMore;
-const parseSearch = ($, mangaId) => {
-    const mangaItems = [];
-    const collectedIds = [];
-    let image = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-4 > img').attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
-    const title = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim();
-    const subtitle = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > p:nth-child(4) > small > a').text().trim() ?? '';
-    mangaItems.push(App.createPartialSourceManga({
-        mangaId: mangaId,
-        image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-        title: decodeHTMLEntity(title),
-        subtitle: decodeHTMLEntity(subtitle),
-    }));
-    collectedIds.push(mangaId);
-    return mangaItems;
-};
-exports.parseSearch = parseSearch;
 const parseSearchtag = ($) => {
     const mangaItems = [];
     const collectedIds = [];
@@ -1952,5 +1981,63 @@ const decodeHTMLEntity = (str) => {
     return entities.decodeHTML(str);
 };
 
-},{"@paperback/types":61,"entities":69}]},{},[70])(70)
+},{"@paperback/types":61,"entities":69}],72:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.resetSettings = exports.settings = exports.getResetSettings = exports.getCSEapi = void 0;
+const getCSEapi = async (stateManager) => {
+    return await stateManager.retrieve('api_key') ?? '';
+};
+exports.getCSEapi = getCSEapi;
+const getResetSettings = async (stateManager) => {
+    return await stateManager.retrieve('reset') ?? '';
+};
+exports.getResetSettings = getResetSettings;
+const settings = (stateManager) => {
+    return App.createDUINavigationButton({
+        id: 'settings',
+        label: 'Search settings',
+        form: App.createDUIForm({
+            sections: () => {
+                return Promise.resolve([
+                    App.createDUISection({
+                        id: 'content',
+                        footer: 'Enter Google api key',
+                        rows: async () => {
+                            await Promise.all([
+                                (0, exports.getCSEapi)(stateManager),
+                            ]);
+                            return await [
+                                App.createDUIInputField({
+                                    id: 'api_key',
+                                    label: 'Api key',
+                                    value: App.createDUIBinding({
+                                        get: () => (0, exports.getCSEapi)(stateManager),
+                                        set: async (newValue) => await stateManager.store('api_key', newValue)
+                                    })
+                                })
+                            ];
+                        },
+                        isHidden: false
+                    })
+                ]);
+            }
+        })
+    });
+};
+exports.settings = settings;
+const resetSettings = (stateManager) => {
+    return App.createDUIButton({
+        id: 'reset',
+        label: 'Reset to Default',
+        onTap: async () => {
+            await Promise.all([
+                stateManager.store('api_key', null)
+            ]);
+        }
+    });
+};
+exports.resetSettings = resetSettings;
+
+},{}]},{},[70])(70)
 });
