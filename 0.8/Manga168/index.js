@@ -1450,11 +1450,11 @@ exports.Manga168Info = {
     websiteBaseURL: BASE_URL,
     sourceTags: [
         {
-            text: 'th',
+            text: '🇹🇭',
             type: types_1.BadgeColor.BLUE
         }
     ],
-    language: 'th',
+    language: '🇹🇭',
     intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS
 };
 class Manga168 {
@@ -1650,7 +1650,7 @@ const parseChapters = ($, mangaId) => {
         chapters.push(App.createChapter({
             id: chapterId,
             name: title,
-            langCode: 'th',
+            langCode: '🇹🇭',
             chapNum: isNaN(chapNum) ? 0 : chapNum,
             volume: 0,
             time: date

@@ -1450,7 +1450,7 @@ exports.NekoHentaiInfo = {
     websiteBaseURL: BASE_URL,
     sourceTags: [
         {
-            text: 'th',
+            text: '🇹🇭',
             type: types_1.BadgeColor.BLUE
         },
         {
@@ -1458,7 +1458,7 @@ exports.NekoHentaiInfo = {
             type: types_1.BadgeColor.RED
         }
     ],
-    language: 'th',
+    language: '🇹🇭',
     intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS | types_1.SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
 };
 class NekoHentai {
@@ -1688,7 +1688,7 @@ const parseChapters = ($, mangaId) => {
             chapters.push(App.createChapter({
                 id: chapterId,
                 name: title,
-                langCode: 'th',
+                langCode: '🇹🇭',
                 chapNum: isNaN(chapNum) ? 0 : chapNum,
                 volume: 0,
                 time: date
@@ -1706,7 +1706,7 @@ const parseChapters = ($, mangaId) => {
         chapters.push(App.createChapter({
             id: mangaId,
             name: title,
-            langCode: 'th',
+            langCode: '🇹🇭',
             chapNum: 1,
             volume: 0,
             time: date

@@ -1686,7 +1686,7 @@ const parseChapters = (data, mangaId) => {
         chapters.push(App.createChapter({
             id: chapterId,
             name: title,
-            langCode: 'th',
+            langCode: '🇹🇭',
             chapNum: isNaN(chapNum) ? 0 : chapNum,
             volume: 0,
             time: date
