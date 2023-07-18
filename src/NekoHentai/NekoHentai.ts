@@ -43,7 +43,7 @@ export const NekoHentaiInfo: SourceInfo = {
     websiteBaseURL: BASE_URL,
     sourceTags: [
         {
-            text: 'th',
+            text: '🇹🇭',
             type: BadgeColor.BLUE
         },
         {
@@ -51,7 +51,7 @@ export const NekoHentaiInfo: SourceInfo = {
             type: BadgeColor.RED
         }
     ],
-    language: 'th',
+    language: '🇹🇭',
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
 }
 

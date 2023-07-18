@@ -71,7 +71,7 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
             chapters.push(App.createChapter({
                 id: chapterId,
                 name: title,
-                langCode: 'th',
+                langCode: '🇹🇭',
                 chapNum: isNaN(chapNum) ? 0 : chapNum,
                 volume: 0,
                 time: date
@@ -90,7 +90,7 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
         chapters.push(App.createChapter({
             id: mangaId,
             name: title,
-            langCode: 'th',
+            langCode: '🇹🇭',
             chapNum: 1,
             volume: 0,
             time: date

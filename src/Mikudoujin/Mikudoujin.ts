@@ -16,7 +16,6 @@ import {
     MangaProviding,
     SearchResultsProviding,
     HomePageSectionsProviding,
-    HomeSectionType,
     PartialSourceManga,
     DUISection,
     SourceStateManager,
@@ -27,11 +26,12 @@ import {
     isLastPage,
     parseChapters,
     parseHomeSections,
+    parseRandomSections,
+    parseRandomId,
+    parseRandomViewmore,
     parseMangaDetails,
     parseViewMore,
     parseTags,
-    parseRandomSections,
-    parseSearchtag
 } from './MikudoujinParser'
 
 import { SearchResponse } from './MikudoujinInterfaces'
@@ -42,15 +42,15 @@ import {
     settings
 } from './MikudoujinSettings'
 
-const BASE_URL = 'http://miku-doujin.com'
+const BASE_URL = 'https://miku-doujin.com'
 
 export const MikudoujinInfo: SourceInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'Mikudoujin',
     icon: 'icon.png',
     author: 'Thitiphat',
     authorWebsite: 'https://github.com/Thitiphatx',
-    description: 'Extension that pulls manga from miku-doujin',
+    description: `Extension that pulls manga from ${BASE_URL}`,
     contentRating: ContentRating.MATURE,
     websiteBaseURL: BASE_URL,
     sourceTags: [
@@ -63,14 +63,13 @@ export const MikudoujinInfo: SourceInfo = {
             type: BadgeColor.RED
         }
     ],
-    language: 'th',
+    language: '🇹🇭',
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.SETTINGS_UI
 }
 
 export class Mikudoujin implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding {
-
     constructor(private cheerio: CheerioAPI) { }
-    
+
     requestManager = App.createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 15000,
@@ -79,7 +78,7 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
                 request.headers = {
                     ...(request.headers ?? {}),
                     ...{
-                        'referer': `${BASE_URL}/`,
+                        'referer': `${BASE_URL}`,
                     }
                 }
                 return request
@@ -102,14 +101,12 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
             isHidden: false
         }))
     }
-
     getMangaShareUrl(mangaId: string): string { return `${BASE_URL}/${mangaId}` }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
         const request = App.createRequest({
-            url: `${BASE_URL}`,
-            method: 'GET',
-            param: `/${mangaId}/`,
+            url: `${BASE_URL}/${mangaId}/`,
+            method: 'GET'
         })
 
         const response = await this.requestManager.schedule(request, 1)
@@ -119,9 +116,8 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
         const request = App.createRequest({
-            url: `${BASE_URL}`,
-            method: 'GET',
-            param: `/${mangaId}/`,
+            url: `${BASE_URL}/${mangaId}/`,
+            method: 'GET'
         })
 
         const response = await this.requestManager.schedule(request, 1)
@@ -130,111 +126,113 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        let request;
-        if (chapterId != mangaId) {
+        let request
+        if (mangaId === chapterId) {
             request = App.createRequest({
-                url: `${BASE_URL}/${mangaId}/${chapterId}/`,
+                url: `${BASE_URL}/${chapterId}/`,
                 method: 'GET',
             })
         }
         else {
             request = App.createRequest({
-                url: `${BASE_URL}/${mangaId}/`,
+                url: `${BASE_URL}/${mangaId}/${chapterId}/`,
                 method: 'GET',
             })
         }
+
         const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
+        const $ = this.cheerio.load(response.data as string)
+
         return parseChapterDetails($, mangaId, chapterId)
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-         // Recent update
-         const request1 = App.createRequest({
+        const request = App.createRequest({
             url: `${BASE_URL}`,
             method: 'GET',
         })
-        const response1 = await this.requestManager.schedule(request1, 1)
-        const $1 = this.cheerio.load(response1.data)
-        parseHomeSections($1, sectionCallback)
 
-        // Random
-        
-        const ids: string[] = ['52e6d','wfxsq','ng709','sbjdo','3xuxg','3p47g']
-        const manga_array: PartialSourceManga[] = []
-        const randomSection = App.createHomeSection({
-            id: 'random',
-            title: 'Random Doujin',
-            containsMoreItems: true,
-            type: HomeSectionType.singleRowNormal
+        const response = await this.requestManager.schedule(request, 1)
+        const $ = this.cheerio.load(response.data as string)
+        parseHomeSections($, sectionCallback)
+
+        const request2 = App.createRequest({
+            url: `${BASE_URL}/52e6d/`,
+            method: 'GET',
         })
 
-        for (const id of ids) {
-
-            const request2 = App.createRequest({
-                url: `${BASE_URL}/${id}/`,
-                method: 'GET',
-            })
-
-            const response2 = await this.requestManager.schedule(request2, 1)
-            const $2 = this.cheerio.load(response2.data)
-        
-            for (const item of $2('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-                let image: string = $2('a > img', item).first().attr('src') ?? ''
-        
-                const title: string = $2('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
-                const id: string = $2('a', item).attr('href').split('/')[3] ?? ''
-                if (!id || !title) continue
-                manga_array.push(App.createPartialSourceManga({
-                    mangaId: id,
-                    image: encodeURI(image),
-                    title: decodeURI(title),
-                }))
-            }
-        }
-        randomSection.items = manga_array
-        sectionCallback(randomSection)
+        const response2 = await this.requestManager.schedule(request2, 1)
+        const $2 = this.cheerio.load(response2.data as string)
+        parseRandomSections($2, sectionCallback)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
+        
         if (metadata?.completed) return metadata
-
+        const collectedIds: string[] = ['84vpp']
         const page: number = metadata?.page ?? 1
-        let param = ''
+        let param
 
-        switch (homepageSectionId) {
-            case 'latest_doujin':
-                param = `${page}`
-                break
-            default:
-                throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist')
+        if (homepageSectionId == 'latest_doujin') {
+            param = `${page}`
+            const request = App.createRequest({
+                url: `${BASE_URL}/?page=${param}`,
+                method: 'GET'
+            })
+    
+            const response = await this.requestManager.schedule(request, 1)
+            const $ = this.cheerio.load(response.data as string)
+            const manga = parseViewMore($)
+            metadata = !isLastPage($) ? { page: page + 1 } : undefined
+            return App.createPagedResults({
+                results: manga,
+                metadata
+            })
         }
+        else {
+            const lastIndex = collectedIds.length - 1
+            console.log(metadata)
 
+            if (page > lastIndex) {
+                
+                const request2 = App.createRequest({
+                    url: `${BASE_URL}/${collectedIds[lastIndex]}/`,
+                    method: 'GET'
+                })
+        
+                const response2 = await this.requestManager.schedule(request2, 1)
+                const $2 = this.cheerio.load(response2.data as string)
+
+                const newIds = parseRandomId($2,collectedIds)
+                console.log(newIds)
+                collectedIds.push(...newIds)
+            }
+                const request = App.createRequest({
+                    url: `${BASE_URL}/${collectedIds[page]}/`,
+                    method: 'GET'
+                })
+        
+                const response = await this.requestManager.schedule(request, 1)
+                const $ = this.cheerio.load(response.data as string)
+                const manga = parseRandomViewmore($)
+
+                metadata = true ? { page: page + 1 } : undefined
+                return App.createPagedResults({
+                results: manga,
+                metadata
+            })
+        }
+    }
+
+    async getSearchTags(): Promise<TagSection[]> {
         const request = App.createRequest({
-            url: `${BASE_URL}/?page=${param}`,
+            url: `${BASE_URL}`,
             method: 'GET'
         })
 
         const response = await this.requestManager.schedule(request, 1)
         const $ = this.cheerio.load(response.data as string)
-        const manga = parseViewMore($)
-
-        metadata = !isLastPage($) ? { page: page + 1 } : undefined
-        return App.createPagedResults({
-            results: manga,
-            metadata
-        })
-    }
-
-    async getSearchTags(): Promise<TagSection[]> {
-        const request = App.createRequest({
-            url: BASE_URL,
-            method: 'GET',
-        })
-
-        const response = await this.requestManager.schedule(request, 1)
-        const $ = this.cheerio.load(response.data)
-        return parseTags($) || []
+        return parseTags($)
     }
 
     async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
@@ -306,7 +304,7 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
                 const response = await this.requestManager.schedule(request, 1)
                 const $ = this.cheerio.load(response.data)
                 metadata = page + 10
-                const manga = parseSearchtag($)
+                const manga = parseViewMore($)
                 return App.createPagedResults({
                     results: manga,
                     metadata,
@@ -323,7 +321,7 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
                 if ($('#sub-navbar > div > nav > div > span:nth-child(3) > a > span').text() != '') {
                     metadata = !isLastPage($) ? { page: page + 1 } : undefined
                 
-                    const manga = parseSearchtag($)
+                    const manga = parseViewMore($)
                     return App.createPagedResults({
                         results: manga,
                         metadata
@@ -338,7 +336,7 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
                     const $ = this.cheerio.load(response.data)
                     metadata = !isLastPage($) ? { page: page + 1 } : undefined
                 
-                    const manga = parseSearchtag($)
+                    const manga = parseViewMore($)
                     return App.createPagedResults({
                         results: manga,
                         metadata
@@ -352,4 +350,5 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
         const key = await getCSEapi(stateManager)
         return key
     }
-}
+
+};

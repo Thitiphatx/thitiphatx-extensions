@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-
 import {
     Chapter,
     ChapterDetails,
@@ -23,7 +20,6 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
     const author: string = $('div.col-12.col-md-8 > p:nth-child(4) > small > a',row).text().trim() ?? ''
     const description: string = $('div.col-12.col-md-8',row).contents().first().text().trim() ?? ''
 
-    let hentai = true
     const arrayTags: Tag[] = []
     for (const tag of $('div.tags', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.row > div.col-12.col-md-8 > small:nth-child(12)').toArray()) {
         const label: string = $('a.badge.badge-secondary.badge-up', tag).text().trim()
@@ -41,58 +37,48 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): SourceMang
         mangaInfo: App.createMangaInfo({
             titles: titles,
             image: image,
-            status: 'Ongoing',
+            status: '',
             author: author,
             artist: author,
             tags: tagSections,
             desc: description,
-            hentai: hentai,
         })
     })
 }
 
 export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
     const chapters: Chapter[] = []
-    if ($('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').length != 0) {
-        for (const chapter of $('tr', 'div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.no-padding > table.table.table-hover.table-episode > tbody').toArray()) {
-            const title: string = $('td > a', chapter).text().trim() ?? ''
-            const chapterId: string = $('td > a', chapter).attr('href')?.split('/')[4] ?? ''
-            const time: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').text().trim()
+    if ($('tbody').length != 0) {
+        for (const chapter of $('tbody > tr').toArray()) {
+            const title: string = $('td:nth-child(1)', chapter).text().trim() ?? ""
+            const chapterId: string = $('td:nth-child(1) > a', chapter).attr("href")?.split("/")[4] ?? ""
+            const time: string = $('td.text-right > small').text().trim()
             const date: Date = parseDate(time);
-            new Error(`${title}, ${chapterId}`);
-            if (!chapterId) continue
-    
-            const chapNum = Number(chapterId.replace("ep-", ""))
-            
-            if (!chapterId || !title) continue
+            const chapNum = Number(chapterId.replace("ep-", ""));
+
+            if(!chapterId) continue
             chapters.push(App.createChapter({
                 id: chapterId,
-                name: title,
-                langCode: 'th',
+                name: decodeHTMLEntity(title),
+                langCode: '🇹🇭',
                 chapNum: isNaN(chapNum) ? 0 : chapNum,
-                volume: 0,
                 time: date
             }))
-        } 
-    } else {
-        const title: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-header > b').first().text().trim()
-        const date: string = $('div.container > div.row > div.col-12.col-md-9 div.card > div.card-body.sr-card-body > div.sr-post-header > small').first().text().trim()
-        const time: Date = parseDate(date);
+        }
+    }
+    else {
+        const title: string = $('div.card-header > b').first().text().trim()
+        const time: string = $('div.sr-post-header > small').first().text().trim()
+        const date: Date = parseDate(time);
 
         chapters.push(App.createChapter({
             id: mangaId,
             name: decodeHTMLEntity(title),
-            langCode: 'th',
+            langCode: '🇹🇭',
             chapNum: 1,
-            volume: 0,
-            time
+            time: date,
         }))
     }
-    
-    if (chapters.length == 0) {
-        throw new Error(`Couldn't find any chapters for mangaId: ${mangaId}!`)
-    }
-
     return chapters.map(chapter => {
         return App.createChapter(chapter)
     })
@@ -142,17 +128,49 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
     }
     latestSection.items = latestSection_Array
     sectionCallback(latestSection)
+
+    
 }
 
-export const parseRandomSections = (id: string, $: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
+export const parseRandomSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void): void => {
     const randomSection = App.createHomeSection({
-        id: 'random',
+        id: 'random_doujin',
         title: 'Random Doujin',
         containsMoreItems: true,
         type: HomeSectionType.singleRowNormal
     })
-    
-    const manga_array: PartialSourceManga[] = []
+
+    // Random
+    const randomSection_Array: PartialSourceManga[] = []
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        let image: string = $('a > img', item).first().attr('src') ?? ''
+
+        const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
+        const id: string = $('a', item).attr('href').split('/')[3] ?? ''
+        if (!id || !title) continue
+        randomSection_Array.push(App.createPartialSourceManga({
+            mangaId: id,
+            image: encodeURI(image),
+            title: decodeURI(title),
+        }))
+    }
+    randomSection.items = randomSection_Array
+    sectionCallback(randomSection)
+}
+export const parseRandomId = ($: CheerioStatic, collectedIds: string[]): string[] => {
+
+    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
+        const id: string = $('a', item).attr('href').split('/')[3] ?? ''
+        if (collectedIds.includes(id)) continue
+
+        collectedIds.push(id)
+    }
+    return collectedIds;
+}
+
+export const parseRandomViewmore = ($: CheerioStatic): PartialSourceManga[] => {
+    const comics: PartialSourceManga[] = []
+    const collectedIds: string[] = []
 
     for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
         let image: string = $('a > img', item).first().attr('src') ?? ''
@@ -160,18 +178,21 @@ export const parseRandomSections = (id: string, $: CheerioStatic, sectionCallbac
         const title: string = $('a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
         const id: string = $('a', item).attr('href').split('/')[3] ?? ''
         if (!id || !title) continue
-        manga_array.push(App.createPartialSourceManga({
+
+        comics.push(App.createPartialSourceManga({
             mangaId: id,
-            image: encodeURI(image),
+            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
             title: decodeHTMLEntity(title),
         }))
+        collectedIds.push(id)
     }
-    randomSection.items = manga_array
-    sectionCallback(randomSection)
+    return comics
+
 }
 
 export const parseViewMore = ($: CheerioStatic): PartialSourceManga[] => {
     const comics: PartialSourceManga[] = []
+    const collectedIds: string[] = []
 
     for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
         let image: string = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? ''
@@ -187,33 +208,9 @@ export const parseViewMore = ($: CheerioStatic): PartialSourceManga[] => {
             title: decodeHTMLEntity(title),
             subtitle: decodeHTMLEntity(subtitle),
         }))
-    }
-    return comics
-}
-
-export const parseSearchtag = ($: CheerioStatic): PartialSourceManga[] => {
-    const mangaItems: PartialSourceManga[] = []
-    const collectedIds: string[] = []
-
-    for (const item of $('div.col-6.col-sm-4.col-md-3.mb-3.inz-col', 'div.container > div.row > div.col-sm-12.col-md-9 > div.card > div.card-body > div.row').toArray()) {
-        let image: string = $('a.no-underline.inz-a > img.inz-img-thumbnail', item).first().attr('src') ?? ''
-
-        const title: string = $('a.no-underline.inz-a > div.inz-thumbnail-title-box > div.inz-title', item).first().text().trim() ?? ''
-        const id: string = $('a.no-underline.inz-a', item).attr('href').split('/')[3] ?? ''
-        const subtitle: string = $('a.no-underline.inz-a > div.row.inz-detail > div.col-6.text-left > small', item).first().text().trim() ?? ''
-        if (!id || !title) continue
-
-        if (collectedIds.includes(id)) continue
-
-        mangaItems.push(App.createPartialSourceManga({
-            mangaId: id,
-            image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-            title: decodeHTMLEntity(title),
-            subtitle: decodeHTMLEntity(subtitle),
-        }))
         collectedIds.push(id)
     }
-    return mangaItems
+    return comics
 }
 
 export const parseTags = ($: CheerioStatic): TagSection[] => {
@@ -228,6 +225,20 @@ export const parseTags = ($: CheerioStatic): TagSection[] => {
     
     const tagSections: TagSection[] = [App.createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => App.createTag(x)) })]
     return tagSections
+}
+
+export const isLastPage = ($: CheerioStatic): boolean => {
+    let isLast = false
+    const pages = []
+    for (const page of $('option', 'div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').toArray()) {
+        const p = Number($(page).text().trim())
+        if (isNaN(p)) continue
+        pages.push(p)
+    }
+    const lastPage = Math.max(...pages)
+    const currentPage = Number($('div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').val())
+    if (currentPage >= lastPage) isLast = true
+    return isLast
 }
 
 const parseDate = (date: string): Date => {
@@ -256,20 +267,6 @@ const parseDate = (date: string): Date => {
         time = new Date(Number(split[2]), Number(split[0]) - 1, Number(split[1]))
     }
     return time
-}
-
-export const isLastPage = ($: CheerioStatic): boolean => {
-    let isLast = false
-    const pages = []
-    for (const page of $('option', 'div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').toArray()) {
-        const p = Number($(page).text().trim())
-        if (isNaN(p)) continue
-        pages.push(p)
-    }
-    const lastPage = Math.max(...pages)
-    const currentPage = Number($('div.container > div.row > div.col-sm-12.col-md-9 > div.row.mb-3 > div.col-md-8.col-4 > select').val())
-    if (currentPage >= lastPage) isLast = true
-    return isLast
 }
 
 const decodeHTMLEntity = (str: string): string => {

@@ -42,11 +42,11 @@ export const Manga168Info: SourceInfo = {
     websiteBaseURL: BASE_URL,
     sourceTags: [
         {
-            text: 'th',
+            text: '🇹🇭',
             type: BadgeColor.BLUE
         }
     ],
-    language: 'th',
+    language: '🇹🇭',
     intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS
 }
 
