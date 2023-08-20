@@ -1667,7 +1667,7 @@ const parseChapters = ($, mangaId) => {
 exports.parseChapters = parseChapters;
 const parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
-    for (const images of $('#readerarea').text().trim().split('<br />')) {
+    for (const images of $('#readerarea').html().trim().split('<br>')) {
         let image = parseInfo(images, 'src=').replace(/"/g, '').split(' ')[0];
         if (image && image.startsWith('/'))
             image = 'https:' + image;
