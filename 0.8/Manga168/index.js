@@ -1440,7 +1440,7 @@ const types_1 = require("@paperback/types");
 const Manga168Parser_1 = require("./Manga168Parser");
 const BASE_URL = 'https://manga168.com';
 exports.Manga168Info = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'Manga168',
     icon: 'icon.png',
     author: 'Thitiphat',
