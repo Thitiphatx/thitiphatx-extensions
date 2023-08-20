@@ -32,7 +32,7 @@ import {
 const BASE_URL = 'https://manga168.com'
 
 export const Manga168Info: SourceInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'Manga168',
     icon: 'icon.png',
     author: 'Thitiphat',
