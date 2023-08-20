@@ -98,13 +98,11 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
 
 export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId: string): ChapterDetails => {
     const pages: string[] = []
-
-    for (const images of $('#readerarea').text().trim().split('<br />')) {
-
+    for (const images of $('#readerarea').html().trim().split('<br>')) {
         let image: string | undefined = parseInfo(images, 'src=').replace(/"/g, '').split(' ')[0]
         if (image && image.startsWith('/')) image = 'https:' + image
         if (image) pages.push(encodeURI(image))
-    }
+    }   
 
     const chapterDetails = App.createChapterDetails({
         id: chapterId,
