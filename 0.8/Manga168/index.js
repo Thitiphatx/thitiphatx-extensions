@@ -1482,7 +1482,7 @@ class Manga168 {
             }
         });
     }
-    getMangaShareUrl(mangaId) { return `${BASE_URL}/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${BASE_URL}/${mangaId}/`; }
     async getMangaDetails(mangaId) {
         const request = App.createRequest({
             url: `${BASE_URL}/manga/${mangaId}/`,
@@ -1672,7 +1672,7 @@ const parseChapterDetails = ($, mangaId, chapterId) => {
         if (image && image.startsWith('/'))
             image = 'https:' + image;
         if (image)
-            pages.push(encodeURI(image));
+            pages.push(encodeURI(image.replace(String.fromCharCode(92), "/")));
     }
     const chapterDetails = App.createChapterDetails({
         id: chapterId,

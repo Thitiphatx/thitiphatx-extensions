@@ -1624,6 +1624,8 @@ class NekoHentai {
             }
         });
     }
+    getChapterPages(test) {
+    }
 }
 exports.NekoHentai = NekoHentai;
 
