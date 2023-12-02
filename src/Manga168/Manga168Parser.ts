@@ -101,7 +101,8 @@ export const parseChapterDetails = ($: CheerioStatic, mangaId: string, chapterId
     for (const images of $('#readerarea').html().trim().split('<br>')) {
         let image: string | undefined = parseInfo(images, 'src=').replace(/"/g, '').split(' ')[0]
         if (image && image.startsWith('/')) image = 'https:' + image
-        if (image) pages.push(encodeURI(image))
+        if (image) pages.push(encodeURI(image.replace(String.fromCharCode(92), "/")))
+        
     }   
 
     const chapterDetails = App.createChapterDetails({

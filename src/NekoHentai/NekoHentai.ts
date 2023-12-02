@@ -28,7 +28,6 @@ import {
     parseTags,
     parseSearch
 } from './NekoHentaiParser'
-import { encode } from 'entities';
 
 const BASE_URL = 'https://neko-hentai.net'
 
@@ -238,6 +237,10 @@ export class NekoHentai implements SearchResultsProviding, MangaProviding, Chapt
                 'user-agent': await this.requestManager.getDefaultUserAgent()
             }
         })
+    }
+
+    getChapterPages(test:number): boolean {
+
     }
 
 }

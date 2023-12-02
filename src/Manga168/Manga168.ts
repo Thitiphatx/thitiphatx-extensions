@@ -77,7 +77,7 @@ export class Manga168 implements SearchResultsProviding, MangaProviding, Chapter
         }
     });
 
-    getMangaShareUrl(mangaId: string): string { return `${BASE_URL}/${mangaId}` }
+    getMangaShareUrl(mangaId: string): string { return `${BASE_URL}/${mangaId}/` }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
         const request = App.createRequest({
