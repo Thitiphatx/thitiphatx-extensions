@@ -220,7 +220,7 @@ export const parseTags = ($: CheerioStatic): TagSection[] => {
         const label = $(tag).text().trim()
         const id = $(tag).attr('href')?.split("/")[4] ?? ''
         if (!id || !label) continue
-        arrayTags.push({ id: id, label: label })
+        arrayTags.push({ id: decodeHTMLEntity(id), label: label })
     }
     
     const tagSections: TagSection[] = [App.createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => App.createTag(x)) })]

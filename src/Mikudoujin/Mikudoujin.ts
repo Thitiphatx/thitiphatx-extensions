@@ -295,9 +295,12 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
             })
         }
         else {
+            let id: string = query?.includedTags?.map((x: any) => x.id)[0]
+            id = id.includes("%") ? id : encodeURI(id)
+
             if ((query?.includedTags?.map((x: any) => x.label)[0]).includes('เรื่อง')) {
                 request = App.createRequest({
-                    url: `${BASE_URL}/story/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
+                    url: `${BASE_URL}/story/${id}/?page=${page}`,
                     method: 'GET',
                 })
     
@@ -312,7 +315,7 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
             }
             else {
                 request = App.createRequest({
-                    url: `${BASE_URL}/artist/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
+                    url: `${BASE_URL}/artist/${id}/?page=${page}`,
                     method: 'GET',
                 })
     
@@ -329,7 +332,7 @@ export class Mikudoujin implements SearchResultsProviding, MangaProviding, Chapt
                 }
                 else {
                     request = App.createRequest({
-                        url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x: any) => x.id)[0])}/?page=${page}`,
+                        url: `https://miku-doujin.com/genre/${id}/?page=${page}`,
                         method: 'GET',
                     })
                     const response = await this.requestManager.schedule(request, 1)
