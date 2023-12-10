@@ -1657,9 +1657,11 @@ class Mikudoujin {
             });
         }
         else {
+            let id = query?.includedTags?.map((x) => x.id)[0];
+            id = id.includes("%") ? id : encodeURI(id);
             if ((query?.includedTags?.map((x) => x.label)[0]).includes('เรื่อง')) {
                 request = App.createRequest({
-                    url: `${BASE_URL}/story/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                    url: `${BASE_URL}/story/${id}/?page=${page}`,
                     method: 'GET',
                 });
                 const response = await this.requestManager.schedule(request, 1);
@@ -1673,7 +1675,7 @@ class Mikudoujin {
             }
             else {
                 request = App.createRequest({
-                    url: `${BASE_URL}/artist/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                    url: `${BASE_URL}/artist/${id}/?page=${page}`,
                     method: 'GET',
                 });
                 const response = await this.requestManager.schedule(request, 1);
@@ -1688,7 +1690,7 @@ class Mikudoujin {
                 }
                 else {
                     request = App.createRequest({
-                        url: `https://miku-doujin.com/genre/${encodeURI(query?.includedTags?.map((x) => x.id)[0])}/?page=${page}`,
+                        url: `https://miku-doujin.com/genre/${id}/?page=${page}`,
                         method: 'GET',
                     });
                     const response = await this.requestManager.schedule(request, 1);
@@ -1914,7 +1916,7 @@ const parseTags = ($) => {
         const id = $(tag).attr('href')?.split("/")[4] ?? '';
         if (!id || !label)
             continue;
-        arrayTags.push({ id: id, label: label });
+        arrayTags.push({ id: decodeHTMLEntity(id), label: label });
     }
     const tagSections = [App.createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => App.createTag(x)) })];
     return tagSections;
