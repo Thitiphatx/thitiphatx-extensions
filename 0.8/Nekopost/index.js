@@ -1440,7 +1440,7 @@ const types_1 = require("@paperback/types");
 const NekopostParser_1 = require("./NekopostParser");
 const BASE_URL = 'https://www.nekopost.net';
 exports.NekopostInfo = {
-    version: '1.0.6',
+    version: '1.0.7',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
