@@ -37,7 +37,7 @@ import {
 const BASE_URL = 'https://www.nekopost.net'
 
 export const NekopostInfo: SourceInfo = {
-    version: '1.0.6',
+    version: '1.0.7',
     name: 'Nekopost',
     icon: 'icon.png',
     author: 'Thitiphatx',
