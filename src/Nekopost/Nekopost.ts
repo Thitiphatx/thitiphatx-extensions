@@ -7,7 +7,6 @@ import {
     PagedResults,
     SourceInfo,
     ContentRating,
-    BadgeColor,
     Request,
     Response,
     TagSection,
